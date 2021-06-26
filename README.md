@@ -8,6 +8,10 @@ I will add some videos and pictures of the device in action asap. Please feel fr
 
 ![alt text](https://github.com/dalethomas81/HamMessenger/blob/master/Media/IMG_3982.jpeg)
 
+TODO (repo):
+- add schematics
+- add parts list
+
 Keyboard:
 https://github.com/m5stack/M5-ProductExampleCodes/tree/master/Unit/CARDKB
 https://www.ebay.com/itm/124774337790?hash=item1d0d214cfe:g:kEkAAOSwEZlg0302
