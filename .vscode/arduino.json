@@ -1,7 +1,7 @@
 {
     "board": "arduino:avr:mega",
-    "sketch": "APRS_Mega.ino",
+    "sketch": "HamMessenger.ino",
     "programmer": "arduino:avrisp",
     "configuration": "cpu=atmega2560",
-    "port": "/dev/cu.usbmodem1101"
+    "port": "/dev/cu.usbmodem101"
 }
