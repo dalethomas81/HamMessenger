@@ -6,6 +6,8 @@ At the core of the the project is the MicroAPRS modem created by markqvist (link
 
 I will add some videos and pictures of the device in action asap. Please feel free to contribute to the project. I am very busy outside of this project so any help is greatly appreciated :)
 
+![alt text](https://github.com/dalethomas81/HamMessenger/blob/master/Media/IMG_3982.jpeg)
+
 Keyboard:
 https://github.com/m5stack/M5-ProductExampleCodes/tree/master/Unit/CARDKB
 https://www.ebay.com/itm/124774337790?hash=item1d0d214cfe:g:kEkAAOSwEZlg0302
