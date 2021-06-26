@@ -12,6 +12,14 @@ TODO (repo):
 - add schematics
 - add parts list
 
+TODO (hardware):
+- add shielding to components (controller freezes if radio too close during Txing)
+- design pcb
+- design case
+
+TODO (software):
+- add edit functionality to GPS and Display settings
+
 Keyboard:
 https://github.com/m5stack/M5-ProductExampleCodes/tree/master/Unit/CARDKB
 https://www.ebay.com/itm/124774337790?hash=item1d0d214cfe:g:kEkAAOSwEZlg0302
