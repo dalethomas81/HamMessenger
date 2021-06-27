@@ -58,6 +58,7 @@ TODO (hardware):
 
 TODO (software):
 - add edit functionality to GPS and Display settings
+- add ability to program the radio for 'plug-n-play' experience (is this possible?)
 
 Keyboard:
 https://github.com/m5stack/M5-ProductExampleCodes/tree/master/Unit/CARDKB
