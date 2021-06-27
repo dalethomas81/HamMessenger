@@ -12,6 +12,15 @@
 #define CARDKB_ADDR 0x5F  // M5Stack Keyboard https://docs.m5stack.com/en/unit/cardkb
 char keyboardInputChar, keyboardInputCharLast;
 
+#define KEYBOARD_BACKSPACE_KEY  8
+#define KEYBOARD_ENTER_KEY      13
+#define KEYBOARD_ESCAPE_KEY     27
+#define KEYBOARD_MINUS_KEY      45
+#define KEYBOARD_RIGHT_KEY      -73
+#define KEYBOARD_DOWN_KEY       -74
+#define KEYBOARD_UP_KEY         -75
+#define KEYBOARD_LEFT_KEY       -76
+
 // sketch will write default settings if new build
 //const char version[] = "build "  __DATE__ " " __TIME__; 
 const char version[] = __DATE__ " " __TIME__; 
@@ -689,21 +698,21 @@ void printOutSettings(){
       //Serial.print(F("Entered Display Home:")); Serial.println(currentDisplay);
     }
     // handle button context for current display
-    if (keyboardInputChar == -75){ // -74 DEC - Down Key // -75 DEC - Up Key // -73 DEC - Right Key // -76 DEC - Left Key
+    if (keyboardInputChar == KEYBOARD_UP_KEY){
       if (cursorPosition_Y > 0){
         cursorPosition_Y--;
       } else {
         cursorPosition_Y=2;
       }
     }
-    if (keyboardInputChar == -74){ // -74 DEC - Down Key // -75 DEC - Up Key // -73 DEC - Right Key // -76 DEC - Left Key
+    if (keyboardInputChar == KEYBOARD_DOWN_KEY){ 
       if (cursorPosition_Y < 2){
         cursorPosition_Y++;
       } else {
         cursorPosition_Y=0;
       }
     }
-    if (keyboardInputChar == 13){ // 13 DEC - Enter Key // 8 DEC - Backspace Key
+    if (keyboardInputChar == KEYBOARD_ENTER_KEY){
       switch (cursorPosition_Y){
         case 0:
           currentDisplay = UI_DISPLAY_MESSAGES;
@@ -722,7 +731,7 @@ void printOutSettings(){
           break;
       }
     }
-    if (keyboardInputChar == 27){ // 13 DEC - Enter Key // 8 DEC - Backspace Key // 27 DEC - ESC Key
+    if (keyboardInputChar == KEYBOARD_ESCAPE_KEY){
     }      
     // build display
     if (displayRefresh_Global){
@@ -794,23 +803,23 @@ void printOutSettings(){
       cursorPosition_Y = incomingMessageBufferIndex;
     }
     // handle button context for current display
-    if (keyboardInputChar == -75){ // -74 DEC - Down Key // -75 DEC - Up Key // -73 DEC - Right Key // -76 DEC - Left Key
+    if (keyboardInputChar == KEYBOARD_UP_KEY){
       if (cursorPosition_Y > 0){
         cursorPosition_Y--;
       } else {
         cursorPosition_Y=incomingMessageBufferIndex_RecordCount - 1;
       }
     }
-    if (keyboardInputChar == -74){ // -74 DEC - Down Key // -75 DEC - Up Key // -73 DEC - Right Key // -76 DEC - Left Key
+    if (keyboardInputChar == KEYBOARD_DOWN_KEY){
       if (cursorPosition_Y < incomingMessageBufferIndex_RecordCount - 1){ // dont scroll past the number of records in the array
         cursorPosition_Y++;
       } else {
         cursorPosition_Y=0;
       }
     }
-    if (keyboardInputChar == 13){ // 13 DEC - Enter Key // 8 DEC - Backspace Key
+    if (keyboardInputChar == KEYBOARD_ENTER_KEY){
     }
-    if (keyboardInputChar == 27){ // 13 DEC - Enter Key // 8 DEC - Backspace Key // 27 DEC - ESC Key
+    if (keyboardInputChar == KEYBOARD_ESCAPE_KEY){
       currentDisplay = previousDisplay_Messages;
       return;
     }
@@ -866,7 +875,7 @@ void printOutSettings(){
         display.setTextSize(2);                     // Normal 1:1 pixel scale - default letter size is 5x8 pixels
         display.print(IncomingMessageBuffer[cursorPosition_Y].msg); 
         display.setTextSize(1);                     // Normal 1:1 pixel scale - default letter size is 5x8 pixels
-        if (keyboardInputChar == 13 || SETTINGS_DISPLAY_SCROLL_MESSAGES){ //  scroll only when enter pressed TODO: this wont work because key press not persistent
+        if (keyboardInputChar == KEYBOARD_ENTER_KEY || SETTINGS_DISPLAY_SCROLL_MESSAGES){ //  scroll only when enter pressed TODO: this wont work because key press not persistent
           ScrollingIndex_MessageFeed = ScrollingIndex_MessageFeed - SETTINGS_DISPLAY_SCROLL_SPEED; // higher number here is faster scroll but choppy
           if(ScrollingIndex_MessageFeed < ScrollingIndex_MessageFeed_minX) ScrollingIndex_MessageFeed = display.width(); // makeshift scroll because startScrollleft truncates the string!
         }
@@ -917,23 +926,23 @@ void printOutSettings(){
       cursorPosition_Y = liveFeedBufferIndex;
     }
     // handle button context for current display
-    if (keyboardInputChar == -75){ // -74 DEC - Down Key // -75 DEC - Up Key // -73 DEC - Right Key // -76 DEC - Left Key
+    if (keyboardInputChar == KEYBOARD_UP_KEY){ // -74 DEC - Down Key // -75 DEC - Up Key // -73 DEC - Right Key // -76 DEC - Left Key
       if (cursorPosition_Y > 0){
         cursorPosition_Y--;
       } else {
         cursorPosition_Y=liveFeedBufferIndex_RecordCount - 1;
       }
     }
-    if (keyboardInputChar == -74){ // -74 DEC - Down Key // -75 DEC - Up Key // -73 DEC - Right Key // -76 DEC - Left Key
+    if (keyboardInputChar == KEYBOARD_DOWN_KEY){ // -74 DEC - Down Key // -75 DEC - Up Key // -73 DEC - Right Key // -76 DEC - Left Key
       if (cursorPosition_Y < liveFeedBufferIndex_RecordCount - 1){ // dont scroll past the number of records in the array
         cursorPosition_Y++;
       } else {
         cursorPosition_Y=0;
       }
     }
-    if (keyboardInputChar == 13){ // 13 DEC - Enter Key // 8 DEC - Backspace Key
+    if (keyboardInputChar == KEYBOARD_ENTER_KEY){ // 13 DEC - Enter Key // 8 DEC - Backspace Key
     }
-    if (keyboardInputChar == 27){ // 13 DEC - Enter Key // 8 DEC - Backspace Key // 27 DEC - ESC Key
+    if (keyboardInputChar == KEYBOARD_ESCAPE_KEY){ // 13 DEC - Enter Key // 8 DEC - Backspace Key // 27 DEC - ESC Key
       currentDisplay = previousDisplay_LiveFeed;
       return;
     }
@@ -989,7 +998,7 @@ void printOutSettings(){
         display.setTextSize(2);                     // Normal 1:1 pixel scale - default letter size is 5x8 pixels
         display.print(LiveFeedBuffer[cursorPosition_Y].data); 
         display.setTextSize(1);                     // Normal 1:1 pixel scale - default letter size is 5x8 pixels
-        if (keyboardInputChar == 13 || SETTINGS_DISPLAY_SCROLL_MESSAGES){ //  scroll only when enter pressed TODO: this wont work because key press not persistent
+        if (keyboardInputChar == KEYBOARD_ENTER_KEY || SETTINGS_DISPLAY_SCROLL_MESSAGES){ //  scroll only when enter pressed TODO: this wont work because key press not persistent
           ScrollingIndex_LiveFeed = ScrollingIndex_LiveFeed - SETTINGS_DISPLAY_SCROLL_SPEED; // higher number here is faster scroll but choppy
           if(ScrollingIndex_LiveFeed < ScrollingIndex_LiveFeed_minX) ScrollingIndex_LiveFeed = display.width(); // makeshift scroll because startScrollleft truncates the string!
         }
@@ -1031,21 +1040,21 @@ void printOutSettings(){
       //Serial.print(F("Entered Settings Save:")); Serial.println(currentDisplay);
     }
     // handle button context for current display
-    if (keyboardInputChar == -75){ // -74 DEC - Down Key // -75 DEC - Up Key // -73 DEC - Right Key // -76 DEC - Left Key
+    if (keyboardInputChar == KEYBOARD_UP_KEY){
       if (cursorPosition_Y > 0){
         cursorPosition_Y--;
       } else {
         cursorPosition_Y=1;
       }
     }
-    if (keyboardInputChar == -74){ // -74 DEC - Down Key // -75 DEC - Up Key // -73 DEC - Right Key // -76 DEC - Left Key
+    if (keyboardInputChar == KEYBOARD_DOWN_KEY){
       if (cursorPosition_Y < 1){
         cursorPosition_Y++;
       } else {
         cursorPosition_Y=0;
       }
     }
-    if (keyboardInputChar == 13){ // 13 DEC - Enter Key // 8 DEC - Backspace Key
+    if (keyboardInputChar == KEYBOARD_ENTER_KEY){
       if (cursorPosition_Y == 1) {
         writeSettingsToEeprom();
         applySettings=true;
@@ -1053,7 +1062,7 @@ void printOutSettings(){
       }
       currentDisplay = UI_DISPLAY_SETTINGS;
     }
-    if (keyboardInputChar == 27){ // 13 DEC - Enter Key // 8 DEC - Backspace Key // 27 DEC - ESC Key
+    if (keyboardInputChar == KEYBOARD_ESCAPE_KEY){
       currentDisplay = UI_DISPLAY_SETTINGS;
       return;
     }
@@ -1111,21 +1120,21 @@ void printOutSettings(){
       //Serial.print(F("Entered Settings:")); Serial.println(currentDisplay);
     }
     // handle button context for current display
-    if (keyboardInputChar == -75){ // -74 DEC - Down Key // -75 DEC - Up Key // -73 DEC - Right Key // -76 DEC - Left Key
+    if (keyboardInputChar == KEYBOARD_UP_KEY){
       if (cursorPosition_Y > 0){
         cursorPosition_Y--;
       } else {
         cursorPosition_Y=ARRAY_SIZE(MenuItems_Settings) - 1;
       }
     }
-    if (keyboardInputChar == -74){ // -74 DEC - Down Key // -75 DEC - Up Key // -73 DEC - Right Key // -76 DEC - Left Key
+    if (keyboardInputChar == KEYBOARD_DOWN_KEY){
       if (cursorPosition_Y < ARRAY_SIZE(MenuItems_Settings) - 1){ // Size of array / size of array element
         cursorPosition_Y++;
       } else {
         cursorPosition_Y=0;
       }
     }
-    if (keyboardInputChar == 13){ // 13 DEC - Enter Key // 8 DEC - Backspace Key
+    if (keyboardInputChar == KEYBOARD_ENTER_KEY){
       switch (cursorPosition_Y) {
         case 0:
           currentDisplay = UI_DISPLAY_SETTINGS_APRS;
@@ -1144,7 +1153,7 @@ void printOutSettings(){
           break;
       }
     }
-    if (keyboardInputChar == 27){ // 13 DEC - Enter Key // 8 DEC - Backspace Key // 27 DEC - ESC Key
+    if (keyboardInputChar == KEYBOARD_ESCAPE_KEY){
       currentDisplay = previousDisplay_Settings;
       return;
     }
@@ -1222,36 +1231,33 @@ void printOutSettings(){
       settingsChanged = true;
     }
     // handle button context for current display
-    if ((keyboardInputChar >= 32 && keyboardInputChar <= 126) || (keyboardInputChar >= -76 && keyboardInputChar <= -73) || keyboardInputChar == 8) { // -74 DEC - Down Key // -75 DEC - Up Key // -73 DEC - Right Key // -76 DEC - Left Key
+    if ((keyboardInputChar >= 32 && keyboardInputChar <= 126) || (keyboardInputChar >= -76 && keyboardInputChar <= -73) || keyboardInputChar == KEYBOARD_BACKSPACE_KEY) { // -74 DEC - Down Key // -75 DEC - Up Key // -73 DEC - Right Key // -76 DEC - Left Key
       if (editMode_Settings_APRS){
         bool characterDelete = false;
-        if (keyboardInputChar == -76) { // -74 DEC - Down Key // -75 DEC - Up Key // -73 DEC - Right Key // -76 DEC - Left Key
+        if (keyboardInputChar == KEYBOARD_LEFT_KEY) {
           if (cursorPosition_X > 0) { 
             cursorPosition_X--;
           } else {
             cursorPosition_X=Settings_EditValueSize;
           }
         }
-        if (keyboardInputChar == -73) { // -74 DEC - Down Key // -75 DEC - Up Key // -73 DEC - Right Key // -76 DEC - Left Key
+        if (keyboardInputChar == KEYBOARD_RIGHT_KEY) {
           if (cursorPosition_X < Settings_EditValueSize) { 
             cursorPosition_X++;
           } else {
             cursorPosition_X=0;
           }
         }
-        if (keyboardInputChar == 8){ // 13 DEC - Enter Key // 8 DEC - Backspace Key // 27 DEC - ESC Key
+        if (keyboardInputChar == KEYBOARD_BACKSPACE_KEY){
           if (cursorPosition_X > 0) { 
             cursorPosition_X--;
             characterDelete = true;
-          } else {
-
           }
         }
-        /////////////// change values here ////////////////////
-        //int chrCode = 0;
+        
         switch (Settings_Type_APRS[cursorPosition_Y]) {
           case SETTINGS_EDIT_TYPE_BOOLEAN:
-            if (keyboardInputChar == -74) {
+            if (keyboardInputChar == KEYBOARD_DOWN_KEY) {
               if (Settings_TempDispCharArr[0] == 'T' || Settings_TempDispCharArr[0] == 't' || Settings_TempDispCharArr[0] == '1') {
                 strcpy(Settings_TempDispCharArr, "False");
               } else {
@@ -1267,7 +1273,7 @@ void printOutSettings(){
                 }
               } else if (keyboardInputChar >= 48 && keyboardInputChar <= 57) {
                 Settings_TempDispCharArr[cursorPosition_X] = keyboardInputChar;
-              } else if (keyboardInputChar <= 45) { // 45 = '-'
+              } else if (keyboardInputChar == KEYBOARD_MINUS_KEY) {
                 int tempInt = strtoul(Settings_TempDispCharArr[cursorPosition_X],NULL,10);
                 tempInt = tempInt / -1;
                 itoa(tempInt, Settings_TempDispCharArr[cursorPosition_X], 10);
@@ -1290,7 +1296,7 @@ void printOutSettings(){
                 }
               } else if (keyboardInputChar >= 48 && keyboardInputChar <= 57) {
                 Settings_TempDispCharArr[cursorPosition_X] = keyboardInputChar;
-              } else if (keyboardInputChar <= 45) { // 45 = '-'
+              } else if (keyboardInputChar == KEYBOARD_MINUS_KEY) {
                 int tempInt = strtoul(Settings_TempDispCharArr[cursorPosition_X],NULL,10);
                 tempInt = tempInt / -1;
                 itoa(tempInt, Settings_TempDispCharArr[cursorPosition_X], 10);
@@ -1313,7 +1319,7 @@ void printOutSettings(){
                 }
               } else if ((keyboardInputChar >= 48 && keyboardInputChar <= 57) || keyboardInputChar <= 46) { // 46 = '.'
                 Settings_TempDispCharArr[cursorPosition_X] = keyboardInputChar;
-              } else if (keyboardInputChar <= 45) { // 45 = '-'
+              } else if (keyboardInputChar == KEYBOARD_MINUS_KEY) {
                 double tempDouble = strtod(Settings_TempDispCharArr[cursorPosition_X],NULL);
                 tempDouble = tempDouble / -1.0;
                 dtostrf(tempDouble,3,6,Settings_TempDispCharArr[cursorPosition_X]); // https://www.programmingelectronics.com/dtostrf/
@@ -1350,21 +1356,21 @@ void printOutSettings(){
             break;
         }
         characterDelete = false;
-      } else if (keyboardInputChar == -75) { // -74 DEC - Down Key // -75 DEC - Up Key // -73 DEC - Right Key // -76 DEC - Left Key
-        if (cursorPosition_Y > 0) { // Size of array / size of array element
+      } else if (keyboardInputChar == KEYBOARD_UP_KEY) {
+        if (cursorPosition_Y > 0) {
           cursorPosition_Y--;
         } else {
           cursorPosition_Y=ARRAY_SIZE(MenuItems_Settings_APRS) - 1;
         }
-      } else if (keyboardInputChar == -74) { // -74 DEC - Down Key // -75 DEC - Up Key // -73 DEC - Right Key // -76 DEC - Left Key
-        if (cursorPosition_Y < ARRAY_SIZE(MenuItems_Settings_APRS) - 1) { // Size of array / size of array element
+      } else if (keyboardInputChar == KEYBOARD_DOWN_KEY) {
+        if (cursorPosition_Y < ARRAY_SIZE(MenuItems_Settings_APRS) - 1) {
           cursorPosition_Y++;
         } else {
           cursorPosition_Y=0;
         }
       }
     }
-    if (keyboardInputChar == 13){ // 13 DEC - Enter Key // 8 DEC - Backspace Key
+    if (keyboardInputChar == KEYBOARD_ENTER_KEY){
       if (editMode_Settings_APRS) {
         editMode_Settings_APRS = false;
         cursorPosition_X = 0;
@@ -1461,7 +1467,7 @@ void printOutSettings(){
         }
       }
     }
-    if (keyboardInputChar == 27){ // 13 DEC - Enter Key // 8 DEC - Backspace Key // 27 DEC - ESC Key
+    if (keyboardInputChar == KEYBOARD_ESCAPE_KEY){
       if (editMode_Settings_APRS) {
         // disable edit mode
         editMode_Settings_APRS = false;
@@ -1488,12 +1494,12 @@ void printOutSettings(){
       }
       // place the cursor
       display.setCursor(0,UI_DISPLAY_ROW_BOTTOM-1);
-      // print
-      if (editMode_Settings_APRS) {
+      // print values to oled
+      if (editMode_Settings_APRS) { // print temp variable currently being edited
         Settings_EditValueSize = sizeof(Settings_TempDispCharArr) - 1;
         display.print(Settings_TempDispCharArr);
         cursorPosition_X = strlen(Settings_TempDispCharArr);
-      } else {
+      } else { // print value of setting stored in memory
         switch (Settings_Type_APRS[cursorPosition_Y]) {
           case SETTINGS_EDIT_TYPE_BOOLEAN:
             Settings_EditValueSize = 0;
@@ -1599,24 +1605,23 @@ void printOutSettings(){
       //Serial.print(F("Entered GPS Settings:")); Serial.println(currentDisplay);
     }
     // handle button context for current display
-    if (keyboardInputChar == -75){ // -74 DEC - Down Key // -75 DEC - Up Key // -73 DEC - Right Key // -76 DEC - Left Key
+    if (keyboardInputChar == KEYBOARD_UP_KEY){
       if (cursorPosition_Y > 0){
         cursorPosition_Y--;
       } else {
         cursorPosition_Y=ARRAY_SIZE(MenuItems_Settings_GPS) - 1;
       }
     }
-    if (keyboardInputChar == -74){ // -74 DEC - Down Key // -75 DEC - Up Key // -73 DEC - Right Key // -76 DEC - Left Key
-      if (cursorPosition_Y < ARRAY_SIZE(MenuItems_Settings_GPS) - 1){ // Size of array / size of array element
+    if (keyboardInputChar == KEYBOARD_DOWN_KEY){
+      if (cursorPosition_Y < ARRAY_SIZE(MenuItems_Settings_GPS) - 1){
         cursorPosition_Y++;
       } else {
         cursorPosition_Y=0;
       }
     }
-    if (keyboardInputChar == 13){ // 13 DEC - Enter Key // 8 DEC - Backspace Key
-      ////////////////// handle modifying the setting here ////////////////
+    if (keyboardInputChar == KEYBOARD_ENTER_KEY){
     }
-    if (keyboardInputChar == 27){ // 13 DEC - Enter Key // 8 DEC - Backspace Key // 27 DEC - ESC Key
+    if (keyboardInputChar == KEYBOARD_ESCAPE_KEY){
       currentDisplay = previousDisplay_Settings_GPS;
       return;
     }
@@ -1684,24 +1689,24 @@ void printOutSettings(){
     //Serial.print(F("Entered Display Settings:")); Serial.println(currentDisplay);
   }
   // handle button context for current display
-  if (keyboardInputChar == -75){ // -74 DEC - Down Key // -75 DEC - Up Key // -73 DEC - Right Key // -76 DEC - Left Key
+  if (keyboardInputChar == KEYBOARD_UP_KEY){
     if (cursorPosition_Y > 0){
       cursorPosition_Y--;
     } else {
       cursorPosition_Y=ARRAY_SIZE(MenuItems_Settings_Display) - 1;
     }
   }
-  if (keyboardInputChar == -74){ // -74 DEC - Down Key // -75 DEC - Up Key // -73 DEC - Right Key // -76 DEC - Left Key
-    if (cursorPosition_Y < ARRAY_SIZE(MenuItems_Settings_Display) - 1){ // Size of array / size of array element
+  if (keyboardInputChar == KEYBOARD_DOWN_KEY){
+    if (cursorPosition_Y < ARRAY_SIZE(MenuItems_Settings_Display) - 1){
       cursorPosition_Y++;
     } else {
       cursorPosition_Y=0;
     }
   }
-  if (keyboardInputChar == 13){ // 13 DEC - Enter Key // 8 DEC - Backspace Key
-    ////////////////// handle modifying the setting here ////////////////
+  if (keyboardInputChar == KEYBOARD_ENTER_KEY){
+ 
   }
-  if (keyboardInputChar == 27){ // 13 DEC - Enter Key // 8 DEC - Backspace Key // 27 DEC - ESC Key
+  if (keyboardInputChar == KEYBOARD_ESCAPE_KEY){
     currentDisplay = previousDisplay_Settings_Display;
     return;
   }

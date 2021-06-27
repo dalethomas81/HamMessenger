@@ -3,5 +3,5 @@
     "sketch": "HamMessenger.ino",
     "programmer": "arduino:avrisp",
     "configuration": "cpu=atmega2560",
-    "port": "/dev/cu.usbmodem1101"
+    "port": "/dev/cu.usbmodem101"
 }
