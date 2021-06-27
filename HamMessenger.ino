@@ -242,6 +242,7 @@ float Settings_TypeFloat[3] = {0.00001,34.790040,-82.790672}; // gps position to
 char Settings_TypeString2[7][2] = {'0','\0'};
 char Settings_TypeString7[5][7] = {'N','O','C','A','L','L','\0'};
 char Settings_TypeString100[3][100] = {'T','e','s','t','\0'};
+char Settings_TempDispCharArr[10];
 
 #define SETTINGS_APRS_BEACON_FREQUENCY        Settings_TypeULong[Settings_TypeIndex_APRS[0]]        // beacon frequency
 #define SETTINGS_APRS_RAW_PACKET              Settings_TypeString100[Settings_TypeIndex_APRS[1]]    // raw packet
@@ -1297,6 +1298,9 @@ void handleButtons(){
       settingsChanged = false;
       //Settings_EditType = SETTINGS_EDIT_TYPE_NONE;
       //Serial.print(F("Entered APRS Settings:")); Serial.println(currentDisplay);
+      for (int i=0; i<sizeof(Settings_TempDispCharArr);i++) {
+        Settings_TempDispCharArr[i] = '\0'; // raw packet
+      }
     }
     // monitor for changes
     if (editMode_Settings_APRS) {
@@ -1314,11 +1318,11 @@ void handleButtons(){
       button_hold_timer_down = millis();
       character_increment_rate = CHARACTER_INCREMENT_RATE;
     }
-    if (ButtonFlag_Down_01 || (keyboardInputChar >= 32 && keyboardInputChar < 126) || (keyboardInputChar >= -76 && keyboardInputChar <= -73) || keyboardInputChar == 8) { // -74 DEC - Down Key // -75 DEC - Up Key // -73 DEC - Right Key // -76 DEC - Left Key
+    if (ButtonFlag_Down_01 || (keyboardInputChar >= 32 && keyboardInputChar <= 126) || (keyboardInputChar >= -76 && keyboardInputChar <= -73) || keyboardInputChar == 8) { // -74 DEC - Down Key // -75 DEC - Up Key // -73 DEC - Right Key // -76 DEC - Left Key
       if (editMode_Settings_APRS){
         bool characterDelete = false;
         // if typing from the keyboard don't use increment functionality
-        if ((keyboardInputChar >= 32 && keyboardInputChar < 126) || (keyboardInputChar >= -76 && keyboardInputChar <= -73) || keyboardInputChar == 8) {
+        if ((keyboardInputChar >= 32 && keyboardInputChar <= 126) || (keyboardInputChar >= -76 && keyboardInputChar <= -73) || keyboardInputChar == 8) {
           characterIncrement = false;
         }
         if (keyboardInputChar == -76) { // -74 DEC - Down Key // -75 DEC - Up Key // -73 DEC - Right Key // -76 DEC - Left Key
@@ -1352,6 +1356,21 @@ void handleButtons(){
           case SETTINGS_EDIT_TYPE_INT:
             break;
           case SETTINGS_EDIT_TYPE_UINT:
+              if (characterIncrement) {
+                if (Settings_TempDispCharArr[cursorPosition_X] < 57) {
+                  Settings_TempDispCharArr[cursorPosition_X]++;
+                } else {
+                  Settings_TempDispCharArr[cursorPosition_X] = 0;
+                }
+                character_increment_timer = millis();
+                characterIncrement = false;
+              } else if (characterDelete) {
+                if (cursorPosition_X >= 0) {
+                  Settings_TempDispCharArr[cursorPosition_X] = '\0';
+                }
+              } else if (keyboardInputChar >= 48 && keyboardInputChar <= 57) {
+                Settings_TempDispCharArr[cursorPosition_X] = keyboardInputChar;
+              }
             break;
           case SETTINGS_EDIT_TYPE_LONG:
             break;
@@ -1370,7 +1389,7 @@ void handleButtons(){
                 if (cursorPosition_X >= 0) {
                   Settings_TypeString2[Settings_TypeIndex_APRS[cursorPosition_Y]][cursorPosition_X] = '\0';
                 }
-              } else if (keyboardInputChar >= 32 && keyboardInputChar < 126) {
+              } else if (keyboardInputChar >= 32 && keyboardInputChar <= 126) {
                 Settings_TypeString2[Settings_TypeIndex_APRS[cursorPosition_Y]][cursorPosition_X] = keyboardInputChar;
                 if (cursorPosition_X < 1) {
                   cursorPosition_X++;
@@ -1391,7 +1410,7 @@ void handleButtons(){
                 if (cursorPosition_X >= 0) {
                   Settings_TypeString7[Settings_TypeIndex_APRS[cursorPosition_Y]][cursorPosition_X] = '\0';
                 }
-              } else if (keyboardInputChar >= 32 && keyboardInputChar < 126) {
+              } else if (keyboardInputChar >= 32 && keyboardInputChar <= 126) {
                 Settings_TypeString7[Settings_TypeIndex_APRS[cursorPosition_Y]][cursorPosition_X] = keyboardInputChar;
                 if (cursorPosition_X < 6) {
                   cursorPosition_X++;
@@ -1412,7 +1431,7 @@ void handleButtons(){
                 if (cursorPosition_X >= 0) {
                   Settings_TypeString100[Settings_TypeIndex_APRS[cursorPosition_Y]][cursorPosition_X] = '\0';
                 }
-              } else if (keyboardInputChar >= 32 && keyboardInputChar < 126) {
+              } else if (keyboardInputChar >= 32 && keyboardInputChar <= 126) {
                 Settings_TypeString100[Settings_TypeIndex_APRS[cursorPosition_Y]][cursorPosition_X] = keyboardInputChar;
                 if (cursorPosition_X < 99) {
                   cursorPosition_X++;
@@ -1481,7 +1500,32 @@ void handleButtons(){
           cursorPosition_X=0;
         }
       } else {
+        // enable edit mode
         editMode_Settings_APRS = true;
+        // copy data to temp variable
+        switch (Settings_Type_APRS[cursorPosition_Y]) {
+          case SETTINGS_EDIT_TYPE_BOOLEAN:
+            break;
+          case SETTINGS_EDIT_TYPE_INT:
+            break;
+          case SETTINGS_EDIT_TYPE_UINT:
+            itoa(Settings_TypeUInt[Settings_TypeIndex_APRS[cursorPosition_Y]],Settings_TempDispCharArr,10);
+            break;
+          case SETTINGS_EDIT_TYPE_LONG:
+            break;
+          case SETTINGS_EDIT_TYPE_ULONG:
+            break;
+          case SETTINGS_EDIT_TYPE_FLOAT:
+            break;
+          case SETTINGS_EDIT_TYPE_STRING2:
+            break;
+          case SETTINGS_EDIT_TYPE_STRING7:
+            break;
+          case SETTINGS_EDIT_TYPE_STRING100:
+            break;
+          default:
+            break;
+        }
       }
     }
     if (ButtonFlag_Back_01 || keyboardInputChar == 27){ // 13 DEC - Enter Key // 8 DEC - Backspace Key // 27 DEC - ESC Key
@@ -1497,6 +1541,7 @@ void handleButtons(){
               cursorPosition_X = 0;
             break;
           case SETTINGS_EDIT_TYPE_UINT:
+              Settings_TypeUInt[Settings_TypeIndex_APRS[cursorPosition_Y]] = strtoul(Settings_TempDispCharArr,NULL,10);
               editMode_Settings_APRS = false;
               cursorPosition_X = 0;
             break;
@@ -1569,32 +1614,41 @@ void handleButtons(){
           display.setCursor(0,UI_DISPLAY_ROW_BOTTOM-1);
           if (Settings_TypeBool[Settings_TypeIndex_APRS[cursorPosition_Y]]) {
             display.print(F("True"));
+            cursorPosition_X = 4;
           } else {
             display.print(F("False"));
+            cursorPosition_X = 5;
           }
           break;
         case SETTINGS_EDIT_TYPE_INT:
-          //////////////////////////////// need to count digits here. don't know how
+          Settings_EditValueSize = numberOfDigits<int>(Settings_TypeInt[Settings_TypeIndex_APRS[cursorPosition_Y]]);
           display.setCursor(0,UI_DISPLAY_ROW_BOTTOM-1);
           display.print(Settings_TypeInt[Settings_TypeIndex_APRS[cursorPosition_Y]]);
           break;
         case SETTINGS_EDIT_TYPE_UINT:
-          //////////////////////////////// need to count digits here. don't know how
           display.setCursor(0,UI_DISPLAY_ROW_BOTTOM-1);
-          display.print(Settings_TypeUInt[Settings_TypeIndex_APRS[cursorPosition_Y]]);
+          if (editMode_Settings_APRS) {
+            Settings_EditValueSize = sizeof(Settings_TempDispCharArr) - 1;
+            display.print(Settings_TempDispCharArr);
+            cursorPosition_X = strlen(Settings_TempDispCharArr);
+          } else {
+            Settings_EditValueSize = numberOfDigits<unsigned int>(Settings_TypeUInt[Settings_TypeIndex_APRS[cursorPosition_Y]]);
+            display.print(Settings_TypeUInt[Settings_TypeIndex_APRS[cursorPosition_Y]]);
+            cursorPosition_X = strlen(Settings_TypeUInt[Settings_TypeIndex_APRS[cursorPosition_Y]]);
+          }
           break;
         case SETTINGS_EDIT_TYPE_LONG:
-          //////////////////////////////// need to count digits here. don't know how
+          Settings_EditValueSize = numberOfDigits<long>(Settings_TypeLong[Settings_TypeIndex_APRS[cursorPosition_Y]]);
           display.setCursor(0,UI_DISPLAY_ROW_BOTTOM-1);
           display.print(Settings_TypeLong[Settings_TypeIndex_APRS[cursorPosition_Y]]);
           break;
         case SETTINGS_EDIT_TYPE_ULONG:
-          //////////////////////////////// need to count digits here. don't know how
+          Settings_EditValueSize = numberOfDigits<unsigned long>(Settings_TypeULong[Settings_TypeIndex_APRS[cursorPosition_Y]]);
           display.setCursor(0,UI_DISPLAY_ROW_BOTTOM-1);
           display.print(Settings_TypeULong[Settings_TypeIndex_APRS[cursorPosition_Y]]);
           break;
         case SETTINGS_EDIT_TYPE_FLOAT:
-          //////////////////////////////// need to count digits here. don't know how
+          Settings_EditValueSize = numberOfDigits<float>(Settings_TypeFloat[Settings_TypeIndex_APRS[cursorPosition_Y]]);
           display.setCursor(0,UI_DISPLAY_ROW_BOTTOM-1);
           display.print(Settings_TypeFloat[Settings_TypeIndex_APRS[cursorPosition_Y]]);
           break;
@@ -1835,6 +1889,19 @@ void handleButtons(){
   } 
 }
 #pragma endregion
+
+template <typename T>
+T numberOfDigits(T number) {
+  // https://studyfied.com/program/cpp-basic/count-number-of-digits-in-a-given-integer/
+  // https://stackoverflow.com/questions/8627625/is-it-possible-to-make-function-that-will-accept-multiple-data-types-for-given-a/8627646
+
+    int count = 0;
+    while(number != 0) {
+      count++;
+      number /= 10;
+  }
+  return count;
+}
 
 void handleAprsBeacon(){
   if ( millis() - aprs_beacon_timer > SETTINGS_APRS_BEACON_FREQUENCY ){
