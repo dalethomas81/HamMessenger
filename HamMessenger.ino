@@ -242,38 +242,38 @@ float Settings_TypeFloat[3] = {0.00001,34.790040,-82.790672}; // gps position to
 char Settings_TypeString2[7][2] = {'0','\0'};
 char Settings_TypeString7[5][7] = {'N','O','C','A','L','L','\0'};
 char Settings_TypeString100[3][100] = {'T','e','s','t','\0'};
-/*
-Settings_TypeULong[Settings_TypeIndex_APRS[0]]        beacon frequency
-Settings_TypeString100[Settings_TypeIndex_APRS[1]]    raw packet
-Settings_TypeString100[Settings_TypeIndex_APRS[2]]    comment
-Settings_TypeString100[Settings_TypeIndex_APRS[3]]    message
-Settings_TypeString7[Settings_TypeIndex_APRS[4]]      recipient
-Settings_TypeString2[Settings_TypeIndex_APRS[5]]      recipient ssid
-Settings_TypeString7[Settings_TypeIndex_APRS[6]]      callsign
-Settings_TypeString2[Settings_TypeIndex_APRS[7]]      callsign ssid
-Settings_TypeString7[Settings_TypeIndex_APRS[8]]      Destination Callsign
-Settings_TypeString2[Settings_TypeIndex_APRS[9]]      Destination SSID
-Settings_TypeString7[Settings_TypeIndex_APRS[10]]     PATH1 Callsign
-Settings_TypeString2[Settings_TypeIndex_APRS[11]]     PATH1 SSID
-Settings_TypeString7[Settings_TypeIndex_APRS[12]]     PATH2 Callsign
-Settings_TypeString2[Settings_TypeIndex_APRS[13]]     PATH2 SSID
-Settings_TypeString2[Settings_TypeIndex_APRS[14]]     Symbol
-Settings_TypeString2[Settings_TypeIndex_APRS[15]]     Symbol Table
-Settings_TypeBool[Settings_TypeIndex_APRS[16]]        Automatic ACK
-Settings_TypeUInt[Settings_TypeIndex_APRS[17]]        Preamble
-Settings_TypeUInt[Settings_TypeIndex_APRS[18]]        Tail
 
-Settings_TypeULong[Settings_TypeIndex_GPS[0]]       update frequency
-Settings_TypeFloat[Settings_TypeIndex_GPS[1]]       position tolerance
-Settings_TypeFloat[Settings_TypeIndex_GPS[2]]       destination latitude
-Settings_TypeFloat[Settings_TypeIndex_GPS[3]]       destination longitute
+#define SETTINGS_APRS_BEACON_FREQUENCY        Settings_TypeULong[Settings_TypeIndex_APRS[0]]        // beacon frequency
+#define SETTINGS_APRS_RAW_PACKET              Settings_TypeString100[Settings_TypeIndex_APRS[1]]    // raw packet
+#define SETTINGS_APRS_COMMENT                 Settings_TypeString100[Settings_TypeIndex_APRS[2]]    // comment
+#define SETTINGS_APRS_MESSAGE                 Settings_TypeString100[Settings_TypeIndex_APRS[3]]    // message
+#define SETTINGS_APRS_RECIPIENT_CALL          Settings_TypeString7[Settings_TypeIndex_APRS[4]]      // recipient
+#define SETTINGS_APRS_RECIPIENT_SSID          Settings_TypeString2[Settings_TypeIndex_APRS[5]]      // recipient ssid
+#define SETTINGS_APRS_CALLSIGN                Settings_TypeString7[Settings_TypeIndex_APRS[6]]      // callsign
+#define SETTINGS_APRS_CALLSIGN_SSID           Settings_TypeString2[Settings_TypeIndex_APRS[7]]      // callsign ssid
+#define SETTINGS_APRS_DESTINATION_CALL        Settings_TypeString7[Settings_TypeIndex_APRS[8]]      // Destination Callsign
+#define SETTINGS_APRS_DESTINATION_SSID        Settings_TypeString2[Settings_TypeIndex_APRS[9]]      // Destination SSID
+#define SETTINGS_APRS_PATH1_CALL              Settings_TypeString7[Settings_TypeIndex_APRS[10]]     // PATH1 Callsign
+#define SETTINGS_APRS_PATH1_SSID              Settings_TypeString2[Settings_TypeIndex_APRS[11]]     // PATH1 SSID
+#define SETTINGS_APRS_PATH2_CALL              Settings_TypeString7[Settings_TypeIndex_APRS[12]]     // PATH2 Callsign
+#define SETTINGS_APRS_PATH2_SSID              Settings_TypeString2[Settings_TypeIndex_APRS[13]]     // PATH2 SSID
+#define SETTINGS_APRS_SYMBOL                  Settings_TypeString2[Settings_TypeIndex_APRS[14]]     // Symbol
+#define SETTINGS_APRS_SYMBOL_TABLE            Settings_TypeString2[Settings_TypeIndex_APRS[15]]     // Symbol Table
+#define SETTINGS_APRS_AUTOMATIC_ACK           Settings_TypeBool[Settings_TypeIndex_APRS[16]]        // Automatic ACK
+#define SETTINGS_APRS_PREAMBLE                Settings_TypeUInt[Settings_TypeIndex_APRS[17]]        // Preamble
+#define SETTINGS_APRS_TAIL                    Settings_TypeUInt[Settings_TypeIndex_APRS[18]]        // Tail
 
-Settings_TypeULong[Settings_TypeIndex_Display[0]]        timeout
-Settings_TypeUInt[Settings_TypeIndex_Display[1]]         brightness
-Settings_TypeBool[Settings_TypeIndex_Display[2]]         show position
-Settings_TypeBool[Settings_TypeIndex_Display[3]]         scroll messages
-Settings_TypeUInt[Settings_TypeIndex_Display[4]]         scroll speed
-*/
+#define SETTINGS_GPS_UPDATE_FREQUENCY         Settings_TypeULong[Settings_TypeIndex_GPS[0]]       // update frequency
+#define SETTINGS_GPS_POSITION_TOLERANCE       Settings_TypeFloat[Settings_TypeIndex_GPS[1]]       // position tolerance
+#define SETTINGS_GPS_DESTINATION_LATITUDE     Settings_TypeFloat[Settings_TypeIndex_GPS[2]]       // destination latitude
+#define SETTINGS_GPS_DESTINATION_LONGITUDE    Settings_TypeFloat[Settings_TypeIndex_GPS[3]]       // destination longitute
+
+#define SETTINGS_DISPLAY_TIMEOUT              Settings_TypeULong[Settings_TypeIndex_Display[0]]        // timeout
+#define SETTINGS_DISPLAY_BRIGHTNESS           Settings_TypeUInt[Settings_TypeIndex_Display[1]]         // brightness
+#define SETTINGS_DISPLAY_SHOW_POSITION        Settings_TypeBool[Settings_TypeIndex_Display[2]]         // show position
+#define SETTINGS_DISPLAY_SCROLL_MESSAGES      Settings_TypeBool[Settings_TypeIndex_Display[3]]         // scroll messages
+#define SETTINGS_DISPLAY_SCROLL_SPEED         Settings_TypeUInt[Settings_TypeIndex_Display[4]]         // scroll speed
+
 
 // store common strings here
 const char DataEntered[] = {"Data entered="};
@@ -345,61 +345,61 @@ void makeInitialized(){
 
 void applyDefaultsToSettings() {
   Serial.println(F("Applying defaults to settings..."));
-  Settings_TypeULong[Settings_TypeIndex_APRS[0]] = 300000;                // beacon frequency
+  SETTINGS_APRS_BEACON_FREQUENCY = 300000;                // beacon frequency
   char strTemp1[] = {"HamMessenger!"};
   for (int i=0; i<sizeof(strTemp1);i++) {
-     Settings_TypeString100[Settings_TypeIndex_APRS[1]][i] = strTemp1[i]; // raw packet
+     SETTINGS_APRS_RAW_PACKET[i] = strTemp1[i]; // raw packet
   }
   char strTemp2[] = {"Testing HamMessenger!"};
   for (int i=0; i<sizeof(strTemp2);i++) {
-     Settings_TypeString100[Settings_TypeIndex_APRS[2]][i] = strTemp2[i]; // comment
+     SETTINGS_APRS_COMMENT[i] = strTemp2[i]; // comment
   }
   char strTemp3[] = {"Hi!"};
   for (int i=0; i<sizeof(strTemp3);i++) {
-     Settings_TypeString100[Settings_TypeIndex_APRS[3]][i] = strTemp3[i]; // message
+     SETTINGS_APRS_MESSAGE[i] = strTemp3[i]; // message
   }
   char strTemp4[] = {"NOCALL"};
   for (int i=0; i<sizeof(strTemp4);i++) {
-     Settings_TypeString7[Settings_TypeIndex_APRS[4]][i] = strTemp4[i];   // recipient
+     SETTINGS_APRS_RECIPIENT_CALL[i] = strTemp4[i];   // recipient
   }
-  Settings_TypeString2[Settings_TypeIndex_APRS[5]][0] = '3';              // recipient ssid
+  SETTINGS_APRS_RECIPIENT_SSID[0] = '3';              // recipient ssid
   char strTemp5[] = {"NOCALL"};
   for (int i=0; i<sizeof(strTemp5);i++) {
-     Settings_TypeString7[Settings_TypeIndex_APRS[6]][i] = strTemp5[i];   // callsign
+     SETTINGS_APRS_CALLSIGN[i] = strTemp5[i];   // callsign
   }
-  Settings_TypeString2[Settings_TypeIndex_APRS[7]][0] = '3';              // callsign ssid
+  SETTINGS_APRS_CALLSIGN_SSID[0] = '3';              // callsign ssid
   char strTemp6[] = {"APRS"};
   for (int i=0; i<sizeof(strTemp6);i++) {
-     Settings_TypeString7[Settings_TypeIndex_APRS[8]][i] = strTemp6[i];   // Destination Callsign
+     SETTINGS_APRS_DESTINATION_CALL[i] = strTemp6[i];   // Destination Callsign
   }
-  Settings_TypeString2[Settings_TypeIndex_APRS[9]][0]  = '0';             // Destination SSID
+  SETTINGS_APRS_DESTINATION_SSID[0]  = '0';             // Destination SSID
   char strTemp7[] = {"WIDE1"};
   for (int i=0; i<sizeof(strTemp7);i++) {
-     Settings_TypeString7[Settings_TypeIndex_APRS[10]][i] = strTemp7[i];  // PATH1 Callsign
+     SETTINGS_APRS_PATH1_CALL[i] = strTemp7[i];  // PATH1 Callsign
   }
-  Settings_TypeString2[Settings_TypeIndex_APRS[11]][0] = '1';             // PATH1 SSID
+  SETTINGS_APRS_PATH1_SSID[0] = '1';             // PATH1 SSID
   char strTemp8[] = {"WIDE2"};
   for (int i=0; i<sizeof(strTemp8)-1;i++) {
-     Settings_TypeString7[Settings_TypeIndex_APRS[12]][i] = strTemp8[i];  // PATH2 Callsign
+     SETTINGS_APRS_PATH2_CALL[i] = strTemp8[i];  // PATH2 Callsign
   }
-  Settings_TypeString2[Settings_TypeIndex_APRS[13]][0] = '2';             // PATH2 SSID
-  Settings_TypeString2[Settings_TypeIndex_APRS[14]][0] = 'n';             // Symbol
-  Settings_TypeString2[Settings_TypeIndex_APRS[15]][0] = 's';             // Symbol Table
-  Settings_TypeBool[Settings_TypeIndex_APRS[16]] = true;                  // Automatic ACK
-  Settings_TypeUInt[Settings_TypeIndex_APRS[17]] = 350;                   // Preamble
-  Settings_TypeUInt[Settings_TypeIndex_APRS[18]] = 80;                    // Tail
+  SETTINGS_APRS_PATH2_SSID[0] = '2';             // PATH2 SSID
+  SETTINGS_APRS_SYMBOL[0] = 'n';             // Symbol
+  SETTINGS_APRS_SYMBOL_TABLE[0] = 's';             // Symbol Table
+  SETTINGS_APRS_AUTOMATIC_ACK = true;                  // Automatic ACK
+  SETTINGS_APRS_PREAMBLE = 350;                   // Preamble
+  SETTINGS_APRS_TAIL = 80;                    // Tail
   
   // London  LAT:51.508131     LNG:-0.128002
-  Settings_TypeULong[Settings_TypeIndex_GPS[0]] = 10000;                  // update frequency
-  Settings_TypeFloat[Settings_TypeIndex_GPS[1]] = 0.00001;                // position tolerance
-  Settings_TypeFloat[Settings_TypeIndex_GPS[2]] = 51.508131;              // destination latitude
-  Settings_TypeFloat[Settings_TypeIndex_GPS[3]] = -0.128002;              // destination longitute
+  SETTINGS_GPS_UPDATE_FREQUENCY = 10000;                  // update frequency
+  SETTINGS_GPS_POSITION_TOLERANCE = 0.00001;                // position tolerance
+  SETTINGS_GPS_DESTINATION_LATITUDE = 51.508131;              // destination latitude
+  SETTINGS_GPS_DESTINATION_LONGITUDE = -0.128002;              // destination longitute
   
-  Settings_TypeULong[Settings_TypeIndex_Display[0]] = 2000;                    // timeout
-  Settings_TypeUInt[Settings_TypeIndex_Display[1]] = 100;                      // brightness
-  Settings_TypeBool[Settings_TypeIndex_Display[2]] = true;                     // show position
-  Settings_TypeBool[Settings_TypeIndex_Display[3]] = true;                     // scroll messages
-  Settings_TypeUInt[Settings_TypeIndex_Display[4]] = 4;                        // scroll speed
+  SETTINGS_DISPLAY_TIMEOUT = 2000;                    // timeout
+  SETTINGS_DISPLAY_BRIGHTNESS = 100;                      // brightness
+  SETTINGS_DISPLAY_SHOW_POSITION = true;                     // show position
+  SETTINGS_DISPLAY_SCROLL_MESSAGES = true;                     // scroll messages
+  SETTINGS_DISPLAY_SCROLL_SPEED = 4;                        // scroll speed
 
   writeSettingsToEeprom();
 }
@@ -531,36 +531,36 @@ void printOutSettings(){
   Serial.println();
   Serial.println(F("////////  Current Settings  ////////"));
   Serial.println(F("APRS:"));
-  Serial.print(F("Beacon Frequency=")); Serial.println(Settings_TypeULong[Settings_TypeIndex_APRS[0]]);
-  Serial.print(F("Raw Packet=")); Serial.println(Settings_TypeString100[Settings_TypeIndex_APRS[1]]);
-  Serial.print(F("Comment=")); Serial.println(Settings_TypeString100[Settings_TypeIndex_APRS[2]]);
-  Serial.print(F("Message=")); Serial.println(Settings_TypeString100[Settings_TypeIndex_APRS[3]]);
-  Serial.print(F("Message Recipient=")); Serial.println(Settings_TypeString7[Settings_TypeIndex_APRS[4]]);
-  Serial.print(F("Message Recipient SSID=")); Serial.println(Settings_TypeString2[Settings_TypeIndex_APRS[5]]);
-  Serial.print(F("Callsign=")); Serial.println(Settings_TypeString7[Settings_TypeIndex_APRS[6]]);
-  Serial.print(F("Callsign SSID=")); Serial.println(Settings_TypeString2[Settings_TypeIndex_APRS[7]]);
-  Serial.print(F("Destination Callsign=")); Serial.println(Settings_TypeString7[Settings_TypeIndex_APRS[8]]);
-  Serial.print(F("Destination SSID=")); Serial.println(Settings_TypeString2[Settings_TypeIndex_APRS[9]]);
-  Serial.print(F("PATH1 Callsign=")); Serial.println(Settings_TypeString7[Settings_TypeIndex_APRS[10]]);
-  Serial.print(F("PATH1 SSID=")); Serial.println(Settings_TypeString2[Settings_TypeIndex_APRS[11]]);
-  Serial.print(F("PATH2 Callsign=")); Serial.println(Settings_TypeString7[Settings_TypeIndex_APRS[12]]);
-  Serial.print(F("PATH2 SSID=")); Serial.println(Settings_TypeString2[Settings_TypeIndex_APRS[13]]);
-  Serial.print(F("Symbol=")); Serial.println(Settings_TypeString2[Settings_TypeIndex_APRS[14]]);
-  Serial.print(F("Symbol Table=")); Serial.println(Settings_TypeString2[Settings_TypeIndex_APRS[15]]);
-  Serial.print(F("Automatic ACK=")); Serial.println(Settings_TypeBool[Settings_TypeIndex_APRS[16]]);
-  Serial.print(F("Preamble=")); Serial.println(Settings_TypeUInt[Settings_TypeIndex_APRS[17]]);
-  Serial.print(F("Tail=")); Serial.println(Settings_TypeUInt[Settings_TypeIndex_APRS[18]]);
+  Serial.print(F("Beacon Frequency=")); Serial.println(SETTINGS_APRS_BEACON_FREQUENCY);
+  Serial.print(F("Raw Packet=")); Serial.println(SETTINGS_APRS_RAW_PACKET);
+  Serial.print(F("Comment=")); Serial.println(SETTINGS_APRS_COMMENT);
+  Serial.print(F("Message=")); Serial.println(SETTINGS_APRS_MESSAGE);
+  Serial.print(F("Message Recipient=")); Serial.println(SETTINGS_APRS_RECIPIENT_CALL);
+  Serial.print(F("Message Recipient SSID=")); Serial.println(SETTINGS_APRS_RECIPIENT_SSID);
+  Serial.print(F("Callsign=")); Serial.println(SETTINGS_APRS_CALLSIGN);
+  Serial.print(F("Callsign SSID=")); Serial.println(SETTINGS_APRS_CALLSIGN_SSID);
+  Serial.print(F("Destination Callsign=")); Serial.println(SETTINGS_APRS_DESTINATION_CALL);
+  Serial.print(F("Destination SSID=")); Serial.println(SETTINGS_APRS_DESTINATION_SSID);
+  Serial.print(F("PATH1 Callsign=")); Serial.println(SETTINGS_APRS_PATH1_CALL);
+  Serial.print(F("PATH1 SSID=")); Serial.println(SETTINGS_APRS_PATH1_SSID);
+  Serial.print(F("PATH2 Callsign=")); Serial.println(SETTINGS_APRS_PATH2_CALL);
+  Serial.print(F("PATH2 SSID=")); Serial.println(SETTINGS_APRS_PATH2_SSID);
+  Serial.print(F("Symbol=")); Serial.println(SETTINGS_APRS_SYMBOL);
+  Serial.print(F("Symbol Table=")); Serial.println(SETTINGS_APRS_SYMBOL_TABLE);
+  Serial.print(F("Automatic ACK=")); Serial.println(SETTINGS_APRS_AUTOMATIC_ACK);
+  Serial.print(F("Preamble=")); Serial.println(SETTINGS_APRS_PREAMBLE);
+  Serial.print(F("Tail=")); Serial.println(SETTINGS_APRS_TAIL);
   Serial.println(F("GPS:"));
-  Serial.print(F("Update Frequency=")); Serial.println(Settings_TypeULong[Settings_TypeIndex_GPS[0]]);
-  Serial.print(F("Position Tolerance=")); Serial.println(Settings_TypeFloat[Settings_TypeIndex_GPS[1]], 6);
-  Serial.print(F("Destination Latitude=")); Serial.println(Settings_TypeFloat[Settings_TypeIndex_GPS[2]], 6);
-  Serial.print(F("Destination Longitude=")); Serial.println(Settings_TypeFloat[Settings_TypeIndex_GPS[3]], 6);
+  Serial.print(F("Update Frequency=")); Serial.println(SETTINGS_GPS_UPDATE_FREQUENCY);
+  Serial.print(F("Position Tolerance=")); Serial.println(SETTINGS_GPS_POSITION_TOLERANCE, 6);
+  Serial.print(F("Destination Latitude=")); Serial.println(SETTINGS_GPS_DESTINATION_LATITUDE, 6);
+  Serial.print(F("Destination Longitude=")); Serial.println(SETTINGS_GPS_DESTINATION_LONGITUDE, 6);
   Serial.println(F("Display:"));
-  Serial.print(F("Timeout=")); Serial.println(Settings_TypeULong[Settings_TypeIndex_Display[0]]);
-  Serial.print(F("Brightness=")); Serial.println(Settings_TypeUInt[Settings_TypeIndex_Display[1]]);
-  Serial.print(F("Show Position=")); Serial.println(Settings_TypeBool[Settings_TypeIndex_Display[2]]);
-  Serial.print(F("Scroll Messages=")); Serial.println(Settings_TypeBool[Settings_TypeIndex_Display[3]]);
-  Serial.print(F("Scroll Speed=")); Serial.println(Settings_TypeUInt[Settings_TypeIndex_Display[4]]);
+  Serial.print(F("Timeout=")); Serial.println(SETTINGS_DISPLAY_TIMEOUT);
+  Serial.print(F("Brightness=")); Serial.println(SETTINGS_DISPLAY_BRIGHTNESS);
+  Serial.print(F("Show Position=")); Serial.println(SETTINGS_DISPLAY_SHOW_POSITION);
+  Serial.print(F("Scroll Messages=")); Serial.println(SETTINGS_DISPLAY_SCROLL_MESSAGES);
+  Serial.print(F("Scroll Speed=")); Serial.println(SETTINGS_DISPLAY_SCROLL_SPEED);
   Serial.println();
   Serial.print(F("Version=")); Serial.println(version);
   Serial.println();
@@ -698,7 +698,7 @@ void handleButtons(){
     display.println(F("Call:"));
     
     display.setCursor(60,UI_DISPLAY_ROW_05);                   // 50 pixels right, 13 pixels down
-    display.println(Settings_TypeString7[Settings_TypeIndex_APRS[6]]);
+    display.println(SETTINGS_APRS_CALLSIGN);
     
     display.display();
     delay(5000); // Pause for 2 seconds
@@ -727,7 +727,7 @@ void handleButtons(){
     display.setCursor(100,UI_DISPLAY_ROW_TOP);
     display.print(String(scanTime) + F("ms"));
 
-    if (Settings_TypeBool[Settings_TypeIndex_Display[2]]) {
+    if (SETTINGS_DISPLAY_SHOW_POSITION) {
       display.setCursor(0,UI_DISPLAY_ROW_BOTTOM);
       display.print(F("LT:"));
       
@@ -943,8 +943,8 @@ void handleButtons(){
         display.setTextSize(2);                     // Normal 1:1 pixel scale - default letter size is 5x8 pixels
         display.print(IncomingMessageBuffer[cursorPosition_Y].msg); 
         display.setTextSize(1);                     // Normal 1:1 pixel scale - default letter size is 5x8 pixels
-        if (buttonState_Select == 0 || Settings_TypeBool[Settings_TypeIndex_Display[3]]){ //  scroll only when select button pressed
-          ScrollingIndex_MessageFeed = ScrollingIndex_MessageFeed - Settings_TypeUInt[Settings_TypeIndex_Display[4]]; // higher number here is faster scroll but choppy
+        if (buttonState_Select == 0 || SETTINGS_DISPLAY_SCROLL_MESSAGES){ //  scroll only when select button pressed
+          ScrollingIndex_MessageFeed = ScrollingIndex_MessageFeed - SETTINGS_DISPLAY_SCROLL_SPEED; // higher number here is faster scroll but choppy
           if(ScrollingIndex_MessageFeed < ScrollingIndex_MessageFeed_minX) ScrollingIndex_MessageFeed = display.width(); // makeshift scroll because startScrollleft truncates the string!
         }
       } else {
@@ -958,7 +958,7 @@ void handleButtons(){
       // display all content from buffer
       display.display();
     }
-    if (millis() - leave_display_timer_MessageFeed > Settings_TypeULong[Settings_TypeIndex_Display[0]] && leaveDisplay_MessageFeed){
+    if (millis() - leave_display_timer_MessageFeed > SETTINGS_DISPLAY_TIMEOUT && leaveDisplay_MessageFeed){
       leaveDisplay_MessageFeed = false;
       currentDisplay = UI_DISPLAY_HOME;
       return;
@@ -1068,8 +1068,8 @@ void handleButtons(){
         display.setTextSize(2);                     // Normal 1:1 pixel scale - default letter size is 5x8 pixels
         display.print(LiveFeedBuffer[cursorPosition_Y].data); 
         display.setTextSize(1);                     // Normal 1:1 pixel scale - default letter size is 5x8 pixels
-        if (buttonState_Select == 0 || Settings_TypeBool[Settings_TypeIndex_Display[3]]){ //  scroll only when select button pressed
-          ScrollingIndex_LiveFeed = ScrollingIndex_LiveFeed - Settings_TypeUInt[Settings_TypeIndex_Display[4]]; // higher number here is faster scroll but choppy
+        if (buttonState_Select == 0 || SETTINGS_DISPLAY_SCROLL_MESSAGES){ //  scroll only when select button pressed
+          ScrollingIndex_LiveFeed = ScrollingIndex_LiveFeed - SETTINGS_DISPLAY_SCROLL_SPEED; // higher number here is faster scroll but choppy
           if(ScrollingIndex_LiveFeed < ScrollingIndex_LiveFeed_minX) ScrollingIndex_LiveFeed = display.width(); // makeshift scroll because startScrollleft truncates the string!
         }
       } else {
@@ -1083,7 +1083,7 @@ void handleButtons(){
       // display all content from buffer
       display.display();
     }
-    if (millis() - leave_display_timer_Livefeed > Settings_TypeULong[Settings_TypeIndex_Display[0]] && leaveDisplay_LiveFeed){
+    if (millis() - leave_display_timer_Livefeed > SETTINGS_DISPLAY_TIMEOUT && leaveDisplay_LiveFeed){
       leaveDisplay_LiveFeed = false;
       currentDisplay = UI_DISPLAY_HOME;
       return;
@@ -1837,7 +1837,7 @@ void handleButtons(){
 #pragma endregion
 
 void handleAprsBeacon(){
-  if ( millis() - aprs_beacon_timer > Settings_TypeULong[Settings_TypeIndex_APRS[0]] ){
+  if ( millis() - aprs_beacon_timer > SETTINGS_APRS_BEACON_FREQUENCY ){
     if (blnAprsAutomaticCommentEnabled==true){
       blnModemCmdFlag_Cmt=true;
     }
@@ -1848,77 +1848,77 @@ void handleAprsBeacon(){
 void handleModemCommands(){
     // send raw packet
     if (blnModemCmdFlag_Raw==true){
-      if (sendModemCommand("!", 1, Settings_TypeString100[Settings_TypeIndex_APRS[1]], strlen(Settings_TypeString100[Settings_TypeIndex_APRS[1]])) == -1){
+      if (sendModemCommand("!", 1, SETTINGS_APRS_RAW_PACKET, strlen(SETTINGS_APRS_RAW_PACKET)) == -1){
         blnModemCmdFlag_Raw=false;
       }
       return;
     }
     // send location
     if (blnModemCmdFlag_Cmt==true){
-      if (sendModemCommand("@", 1, Settings_TypeString100[Settings_TypeIndex_APRS[2]], strlen(Settings_TypeString100[Settings_TypeIndex_APRS[2]])) == -1){
+      if (sendModemCommand("@", 1, SETTINGS_APRS_COMMENT, strlen(SETTINGS_APRS_COMMENT)) == -1){
         blnModemCmdFlag_Cmt=false;
       }
       return;
     }
     // send message
     if (blnModemCmdFlag_Msg==true){
-      if (sendModemCommand("#", 1, Settings_TypeString100[Settings_TypeIndex_APRS[3]], strlen(Settings_TypeString100[Settings_TypeIndex_APRS[3]])) == -1){
+      if (sendModemCommand("#", 1, SETTINGS_APRS_MESSAGE, strlen(SETTINGS_APRS_MESSAGE)) == -1){
         blnModemCmdFlag_Msg=false;
       }
       return;
     }
     // set callsign                           ****************Setting*******************
     if (blnModemCmdFlag_Setc==true){
-      if (sendModemCommand("c", 1, Settings_TypeString7[Settings_TypeIndex_APRS[6]], strlen(Settings_TypeString7[Settings_TypeIndex_APRS[6]])) == -1){
+      if (sendModemCommand("c", 1, SETTINGS_APRS_CALLSIGN, strlen(SETTINGS_APRS_CALLSIGN)) == -1){
         blnModemCmdFlag_Setc=false;
       }
       return;
     }
     // set destination callsign               ****************Setting*******************
     if (blnModemCmdFlag_Setd==true){
-      if (sendModemCommand("d", 1, Settings_TypeString7[Settings_TypeIndex_APRS[8]], strlen(Settings_TypeString7[Settings_TypeIndex_APRS[8]])) == -1){
+      if (sendModemCommand("d", 1, SETTINGS_APRS_DESTINATION_CALL, strlen(SETTINGS_APRS_DESTINATION_CALL)) == -1){
         blnModemCmdFlag_Setd=false;
       }
       return;
     }
     // set PATH1 callsign                     ****************Setting*******************
     if (blnModemCmdFlag_Set1==true){
-      if (sendModemCommand("1", 1, Settings_TypeString7[Settings_TypeIndex_APRS[10]], strlen(Settings_TypeString7[Settings_TypeIndex_APRS[10]])) == -1){
+      if (sendModemCommand("1", 1, SETTINGS_APRS_PATH1_CALL, strlen(SETTINGS_APRS_PATH1_CALL)) == -1){
         blnModemCmdFlag_Set1=false;
       }
       return;
     }
     // set PATH2 callsign                     ****************Setting*******************
     if (blnModemCmdFlag_Set2==true){
-      if (sendModemCommand("2", 1, Settings_TypeString7[Settings_TypeIndex_APRS[12]], strlen(Settings_TypeString7[Settings_TypeIndex_APRS[12]])) == -1){
+      if (sendModemCommand("2", 1, SETTINGS_APRS_PATH2_CALL, strlen(SETTINGS_APRS_PATH2_CALL)) == -1){
         blnModemCmdFlag_Set2=false;
       }
       return;
     }
     // set your SSID                          ****************Setting*******************
     if (blnModemCmdFlag_Setsc==true){
-      if (sendModemCommand("sc", 2, Settings_TypeString2[Settings_TypeIndex_APRS[7]], strlen(Settings_TypeString2[Settings_TypeIndex_APRS[7]])) == -1){
+      if (sendModemCommand("sc", 2, SETTINGS_APRS_CALLSIGN_SSID, strlen(SETTINGS_APRS_CALLSIGN_SSID)) == -1){
         blnModemCmdFlag_Setsc=false;
       }
       return;
     }
     // set destination SSID                   ****************Setting*******************
     if (blnModemCmdFlag_Setsd==true){
-      if (sendModemCommand("sd", 2, Settings_TypeString2[Settings_TypeIndex_APRS[9]], strlen(Settings_TypeString2[Settings_TypeIndex_APRS[9]])) == -1){
+      if (sendModemCommand("sd", 2, SETTINGS_APRS_DESTINATION_SSID, strlen(SETTINGS_APRS_DESTINATION_SSID)) == -1){
         blnModemCmdFlag_Setsd=false;
       }
       return;
     }
     // set PATH1 SSID                         ****************Setting*******************
     if (blnModemCmdFlag_Sets1==true){
-      if (sendModemCommand("s1", 2, Settings_TypeString2[Settings_TypeIndex_APRS[11]], strlen(Settings_TypeString2[Settings_TypeIndex_APRS[11]])) == -1){
+      if (sendModemCommand("s1", 2, SETTINGS_APRS_PATH1_SSID, strlen(SETTINGS_APRS_PATH1_SSID)) == -1){
         blnModemCmdFlag_Sets1=false;
       }
       return;
     }    
     // set PATH2 SSID                         ****************Setting*******************
     if (blnModemCmdFlag_Sets2==true){
-      if (sendModemCommand("s2", 2, Settings_TypeString2[Settings_TypeIndex_APRS[13]], strlen(Settings_TypeString2[Settings_TypeIndex_APRS[13]])) == -1){
+      if (sendModemCommand("s2", 2, SETTINGS_APRS_PATH2_SSID, strlen(SETTINGS_APRS_PATH2_SSID)) == -1){
         blnModemCmdFlag_Sets2=false;
       }
       return;
@@ -1939,35 +1939,35 @@ void handleModemCommands(){
     }
     // set symbol                             ****************Setting*******************
     if (blnModemCmdFlag_Setls==true){
-      if (sendModemCommand("ls", 2, Settings_TypeString2[Settings_TypeIndex_APRS[14]], strlen(Settings_TypeString2[Settings_TypeIndex_APRS[14]])) == -1){
+      if (sendModemCommand("ls", 2, SETTINGS_APRS_SYMBOL, strlen(SETTINGS_APRS_SYMBOL)) == -1){
         blnModemCmdFlag_Setls=false;
       }
       return;
     }
     // set symbol table                       ****************Setting*******************
     if (blnModemCmdFlag_Setlt==true){
-      if (sendModemCommand("lt", 2, Settings_TypeString2[Settings_TypeIndex_APRS[15]], strlen(Settings_TypeString2[Settings_TypeIndex_APRS[15]])) == -1){
+      if (sendModemCommand("lt", 2, SETTINGS_APRS_SYMBOL_TABLE, strlen(SETTINGS_APRS_SYMBOL_TABLE)) == -1){
         blnModemCmdFlag_Setlt=false;
       }
       return;
     }
     // set message recipient
     if (blnModemCmdFlag_MsgRecipient==true){
-      if (sendModemCommand("mc", 2, Settings_TypeString7[Settings_TypeIndex_APRS[4]], strlen(Settings_TypeString7[Settings_TypeIndex_APRS[4]])) == -1){
+      if (sendModemCommand("mc", 2, SETTINGS_APRS_RECIPIENT_CALL, strlen(SETTINGS_APRS_RECIPIENT_CALL)) == -1){
         blnModemCmdFlag_MsgRecipient=false;
       }
       return;
     }
     // set message recipient ssid
     if (blnModemCmdFlag_MsgRecipientSSID==true){
-      if (sendModemCommand("ms", 2, Settings_TypeString2[Settings_TypeIndex_APRS[5]], strlen(Settings_TypeString2[Settings_TypeIndex_APRS[5]])) == -1){
+      if (sendModemCommand("ms", 2, SETTINGS_APRS_RECIPIENT_SSID, strlen(SETTINGS_APRS_RECIPIENT_SSID)) == -1){
         blnModemCmdFlag_MsgRecipientSSID=false;
       }
       return;
     }
     // retry last message
     if (blnModemCmdFlag_Setmr==true){
-      if (sendModemCommand("mr", 2, Settings_TypeString2[Settings_TypeIndex_APRS[5]], strlen(Settings_TypeString2[Settings_TypeIndex_APRS[5]])) == -1){
+      if (sendModemCommand("mr", 2, SETTINGS_APRS_RECIPIENT_SSID, strlen(SETTINGS_APRS_RECIPIENT_SSID)) == -1){
         blnModemCmdFlag_Setmr=false;
       }
       return;
@@ -1975,7 +1975,7 @@ void handleModemCommands(){
     // automatic ACK on/off                   ****************Setting*******************
     if (blnModemCmdFlag_Setma==true){
       char OnOff[2] = {'\0'};
-      if (Settings_TypeBool[Settings_TypeIndex_APRS[16]]) {
+      if (SETTINGS_APRS_AUTOMATIC_ACK) {
         OnOff[0] = '1';
       } else {
         OnOff[0] = '0';
@@ -1989,7 +1989,7 @@ void handleModemCommands(){
     if (blnModemCmdFlag_Setw==true){
       //char *  itoa ( int value, char * str, int base );
       char timeBuffer[17];
-      itoa(Settings_TypeUInt[Settings_TypeIndex_APRS[17]],timeBuffer,10);
+      itoa(SETTINGS_APRS_PREAMBLE,timeBuffer,10);
       if (sendModemCommand("w", 1, timeBuffer, strlen(timeBuffer)) == -1){
         blnModemCmdFlag_Setw=false;
       }
@@ -1999,7 +1999,7 @@ void handleModemCommands(){
     if (blnModemCmdFlag_SetW==true){
       //char *  itoa ( int value, char * str, int base );
       char timeBuffer[17];
-      itoa(Settings_TypeUInt[Settings_TypeIndex_APRS[18]],timeBuffer,10);
+      itoa(SETTINGS_APRS_TAIL,timeBuffer,10);
       if (sendModemCommand("W", 1, timeBuffer, strlen(timeBuffer)) == -1){
         blnModemCmdFlag_SetW=false;
       }
@@ -2189,9 +2189,9 @@ void readModem(){
       Serial.print("Line=");Serial.println(Format_Msg_In.line);
       Serial.print("Ack=");Serial.println(Format_Msg_In.ack);
       // if message to users callsign add to feed
-      // Settings_TypeString7[Settings_TypeIndex_APRS[6]]      callsign
-      // Settings_TypeString2[Settings_TypeIndex_APRS[7]]      callsign ssid
-      if (strstr(Format_Msg_In.to, Settings_TypeString7[Settings_TypeIndex_APRS[6]]) != NULL) {
+      // SETTINGS_APRS_CALLSIGN      callsign
+      // SETTINGS_APRS_CALLSIGN_SSID      callsign ssid
+      if (strstr(Format_Msg_In.to, SETTINGS_APRS_CALLSIGN) != NULL) {
         // if message is an acknowledge don't add.
         if (!Format_Msg_In.ack) {
           // handle the incoming message index circular buffer
@@ -2247,7 +2247,7 @@ long *= 60; // convert to seconds
         gps.encode(Serial2.read());
   //}
       
-  if ( millis() - gps_report_timer > Settings_TypeULong[Settings_TypeIndex_GPS[0]]){
+  if ( millis() - gps_report_timer > SETTINGS_GPS_UPDATE_FREQUENCY){
       // reset timer
       gps_report_timer = millis();
       if (gps.location.isUpdated())
@@ -2278,7 +2278,7 @@ long *= 60; // convert to seconds
         for (byte i = 0; i < sizeof(strCurrentLat) - 1; i++) {
           if (strCurrentLat[i] == ' ') strCurrentLat[i] = '0';
         }
-        if (fltCurrentLatDeg > fltLastLatDeg + fltLastLatDeg*Settings_TypeFloat[Settings_TypeIndex_GPS[1]]  || fltCurrentLatDeg < fltLastLatDeg - fltLastLatDeg*Settings_TypeFloat[Settings_TypeIndex_GPS[1]]) {
+        if (fltCurrentLatDeg > fltLastLatDeg + fltLastLatDeg*SETTINGS_GPS_POSITION_TOLERANCE  || fltCurrentLatDeg < fltLastLatDeg - fltLastLatDeg*SETTINGS_GPS_POSITION_TOLERANCE) {
           blnModemCmdFlag_Lat=true;
           fltLastLatDeg = fltCurrentLatDeg;
         }
@@ -2290,7 +2290,7 @@ long *= 60; // convert to seconds
         for (byte i = 0; i < sizeof(strCurrentLng) - 1; i++) {
           if (strCurrentLng[i] == ' ') strCurrentLng[i] = '0';
         }
-        if (fltCurrentLngDeg > fltLastLngDeg + fltLastLngDeg*Settings_TypeFloat[Settings_TypeIndex_GPS[1]] || fltCurrentLngDeg < fltLastLngDeg - fltLastLngDeg*Settings_TypeFloat[Settings_TypeIndex_GPS[1]]) {
+        if (fltCurrentLngDeg > fltLastLngDeg + fltLastLngDeg*SETTINGS_GPS_POSITION_TOLERANCE || fltCurrentLngDeg < fltLastLngDeg - fltLastLngDeg*SETTINGS_GPS_POSITION_TOLERANCE) {
           blnModemCmdFlag_Lng=true;
           fltLastLngDeg = fltCurrentLngDeg;
         }
@@ -2432,8 +2432,8 @@ long *= 60; // convert to seconds
             TinyGPSPlus::courseTo(
               gps.location.lat(),
               gps.location.lng(),
-              Settings_TypeFloat[Settings_TypeIndex_GPS[2]], 
-              Settings_TypeFloat[Settings_TypeIndex_GPS[3]]);
+              SETTINGS_GPS_DESTINATION_LATITUDE, 
+              SETTINGS_GPS_DESTINATION_LONGITUDE);
     
           Serial.print(F("DESTINATION     Distance="));
           Serial.print((distanceToDestination/1000.0)*0.621371, 6); // mile factor 0.621371
@@ -2813,7 +2813,7 @@ void handleSerial() {
             i++; k++;
           }
           //Serial.print(DataEntered);Serial.println(inData_Value);
-          Settings_TypeULong[Settings_TypeIndex_APRS[0]] = atol(inData_Value);
+          SETTINGS_APRS_BEACON_FREQUENCY = atol(inData_Value);
           
         } else if (strstr(Setting, MenuItems_Settings_APRS[1]) != NULL) { // "Raw Packet"
           while (inData[i] != '\n' && inData[i] != '\0') {
@@ -2821,9 +2821,9 @@ void handleSerial() {
             i++; k++;
           }
           //Serial.print(DataEntered);Serial.println(inData_Value); 
-          memset(Settings_TypeString100[Settings_TypeIndex_APRS[1]],'\0',sizeof(Settings_TypeString100[Settings_TypeIndex_APRS[1]])); 
+          memset(SETTINGS_APRS_RAW_PACKET,'\0',sizeof(SETTINGS_APRS_RAW_PACKET)); 
           for (int i=0; inData_Value[i]!='\0';i++) {
-             Settings_TypeString100[Settings_TypeIndex_APRS[1]][i] = inData_Value[i];
+             SETTINGS_APRS_RAW_PACKET[i] = inData_Value[i];
           }
           
         } else if (strstr(Setting, MenuItems_Settings_APRS[2]) != NULL) { // "Comment"
@@ -2832,9 +2832,9 @@ void handleSerial() {
             i++; k++;
           }
           //Serial.print(DataEntered);Serial.println(inData_Value); 
-          memset(Settings_TypeString100[Settings_TypeIndex_APRS[2]],'\0',sizeof(Settings_TypeString100[Settings_TypeIndex_APRS[2]])); 
+          memset(SETTINGS_APRS_COMMENT,'\0',sizeof(SETTINGS_APRS_COMMENT)); 
           for (int i=0; inData_Value[i]!='\0';i++) {
-             Settings_TypeString100[Settings_TypeIndex_APRS[2]][i] = inData_Value[i];
+             SETTINGS_APRS_COMMENT[i] = inData_Value[i];
           }
           
         } else if (strstr(Setting, MenuItems_Settings_APRS[3]) != NULL) { // "Message"
@@ -2843,9 +2843,9 @@ void handleSerial() {
             i++; k++;
           }
           //Serial.print(DataEntered);Serial.println(inData_Value); 
-          memset(Settings_TypeString100[Settings_TypeIndex_APRS[3]],'\0',sizeof(Settings_TypeString100[Settings_TypeIndex_APRS[3]])); 
+          memset(SETTINGS_APRS_MESSAGE,'\0',sizeof(SETTINGS_APRS_MESSAGE)); 
           for (int i=0; inData_Value[i]!='\0';i++) {
-             Settings_TypeString100[Settings_TypeIndex_APRS[3]][i] = inData_Value[i];
+             SETTINGS_APRS_MESSAGE[i] = inData_Value[i];
           }
           
         } else if (strstr(Setting, MenuItems_Settings_APRS[4]) != NULL) { // "Recipient Callsign"
@@ -2854,9 +2854,9 @@ void handleSerial() {
             i++; k++;
           }
           //Serial.print(DataEntered);Serial.println(inData_Value); 
-          memset(Settings_TypeString7[Settings_TypeIndex_APRS[4]],'\0',sizeof(Settings_TypeString7[Settings_TypeIndex_APRS[4]])); 
+          memset(SETTINGS_APRS_RECIPIENT_CALL,'\0',sizeof(SETTINGS_APRS_RECIPIENT_CALL)); 
           for (int i=0; inData_Value[i]!='\0';i++) {
-             Settings_TypeString7[Settings_TypeIndex_APRS[4]][i] = inData_Value[i]; 
+             SETTINGS_APRS_RECIPIENT_CALL[i] = inData_Value[i]; 
           }
           
         } else if (strstr(Setting, MenuItems_Settings_APRS[5]) != NULL) { // "Recipient SSID"
@@ -2865,7 +2865,7 @@ void handleSerial() {
             i++; k++;
           }
           //Serial.print(DataEntered);Serial.println(inData_Value); 
-          Settings_TypeString2[Settings_TypeIndex_APRS[5]][0] = inData_Value[0];
+          SETTINGS_APRS_RECIPIENT_SSID[0] = inData_Value[0];
           
         } else if (strstr(Setting, MenuItems_Settings_APRS[6]) != NULL) { // "My Callsign"
           while (inData[i] != '\n' && inData[i] != '\0') {
@@ -2873,9 +2873,9 @@ void handleSerial() {
             i++; k++;
           }
           //Serial.print(DataEntered);Serial.println(inData_Value); 
-          memset(Settings_TypeString7[Settings_TypeIndex_APRS[6]],'\0',sizeof(Settings_TypeString7[Settings_TypeIndex_APRS[6]])); 
+          memset(SETTINGS_APRS_CALLSIGN,'\0',sizeof(SETTINGS_APRS_CALLSIGN)); 
           for (int i=0; inData_Value[i]!='\0';i++) {
-             Settings_TypeString7[Settings_TypeIndex_APRS[6]][i] = inData_Value[i]; 
+             SETTINGS_APRS_CALLSIGN[i] = inData_Value[i]; 
           }
           
         } else if (strstr(Setting, MenuItems_Settings_APRS[7]) != NULL) { // "Callsign SSID"
@@ -2884,7 +2884,7 @@ void handleSerial() {
             i++; k++;
           }
           //Serial.print(DataEntered);Serial.println(inData_Value); 
-          Settings_TypeString2[Settings_TypeIndex_APRS[7]][0] = inData_Value[0];
+          SETTINGS_APRS_CALLSIGN_SSID[0] = inData_Value[0];
           
         } else if (strstr(Setting, MenuItems_Settings_APRS[8]) != NULL) { // "Destination Callsign"
           while (inData[i] != '\n' && inData[i] != '\0') {
@@ -2892,9 +2892,9 @@ void handleSerial() {
             i++; k++;
           }
           //Serial.print(DataEntered);Serial.println(inData_Value); 
-          memset(Settings_TypeString7[Settings_TypeIndex_APRS[8]],'\0',sizeof(Settings_TypeString7[Settings_TypeIndex_APRS[8]])); 
+          memset(SETTINGS_APRS_DESTINATION_CALL,'\0',sizeof(SETTINGS_APRS_DESTINATION_CALL)); 
           for (int i=0; inData_Value[i]!='\0';i++) {
-             Settings_TypeString7[Settings_TypeIndex_APRS[8]][i] = inData_Value[i]; 
+             SETTINGS_APRS_DESTINATION_CALL[i] = inData_Value[i]; 
           }
           
         } else if (strstr(Setting, MenuItems_Settings_APRS[9]) != NULL) { // "Destination SSID"
@@ -2903,7 +2903,7 @@ void handleSerial() {
             i++; k++;
           }
           //Serial.print(DataEntered);Serial.println(inData_Value); 
-          Settings_TypeString2[Settings_TypeIndex_APRS[9]][0] = inData_Value[0];
+          SETTINGS_APRS_DESTINATION_SSID[0] = inData_Value[0];
           
         } else if (strstr(Setting, MenuItems_Settings_APRS[10]) != NULL) { // "PATH1 Callsign"
           while (inData[i] != '\n' && inData[i] != '\0') {
@@ -2911,9 +2911,9 @@ void handleSerial() {
             i++; k++;
           }
           //Serial.print(DataEntered);Serial.println(inData_Value); 
-          memset(Settings_TypeString7[Settings_TypeIndex_APRS[10]],'\0',sizeof(Settings_TypeString7[Settings_TypeIndex_APRS[10]])); 
+          memset(SETTINGS_APRS_PATH1_CALL,'\0',sizeof(SETTINGS_APRS_PATH1_CALL)); 
           for (int i=0; inData_Value[i]!='\0';i++) {
-             Settings_TypeString7[Settings_TypeIndex_APRS[10]][i] = inData_Value[i]; 
+             SETTINGS_APRS_PATH1_CALL[i] = inData_Value[i]; 
           }
           
         } else if (strstr(Setting, MenuItems_Settings_APRS[11]) != NULL) { // "PATH1 SSID"
@@ -2922,7 +2922,7 @@ void handleSerial() {
             i++; k++;
           }
           //Serial.print(DataEntered);Serial.println(inData_Value); 
-          Settings_TypeString2[Settings_TypeIndex_APRS[11]][0] = inData_Value[0];
+          SETTINGS_APRS_PATH1_SSID[0] = inData_Value[0];
           
         } else if (strstr(Setting, MenuItems_Settings_APRS[12]) != NULL) { // "PATH2 Callsign"
           while (inData[i] != '\n' && inData[i] != '\0') {
@@ -2930,9 +2930,9 @@ void handleSerial() {
             i++; k++;
           }
           //Serial.print(DataEntered);Serial.println(inData_Value); 
-          memset(Settings_TypeString7[Settings_TypeIndex_APRS[12]],'\0',sizeof(Settings_TypeString7[Settings_TypeIndex_APRS[12]])); 
+          memset(SETTINGS_APRS_PATH2_CALL,'\0',sizeof(SETTINGS_APRS_PATH2_CALL)); 
           for (int i=0; inData_Value[i]!='\0';i++) {
-             Settings_TypeString7[Settings_TypeIndex_APRS[12]][i] = inData_Value[i]; 
+             SETTINGS_APRS_PATH2_CALL[i] = inData_Value[i]; 
           }
           
         } else if (strstr(Setting, MenuItems_Settings_APRS[13]) != NULL) { // "PATH2 SSID"
@@ -2941,7 +2941,7 @@ void handleSerial() {
             i++; k++;
           }
           //Serial.print(DataEntered);Serial.println(inData_Value); 
-          Settings_TypeString2[Settings_TypeIndex_APRS[13]][0] = inData_Value[0];
+          SETTINGS_APRS_PATH2_SSID[0] = inData_Value[0];
           
         } else if (strstr(Setting, MenuItems_Settings_APRS[14]) != NULL) { // "Symbol"
           while (inData[i] != '\n' && inData[i] != '\0') {
@@ -2949,7 +2949,7 @@ void handleSerial() {
             i++; k++;
           }
           //Serial.print(DataEntered);Serial.println(inData_Value); 
-          Settings_TypeString2[Settings_TypeIndex_APRS[14]][0] = inData_Value[0];
+          SETTINGS_APRS_SYMBOL[0] = inData_Value[0];
           
         } else if (strstr(Setting, MenuItems_Settings_APRS[15]) != NULL) { // "Table"
           while (inData[i] != '\n' && inData[i] != '\0') {
@@ -2958,9 +2958,9 @@ void handleSerial() {
           }
           //Serial.print(DataEntered);Serial.println(inData_Value); 
           if (inData_Value[0]=='1' || inData_Value[0]=='S' || inData_Value[0]=='s'){
-            Settings_TypeString2[Settings_TypeIndex_APRS[15]][0] = 's';
+            SETTINGS_APRS_SYMBOL_TABLE[0] = 's';
           } else if (inData_Value[0]=='0' || inData_Value[0]=='A' || inData_Value[0]=='a'){
-            Settings_TypeString2[Settings_TypeIndex_APRS[15]][0] = 'a';
+            SETTINGS_APRS_SYMBOL_TABLE[0] = 'a';
           } else {
             Serial.println(InvalidData_TrueFalse);
           }
@@ -2972,9 +2972,9 @@ void handleSerial() {
           }
           //Serial.print(DataEntered);Serial.println(inData_Value); 
           if (inData_Value[0]=='1' || inData_Value[0]=='T' || inData_Value[0]=='t'){
-            Settings_TypeBool[Settings_TypeIndex_APRS[16]] = true;
+            SETTINGS_APRS_AUTOMATIC_ACK = true;
           } else if (inData_Value[0]=='0' || inData_Value[0]=='F' || inData_Value[0]=='f'){
-            Settings_TypeBool[Settings_TypeIndex_APRS[16]] = false;
+            SETTINGS_APRS_AUTOMATIC_ACK = false;
           } else {
             Serial.println(InvalidData_TrueFalse);
           }
@@ -2993,7 +2993,7 @@ void handleSerial() {
             i++; k++;
           }
           //Serial.print(DataEntered);Serial.println(inData_Value);
-          Settings_TypeUInt[Settings_TypeIndex_APRS[17]] = atoi(inData_Value);
+          SETTINGS_APRS_PREAMBLE = atoi(inData_Value);
           
         } else if (strstr(Setting, MenuItems_Settings_APRS[18]) != NULL) { // "Tail"
           while (inData[i] != '\n' && inData[i] != '\0') {
@@ -3009,7 +3009,7 @@ void handleSerial() {
             i++; k++;
           }
           //Serial.print(DataEntered);Serial.println(inData_Value);
-          Settings_TypeUInt[Settings_TypeIndex_APRS[18]] = atoi(inData_Value);
+          SETTINGS_APRS_TAIL = atoi(inData_Value);
           
         } else {
           Serial.println(InvalidCommand);
@@ -3057,7 +3057,7 @@ void handleSerial() {
             i++; k++;
           }
           //Serial.print(DataEntered);Serial.println(inData_Value);
-          Settings_TypeULong[Settings_TypeIndex_Display[0]] = atol(inData_Value);
+          SETTINGS_DISPLAY_TIMEOUT = atol(inData_Value);
           
         } else if (strstr(Setting, MenuItems_Settings_Display[1]) != NULL) { // "Brightness"
           while (inData[i] != '\n' && inData[i] != '\0') {
@@ -3073,7 +3073,7 @@ void handleSerial() {
             i++; k++;
           }
           //Serial.print(DataEntered);Serial.println(inData_Value);
-          Settings_TypeUInt[Settings_TypeIndex_Display[1]] = atoi(inData_Value);
+          SETTINGS_DISPLAY_BRIGHTNESS = atoi(inData_Value);
           
         } else if (strstr(Setting, MenuItems_Settings_Display[2]) != NULL) { // "Show Position"
           while (inData[i] != '\n' && inData[i] != '\0') {
@@ -3082,9 +3082,9 @@ void handleSerial() {
           }
           //Serial.print(DataEntered);Serial.println(inData_Value); 
           if (inData_Value[0]=='1' || inData_Value[0]=='T' || inData_Value[0]=='t'){
-            Settings_TypeBool[Settings_TypeIndex_Display[2]] = true;
+            SETTINGS_DISPLAY_SHOW_POSITION = true;
           } else if (inData_Value[0]=='0' || inData_Value[0]=='F' || inData_Value[0]=='f'){
-            Settings_TypeBool[Settings_TypeIndex_Display[2]] = false;
+            SETTINGS_DISPLAY_SHOW_POSITION = false;
           } else {
             Serial.println(InvalidData_TrueFalse);
           }
@@ -3096,9 +3096,9 @@ void handleSerial() {
           }
           //Serial.print(DataEntered);Serial.println(inData_Value); 
           if (inData_Value[0]=='1' || inData_Value[0]=='T' || inData_Value[0]=='t'){
-            Settings_TypeBool[Settings_TypeIndex_Display[3]] = true;
+            SETTINGS_DISPLAY_SCROLL_MESSAGES = true;
           } else if (inData_Value[0]=='0' || inData_Value[0]=='F' || inData_Value[0]=='f'){
-            Settings_TypeBool[Settings_TypeIndex_Display[3]] = false;
+            SETTINGS_DISPLAY_SCROLL_MESSAGES = false;
           } else {
             Serial.println(InvalidData_TrueFalse);
           }
@@ -3117,7 +3117,7 @@ void handleSerial() {
             i++; k++;
           }
           //Serial.print(DataEntered);Serial.println(inData_Value);
-          Settings_TypeUInt[Settings_TypeIndex_Display[4]] = atoi(inData_Value);
+          SETTINGS_DISPLAY_SCROLL_SPEED = atoi(inData_Value);
         } else {
           Serial.println(InvalidCommand);
         }
