@@ -1458,6 +1458,7 @@ void handleDisplay_Settings_APRS(){
           ultoa(Settings_TypeULong[Settings_TypeIndex_APRS[cursorPosition_Y]],Settings_TempDispCharArr,10);
           break;
         case SETTINGS_EDIT_TYPE_FLOAT:
+          dtostrf(Settings_TypeFloat[Settings_TypeIndex_APRS[cursorPosition_Y]],3,6,Settings_TempDispCharArr);
           break;
         case SETTINGS_EDIT_TYPE_STRING2:
           for (int i=0; i<strlen(Settings_TypeString2[Settings_TypeIndex_APRS[cursorPosition_Y]]);i++) {
@@ -1837,6 +1838,7 @@ void handleDisplay_Settings_GPS(){
           ultoa(Settings_TypeULong[Settings_TypeIndex_GPS[cursorPosition_Y]],Settings_TempDispCharArr,10);
           break;
         case SETTINGS_EDIT_TYPE_FLOAT:
+          dtostrf(Settings_TypeFloat[Settings_TypeIndex_GPS[cursorPosition_Y]],3,6,Settings_TempDispCharArr);
           break;
         case SETTINGS_EDIT_TYPE_STRING2:
           for (int i=0; i<strlen(Settings_TypeString2[Settings_TypeIndex_GPS[cursorPosition_Y]]);i++) {
@@ -2216,6 +2218,7 @@ void handleDisplay_Settings_Display(){
           ultoa(Settings_TypeULong[Settings_TypeIndex_Display[cursorPosition_Y]],Settings_TempDispCharArr,10);
           break;
         case SETTINGS_EDIT_TYPE_FLOAT:
+          dtostrf(Settings_TypeFloat[Settings_TypeIndex_Display[cursorPosition_Y]],3,6,Settings_TempDispCharArr);
           break;
         case SETTINGS_EDIT_TYPE_STRING2:
           for (int i=0; i<strlen(Settings_TypeString2[Settings_TypeIndex_Display[cursorPosition_Y]]);i++) {
