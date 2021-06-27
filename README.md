@@ -1,6 +1,6 @@
 # HamMessenger
 
-The goal of the HamMessenger project is to create a device that uses ham radio as a medium for sending and receiving text messages. The project is currently in a beta prototyping stage with minimum functionality. 
+The goal of the HamMessenger project is to create a device that uses ham radio as a medium for sending and receiving text messages. HamMessenger exists also to promote amateur radio, electronics, and programming. The project is currently in a beta prototyping stage with minimum functionality. 
 
 At the core of the the project is the [MicroAPRS](https://github.com/markqvist/MicroAPRS) modem created by [markqvist](https://github.com/markqvist). The primary controller is an Arduino Mega with the MicroAPRS Modem running on an Arduino Pro Mini. HamMessenger includes GPS functionality supplied by a Neo-6M GPS radio. For peripherals, an M5Stack CardKB keyboard is used for input and an SSD1106 Oled display for output.
 
