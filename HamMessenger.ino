@@ -2710,6 +2710,7 @@ int Settings_Type_Display[] = {SETTINGS_EDIT_TYPE_ULONG, SETTINGS_EDIT_TYPE_UINT
   Serial.println();
   Serial.println("CMD:Settings:Print:");
   Serial.println("CMD:Settings:Save:");
+  Serial.println("CMD:Modem:<command>");
   Serial.println();
   for (int i=0;i<ARRAY_SIZE(MenuItems_Settings);i++) {
     switch (i) {
