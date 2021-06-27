@@ -1,6 +1,5 @@
 // http://www.aprs.net/vm/DOS/PROTOCOL.HTM
 
-
 #include <Adafruit_GFX.h>
 //#include <Adafruit_SSD1306.h>
 #include <Adafruit_SH1106.h>
@@ -180,24 +179,6 @@ APRSFormat_Msg IncomingMessageBuffer[INCOMING_MESSAGE_BUFFER_SIZE];
 #define rxPin A5 // using analog input pins
 #define txPin A6
 
-// button debounce
-const int buttonPin_Down = 6;         // the number of the pushbutton pin
-const int buttonPin_Select = 5; 
-const int buttonPin_Back = 4;     
-int buttonState_Down;                 // the current reading from the input pin
-int buttonState_Select;            
-int buttonState_Back;             
-int lastButtonState_Down = HIGH;       // the previous reading from the input pin - HIGH because INPUT_PULLUP
-int lastButtonState_Select = HIGH;  
-int lastButtonState_Back = HIGH;   
-unsigned long lastDebounceTime_Down = 0;  // the last time the output pin was toggled
-unsigned long lastDebounceTime_Select = 0;  // the last time the output pin was toggled
-unsigned long lastDebounceTime_Back = 0;  // the last time the output pin was toggled
-unsigned long debounceDelay = 10;    // the debounce time; increase if the output flickers
-bool ButtonFlag_Down_01 = false, ButtonFlag_Select_01 = false, ButtonFlag_Back_01 = false;
-
-#define EEPROM_SETTINGS_START_ADDR    1000
-
 // voltage settings
 int VoltagePercent = 0;
 long Voltage = 0;
@@ -205,17 +186,18 @@ long Voltage = 0;
 #define BATT_DISCHARGED         5600
 #define VOLTAGE_CHECK_RATE      10000
 
-// define all data types available for settings
-# define SETTINGS_EDIT_TYPE_NONE        0
-# define SETTINGS_EDIT_TYPE_BOOLEAN     1
-# define SETTINGS_EDIT_TYPE_INT         2
-# define SETTINGS_EDIT_TYPE_UINT        3
-# define SETTINGS_EDIT_TYPE_LONG        4
-# define SETTINGS_EDIT_TYPE_ULONG       5
-# define SETTINGS_EDIT_TYPE_FLOAT       6
-# define SETTINGS_EDIT_TYPE_STRING2     7
-# define SETTINGS_EDIT_TYPE_STRING7     8
-# define SETTINGS_EDIT_TYPE_STRING100   9
+// settings
+#define EEPROM_SETTINGS_START_ADDR    1000
+#define SETTINGS_EDIT_TYPE_NONE        0
+#define SETTINGS_EDIT_TYPE_BOOLEAN     1
+#define SETTINGS_EDIT_TYPE_INT         2
+#define SETTINGS_EDIT_TYPE_UINT        3
+#define SETTINGS_EDIT_TYPE_LONG        4
+#define SETTINGS_EDIT_TYPE_ULONG       5
+#define SETTINGS_EDIT_TYPE_FLOAT       6
+#define SETTINGS_EDIT_TYPE_STRING2     7
+#define SETTINGS_EDIT_TYPE_STRING7     8
+#define SETTINGS_EDIT_TYPE_STRING100   9
                         
 const char *MenuItems_Settings[] = {"APRS","GPS","Display"};
 const char *MenuItems_Settings_APRS[] = {"Beacon Frequency","Raw Packet","Comment","Message","Recipient Callsign","Recipient SSID", "My Callsign","Callsign SSID", 
@@ -567,57 +549,6 @@ void printOutSettings(){
   Serial.println();
 }
 
-void handleButtons(){
-  // down button debounce
-  int reading_Down = digitalRead(buttonPin_Down);
-  if (reading_Down != lastButtonState_Down) {
-    lastDebounceTime_Down = millis();
-  }
-  if ((millis() - lastDebounceTime_Down) > debounceDelay) {
-    if (reading_Down != buttonState_Down) {
-      buttonState_Down = reading_Down;
-
-      if (buttonState_Down == LOW) {
-        ButtonFlag_Down_01 = true;
-      }
-    }
-  }
-  lastButtonState_Down = reading_Down;
-
-  // select button debounce
-  int reading_Select = digitalRead(buttonPin_Select);
-  if (reading_Select != lastButtonState_Select) {
-    lastDebounceTime_Select = millis();
-  }
-  if ((millis() - lastDebounceTime_Select) > debounceDelay) {
-    if (reading_Select != buttonState_Select) {
-      buttonState_Select = reading_Select;
-
-      if (buttonState_Select == LOW) {
-        ButtonFlag_Select_01 = true;
-      }
-    }
-  }
-  lastButtonState_Select = reading_Select;
-  
-  // back button debounce
-  int reading_Back = digitalRead(buttonPin_Back);
-  if (reading_Back != lastButtonState_Back) {
-    lastDebounceTime_Back = millis();
-  }
-  if ((millis() - lastDebounceTime_Back) > debounceDelay) {
-    if (reading_Back != buttonState_Back) {
-      buttonState_Back = reading_Back;
-
-      if (buttonState_Back == LOW) {
-        ButtonFlag_Back_01 = true;
-      }
-    }
-  }
-  lastButtonState_Back = reading_Back;
-  
-}
-
 #pragma region "Displays"
   void handleDisplays(){ 
     if (millis() - display_refresh_timer > DISPLAY_REFRESH_RATE){
@@ -631,9 +562,6 @@ void handleButtons(){
     if (millis() - display_blink_timer > DISPLAY_BLINK_RATE) {
       displayBlink = !displayBlink;
       display_blink_timer = millis();
-    }
-    if (millis() - character_increment_timer > character_increment_rate) {
-      characterIncrement = true;
     }
 
     // add display objects to buffer
@@ -768,16 +696,14 @@ void handleButtons(){
         cursorPosition_Y=2;
       }
     }
-    if (ButtonFlag_Down_01 || keyboardInputChar == -74){ // -74 DEC - Down Key // -75 DEC - Up Key // -73 DEC - Right Key // -76 DEC - Left Key
-      ButtonFlag_Down_01 = false;
+    if (keyboardInputChar == -74){ // -74 DEC - Down Key // -75 DEC - Up Key // -73 DEC - Right Key // -76 DEC - Left Key
       if (cursorPosition_Y < 2){
         cursorPosition_Y++;
       } else {
         cursorPosition_Y=0;
       }
     }
-    if (ButtonFlag_Select_01 || keyboardInputChar == 13){ // 13 DEC - Enter Key // 8 DEC - Backspace Key
-      ButtonFlag_Select_01 = false;
+    if (keyboardInputChar == 13){ // 13 DEC - Enter Key // 8 DEC - Backspace Key
       switch (cursorPosition_Y){
         case 0:
           currentDisplay = UI_DISPLAY_MESSAGES;
@@ -796,8 +722,7 @@ void handleButtons(){
           break;
       }
     }
-    if (ButtonFlag_Back_01 || keyboardInputChar == 27){ // 13 DEC - Enter Key // 8 DEC - Backspace Key // 27 DEC - ESC Key
-      ButtonFlag_Back_01 = false;
+    if (keyboardInputChar == 27){ // 13 DEC - Enter Key // 8 DEC - Backspace Key // 27 DEC - ESC Key
     }      
     // build display
     if (displayRefresh_Global){
@@ -876,19 +801,16 @@ void handleButtons(){
         cursorPosition_Y=incomingMessageBufferIndex_RecordCount - 1;
       }
     }
-    if (ButtonFlag_Down_01 || keyboardInputChar == -74){ // -74 DEC - Down Key // -75 DEC - Up Key // -73 DEC - Right Key // -76 DEC - Left Key
-      ButtonFlag_Down_01 = false;
+    if (keyboardInputChar == -74){ // -74 DEC - Down Key // -75 DEC - Up Key // -73 DEC - Right Key // -76 DEC - Left Key
       if (cursorPosition_Y < incomingMessageBufferIndex_RecordCount - 1){ // dont scroll past the number of records in the array
         cursorPosition_Y++;
       } else {
         cursorPosition_Y=0;
       }
     }
-    if (ButtonFlag_Select_01 || keyboardInputChar == 13){ // 13 DEC - Enter Key // 8 DEC - Backspace Key
-      ButtonFlag_Select_01 = false;
+    if (keyboardInputChar == 13){ // 13 DEC - Enter Key // 8 DEC - Backspace Key
     }
-    if (ButtonFlag_Back_01 || keyboardInputChar == 27){ // 13 DEC - Enter Key // 8 DEC - Backspace Key // 27 DEC - ESC Key
-      ButtonFlag_Back_01 = false;
+    if (keyboardInputChar == 27){ // 13 DEC - Enter Key // 8 DEC - Backspace Key // 27 DEC - ESC Key
       currentDisplay = previousDisplay_Messages;
       return;
     }
@@ -944,7 +866,7 @@ void handleButtons(){
         display.setTextSize(2);                     // Normal 1:1 pixel scale - default letter size is 5x8 pixels
         display.print(IncomingMessageBuffer[cursorPosition_Y].msg); 
         display.setTextSize(1);                     // Normal 1:1 pixel scale - default letter size is 5x8 pixels
-        if (buttonState_Select == 0 || SETTINGS_DISPLAY_SCROLL_MESSAGES){ //  scroll only when select button pressed
+        if (keyboardInputChar == 13 || SETTINGS_DISPLAY_SCROLL_MESSAGES){ //  scroll only when enter pressed TODO: this wont work because key press not persistent
           ScrollingIndex_MessageFeed = ScrollingIndex_MessageFeed - SETTINGS_DISPLAY_SCROLL_SPEED; // higher number here is faster scroll but choppy
           if(ScrollingIndex_MessageFeed < ScrollingIndex_MessageFeed_minX) ScrollingIndex_MessageFeed = display.width(); // makeshift scroll because startScrollleft truncates the string!
         }
@@ -959,6 +881,7 @@ void handleButtons(){
       // display all content from buffer
       display.display();
     }
+    // timeout and leave
     if (millis() - leave_display_timer_MessageFeed > SETTINGS_DISPLAY_TIMEOUT && leaveDisplay_MessageFeed){
       leaveDisplay_MessageFeed = false;
       currentDisplay = UI_DISPLAY_HOME;
@@ -1001,19 +924,16 @@ void handleButtons(){
         cursorPosition_Y=liveFeedBufferIndex_RecordCount - 1;
       }
     }
-    if (ButtonFlag_Down_01 || keyboardInputChar == -74){ // -74 DEC - Down Key // -75 DEC - Up Key // -73 DEC - Right Key // -76 DEC - Left Key
-      ButtonFlag_Down_01 = false;
+    if (keyboardInputChar == -74){ // -74 DEC - Down Key // -75 DEC - Up Key // -73 DEC - Right Key // -76 DEC - Left Key
       if (cursorPosition_Y < liveFeedBufferIndex_RecordCount - 1){ // dont scroll past the number of records in the array
         cursorPosition_Y++;
       } else {
         cursorPosition_Y=0;
       }
     }
-    if (ButtonFlag_Select_01 || keyboardInputChar == 13){ // 13 DEC - Enter Key // 8 DEC - Backspace Key
-      ButtonFlag_Select_01 = false;
+    if (keyboardInputChar == 13){ // 13 DEC - Enter Key // 8 DEC - Backspace Key
     }
-    if (ButtonFlag_Back_01 || keyboardInputChar == 27){ // 13 DEC - Enter Key // 8 DEC - Backspace Key // 27 DEC - ESC Key
-      ButtonFlag_Back_01 = false;
+    if (keyboardInputChar == 27){ // 13 DEC - Enter Key // 8 DEC - Backspace Key // 27 DEC - ESC Key
       currentDisplay = previousDisplay_LiveFeed;
       return;
     }
@@ -1069,7 +989,7 @@ void handleButtons(){
         display.setTextSize(2);                     // Normal 1:1 pixel scale - default letter size is 5x8 pixels
         display.print(LiveFeedBuffer[cursorPosition_Y].data); 
         display.setTextSize(1);                     // Normal 1:1 pixel scale - default letter size is 5x8 pixels
-        if (buttonState_Select == 0 || SETTINGS_DISPLAY_SCROLL_MESSAGES){ //  scroll only when select button pressed
+        if (keyboardInputChar == 13 || SETTINGS_DISPLAY_SCROLL_MESSAGES){ //  scroll only when enter pressed TODO: this wont work because key press not persistent
           ScrollingIndex_LiveFeed = ScrollingIndex_LiveFeed - SETTINGS_DISPLAY_SCROLL_SPEED; // higher number here is faster scroll but choppy
           if(ScrollingIndex_LiveFeed < ScrollingIndex_LiveFeed_minX) ScrollingIndex_LiveFeed = display.width(); // makeshift scroll because startScrollleft truncates the string!
         }
@@ -1084,6 +1004,7 @@ void handleButtons(){
       // display all content from buffer
       display.display();
     }
+    // timeout and leave
     if (millis() - leave_display_timer_Livefeed > SETTINGS_DISPLAY_TIMEOUT && leaveDisplay_LiveFeed){
       leaveDisplay_LiveFeed = false;
       currentDisplay = UI_DISPLAY_HOME;
@@ -1117,16 +1038,14 @@ void handleButtons(){
         cursorPosition_Y=1;
       }
     }
-    if (ButtonFlag_Down_01 || keyboardInputChar == -74){ // -74 DEC - Down Key // -75 DEC - Up Key // -73 DEC - Right Key // -76 DEC - Left Key
-      ButtonFlag_Down_01 = false;
+    if (keyboardInputChar == -74){ // -74 DEC - Down Key // -75 DEC - Up Key // -73 DEC - Right Key // -76 DEC - Left Key
       if (cursorPosition_Y < 1){
         cursorPosition_Y++;
       } else {
         cursorPosition_Y=0;
       }
     }
-    if (ButtonFlag_Select_01 || keyboardInputChar == 13){ // 13 DEC - Enter Key // 8 DEC - Backspace Key
-      ButtonFlag_Select_01 = false;
+    if (keyboardInputChar == 13){ // 13 DEC - Enter Key // 8 DEC - Backspace Key
       if (cursorPosition_Y == 1) {
         writeSettingsToEeprom();
         applySettings=true;
@@ -1134,8 +1053,7 @@ void handleButtons(){
       }
       currentDisplay = UI_DISPLAY_SETTINGS;
     }
-    if (ButtonFlag_Back_01 || keyboardInputChar == 27){ // 13 DEC - Enter Key // 8 DEC - Backspace Key // 27 DEC - ESC Key
-      ButtonFlag_Back_01 = false;
+    if (keyboardInputChar == 27){ // 13 DEC - Enter Key // 8 DEC - Backspace Key // 27 DEC - ESC Key
       currentDisplay = UI_DISPLAY_SETTINGS;
       return;
     }
@@ -1200,16 +1118,14 @@ void handleButtons(){
         cursorPosition_Y=ARRAY_SIZE(MenuItems_Settings) - 1;
       }
     }
-    if (ButtonFlag_Down_01 || keyboardInputChar == -74){ // -74 DEC - Down Key // -75 DEC - Up Key // -73 DEC - Right Key // -76 DEC - Left Key
-      ButtonFlag_Down_01 = false;
+    if (keyboardInputChar == -74){ // -74 DEC - Down Key // -75 DEC - Up Key // -73 DEC - Right Key // -76 DEC - Left Key
       if (cursorPosition_Y < ARRAY_SIZE(MenuItems_Settings) - 1){ // Size of array / size of array element
         cursorPosition_Y++;
       } else {
         cursorPosition_Y=0;
       }
     }
-    if (ButtonFlag_Select_01 || keyboardInputChar == 13){ // 13 DEC - Enter Key // 8 DEC - Backspace Key
-      ButtonFlag_Select_01 = false;
+    if (keyboardInputChar == 13){ // 13 DEC - Enter Key // 8 DEC - Backspace Key
       switch (cursorPosition_Y) {
         case 0:
           currentDisplay = UI_DISPLAY_SETTINGS_APRS;
@@ -1228,8 +1144,7 @@ void handleButtons(){
           break;
       }
     }
-    if (ButtonFlag_Back_01 || keyboardInputChar == 27){ // 13 DEC - Enter Key // 8 DEC - Backspace Key // 27 DEC - ESC Key
-      ButtonFlag_Back_01 = false;
+    if (keyboardInputChar == 27){ // 13 DEC - Enter Key // 8 DEC - Backspace Key // 27 DEC - ESC Key
       currentDisplay = previousDisplay_Settings;
       return;
     }
@@ -1307,24 +1222,9 @@ void handleButtons(){
       settingsChanged = true;
     }
     // handle button context for current display
-    if (buttonState_Down == 0) {
-      if (millis() - button_hold_timer_down > 1000) {
-        if (editMode_Settings_APRS) ButtonFlag_Down_01 = true;
-        if (character_increment_rate > 100 && characterIncrement){
-          character_increment_rate = character_increment_rate - 50; // slowly increase the rate as the button is held
-        }
-      }
-    } else {
-      button_hold_timer_down = millis();
-      character_increment_rate = CHARACTER_INCREMENT_RATE;
-    }
-    if (ButtonFlag_Down_01 || (keyboardInputChar >= 32 && keyboardInputChar <= 126) || (keyboardInputChar >= -76 && keyboardInputChar <= -73) || keyboardInputChar == 8) { // -74 DEC - Down Key // -75 DEC - Up Key // -73 DEC - Right Key // -76 DEC - Left Key
+    if ((keyboardInputChar >= 32 && keyboardInputChar <= 126) || (keyboardInputChar >= -76 && keyboardInputChar <= -73) || keyboardInputChar == 8) { // -74 DEC - Down Key // -75 DEC - Up Key // -73 DEC - Right Key // -76 DEC - Left Key
       if (editMode_Settings_APRS){
         bool characterDelete = false;
-        // if typing from the keyboard don't use increment functionality
-        if ((keyboardInputChar >= 32 && keyboardInputChar <= 126) || (keyboardInputChar >= -76 && keyboardInputChar <= -73) || keyboardInputChar == 8) {
-          characterIncrement = false;
-        }
         if (keyboardInputChar == -76) { // -74 DEC - Down Key // -75 DEC - Up Key // -73 DEC - Right Key // -76 DEC - Left Key
           if (cursorPosition_X > 0) { 
             cursorPosition_X--;
@@ -1361,15 +1261,7 @@ void handleButtons(){
             break;
           case SETTINGS_EDIT_TYPE_INT:
               // TODO this is not validated because we have no settings of type int
-              if (characterIncrement) {
-                if (Settings_TempDispCharArr[cursorPosition_X] < 57) {
-                  Settings_TempDispCharArr[cursorPosition_X]++;
-                } else {
-                  Settings_TempDispCharArr[cursorPosition_X] = 0;
-                }
-                character_increment_timer = millis();
-                characterIncrement = false;
-              } else if (characterDelete) {
+              if (characterDelete) {
                 if (cursorPosition_X >= 0) {
                   Settings_TempDispCharArr[cursorPosition_X] = '\0';
                 }
@@ -1382,15 +1274,7 @@ void handleButtons(){
               }
             break;
           case SETTINGS_EDIT_TYPE_UINT:
-              if (characterIncrement) {
-                if (Settings_TempDispCharArr[cursorPosition_X] < 57) {
-                  Settings_TempDispCharArr[cursorPosition_X]++;
-                } else {
-                  Settings_TempDispCharArr[cursorPosition_X] = 0;
-                }
-                character_increment_timer = millis();
-                characterIncrement = false;
-              } else if (characterDelete) {
+              if (characterDelete) {
                 if (cursorPosition_X >= 0) {
                   Settings_TempDispCharArr[cursorPosition_X] = '\0';
                 }
@@ -1400,15 +1284,7 @@ void handleButtons(){
             break;
           case SETTINGS_EDIT_TYPE_LONG:
               // TODO this is not validated because we have no settings of type long
-              if (characterIncrement) {
-                if (Settings_TempDispCharArr[cursorPosition_X] < 57) {
-                  Settings_TempDispCharArr[cursorPosition_X]++;
-                } else {
-                  Settings_TempDispCharArr[cursorPosition_X] = 0;
-                }
-                character_increment_timer = millis();
-                characterIncrement = false;
-              } else if (characterDelete) {
+              if (characterDelete) {
                 if (cursorPosition_X >= 0) {
                   Settings_TempDispCharArr[cursorPosition_X] = '\0';
                 }
@@ -1421,15 +1297,7 @@ void handleButtons(){
               }
             break;
           case SETTINGS_EDIT_TYPE_ULONG:
-              if (characterIncrement) {
-                if (Settings_TempDispCharArr[cursorPosition_X] < 57) {
-                  Settings_TempDispCharArr[cursorPosition_X]++;
-                } else {
-                  Settings_TempDispCharArr[cursorPosition_X] = 0;
-                }
-                character_increment_timer = millis();
-                characterIncrement = false;
-              } else if (characterDelete) {
+              if (characterDelete) {
                 if (cursorPosition_X >= 0) {
                   Settings_TempDispCharArr[cursorPosition_X] = '\0';
                 }
@@ -1452,11 +1320,7 @@ void handleButtons(){
               }
             break;
           case SETTINGS_EDIT_TYPE_STRING2:
-            if (characterIncrement) {
-              Settings_TempDispCharArr[cursorPosition_X]++;
-              character_increment_timer = millis();
-              characterIncrement = false;
-            } else if (characterDelete) {
+            if (characterDelete) {
               if (cursorPosition_X >= 0) {
                 Settings_TempDispCharArr[cursorPosition_X] = '\0';
               }
@@ -1465,11 +1329,7 @@ void handleButtons(){
             }
             break;
           case SETTINGS_EDIT_TYPE_STRING7:
-            if (characterIncrement) {
-              Settings_TempDispCharArr[cursorPosition_X]++;
-              character_increment_timer = millis();
-              characterIncrement = false;
-            } else if (characterDelete) {
+            if (characterDelete) {
               if (cursorPosition_X >= 0) {
                 Settings_TempDispCharArr[cursorPosition_X] = '\0';
               }
@@ -1478,11 +1338,7 @@ void handleButtons(){
             }
             break;
           case SETTINGS_EDIT_TYPE_STRING100:
-            if (characterIncrement) {
-              Settings_TempDispCharArr[cursorPosition_X]++;
-              character_increment_timer = millis();
-              characterIncrement = false;
-            } else if (characterDelete) {
+            if (characterDelete) {
               if (cursorPosition_X >= 0) {
                 Settings_TempDispCharArr[cursorPosition_X] = '\0';
               }
@@ -1500,17 +1356,15 @@ void handleButtons(){
         } else {
           cursorPosition_Y=ARRAY_SIZE(MenuItems_Settings_APRS) - 1;
         }
-      } else if (ButtonFlag_Down_01 || keyboardInputChar == -74) { // -74 DEC - Down Key // -75 DEC - Up Key // -73 DEC - Right Key // -76 DEC - Left Key
+      } else if (keyboardInputChar == -74) { // -74 DEC - Down Key // -75 DEC - Up Key // -73 DEC - Right Key // -76 DEC - Left Key
         if (cursorPosition_Y < ARRAY_SIZE(MenuItems_Settings_APRS) - 1) { // Size of array / size of array element
           cursorPosition_Y++;
         } else {
           cursorPosition_Y=0;
         }
       }
-      ButtonFlag_Down_01 = false;
     }
-    if (ButtonFlag_Select_01 || keyboardInputChar == 13){ // 13 DEC - Enter Key // 8 DEC - Backspace Key
-      ButtonFlag_Select_01 = false;
+    if (keyboardInputChar == 13){ // 13 DEC - Enter Key // 8 DEC - Backspace Key
       if (editMode_Settings_APRS) {
         editMode_Settings_APRS = false;
         cursorPosition_X = 0;
@@ -1607,8 +1461,7 @@ void handleButtons(){
         }
       }
     }
-    if (ButtonFlag_Back_01 || keyboardInputChar == 27){ // 13 DEC - Enter Key // 8 DEC - Backspace Key // 27 DEC - ESC Key
-      ButtonFlag_Back_01 = false;
+    if (keyboardInputChar == 27){ // 13 DEC - Enter Key // 8 DEC - Backspace Key // 27 DEC - ESC Key
       if (editMode_Settings_APRS) {
         // disable edit mode
         editMode_Settings_APRS = false;
@@ -1753,20 +1606,17 @@ void handleButtons(){
         cursorPosition_Y=ARRAY_SIZE(MenuItems_Settings_GPS) - 1;
       }
     }
-    if (ButtonFlag_Down_01 || keyboardInputChar == -74){ // -74 DEC - Down Key // -75 DEC - Up Key // -73 DEC - Right Key // -76 DEC - Left Key
-      ButtonFlag_Down_01 = false;
+    if (keyboardInputChar == -74){ // -74 DEC - Down Key // -75 DEC - Up Key // -73 DEC - Right Key // -76 DEC - Left Key
       if (cursorPosition_Y < ARRAY_SIZE(MenuItems_Settings_GPS) - 1){ // Size of array / size of array element
         cursorPosition_Y++;
       } else {
         cursorPosition_Y=0;
       }
     }
-    if (ButtonFlag_Select_01 || keyboardInputChar == 13){ // 13 DEC - Enter Key // 8 DEC - Backspace Key
-      ButtonFlag_Select_01 = false;
+    if (keyboardInputChar == 13){ // 13 DEC - Enter Key // 8 DEC - Backspace Key
       ////////////////// handle modifying the setting here ////////////////
     }
-    if (ButtonFlag_Back_01 || keyboardInputChar == 27){ // 13 DEC - Enter Key // 8 DEC - Backspace Key // 27 DEC - ESC Key
-      ButtonFlag_Back_01 = false;
+    if (keyboardInputChar == 27){ // 13 DEC - Enter Key // 8 DEC - Backspace Key // 27 DEC - ESC Key
       currentDisplay = previousDisplay_Settings_GPS;
       return;
     }
@@ -1841,20 +1691,17 @@ void handleButtons(){
       cursorPosition_Y=ARRAY_SIZE(MenuItems_Settings_Display) - 1;
     }
   }
-  if (ButtonFlag_Down_01 || keyboardInputChar == -74){ // -74 DEC - Down Key // -75 DEC - Up Key // -73 DEC - Right Key // -76 DEC - Left Key
-    ButtonFlag_Down_01 = false;
+  if (keyboardInputChar == -74){ // -74 DEC - Down Key // -75 DEC - Up Key // -73 DEC - Right Key // -76 DEC - Left Key
     if (cursorPosition_Y < ARRAY_SIZE(MenuItems_Settings_Display) - 1){ // Size of array / size of array element
       cursorPosition_Y++;
     } else {
       cursorPosition_Y=0;
     }
   }
-  if (ButtonFlag_Select_01 || keyboardInputChar == 13){ // 13 DEC - Enter Key // 8 DEC - Backspace Key
-    ButtonFlag_Select_01 = false;
+  if (keyboardInputChar == 13){ // 13 DEC - Enter Key // 8 DEC - Backspace Key
     ////////////////// handle modifying the setting here ////////////////
   }
-  if (ButtonFlag_Back_01 || keyboardInputChar == 27){ // 13 DEC - Enter Key // 8 DEC - Backspace Key // 27 DEC - ESC Key
-    ButtonFlag_Back_01 = false;
+  if (keyboardInputChar == 27){ // 13 DEC - Enter Key // 8 DEC - Backspace Key // 27 DEC - ESC Key
     currentDisplay = previousDisplay_Settings_Display;
     return;
   }
@@ -3298,14 +3145,6 @@ void setup(){
   // inputs
   pinMode(rxPin, INPUT);
   pinMode(txPin, INPUT);
-  
-  // buttons
-  pinMode(buttonPin_Down, INPUT_PULLUP);
-  pinMode(buttonPin_Select, INPUT_PULLUP);
-  pinMode(buttonPin_Back, INPUT_PULLUP);
-  digitalWrite(buttonPin_Down, HIGH);
-  digitalWrite(buttonPin_Select, HIGH);
-  digitalWrite(buttonPin_Back, HIGH);
 
   // SSD1306_SWITCHCAPVCC = generate display voltage from 3.3V internally
   //if(!display.begin(SSD1306_SWITCHCAPVCC, 0x3C)) { // Address 0x3C for 128x32
@@ -3326,7 +3165,6 @@ void loop(){
   // run handle routines
   handleKeyboard();
   handleSettings();
-  handleButtons();
   handleDisplays();
   handleSerial();
   handleModemCommands();
