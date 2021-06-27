@@ -15,7 +15,7 @@ Command | Description | Example
 __?__ | Displays serial command examples
 __CMD:Settings:Print:__ | Prints the current settings
 __CMD:Settings:Save:__ | Saves settings to EEPROM
-__CMD:Modem:__ | Writes commands directly to the modem. See https://github.com/markqvist/MicroAPRS#serial-commands
+__CMD:Modem:__ | Writes commands directly to the modem. See https://github.com/markqvist/MicroAPRS#serial-commands | CMD:Modem:cNOCALL
 &nbsp;
 __CMD:Settings:APRS:Beacon Frequency:<0 to 4,294,967,295>__ | Frequency at which position data will be transmitted in milliseconds | 60000
 __CMD:Settings:APRS:Raw Packet:<alphanumeric 99 char max>__ | APRS raw data to be sent | Q#EWR88$%$^T(w3)
