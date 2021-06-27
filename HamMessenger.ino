@@ -1463,76 +1463,10 @@ void handleButtons(){
     if (ButtonFlag_Select_01 || keyboardInputChar == 13){ // 13 DEC - Enter Key // 8 DEC - Backspace Key
       ButtonFlag_Select_01 = false;
       if (editMode_Settings_APRS) {
-        if (cursorPosition_X < Settings_EditValueSize) { // how wide can we move the cursor
-          cursorPosition_X++;
-          switch (Settings_Type_APRS[cursorPosition_Y]) {
-            case SETTINGS_EDIT_TYPE_BOOLEAN:
-              break;
-            case SETTINGS_EDIT_TYPE_INT:
-              break;
-            case SETTINGS_EDIT_TYPE_UINT:
-              break;
-            case SETTINGS_EDIT_TYPE_LONG:
-              break;
-            case SETTINGS_EDIT_TYPE_ULONG:
-              break;
-            case SETTINGS_EDIT_TYPE_FLOAT:
-              break;
-            case SETTINGS_EDIT_TYPE_STRING2:
-              if (Settings_TypeString2[Settings_TypeIndex_APRS[cursorPosition_Y]][cursorPosition_X] == '\0') {
-                Settings_TypeString2[Settings_TypeIndex_APRS[cursorPosition_Y]][cursorPosition_X] = ' ';
-              }
-              break;
-            case SETTINGS_EDIT_TYPE_STRING7:
-              if (Settings_TypeString7[Settings_TypeIndex_APRS[cursorPosition_Y]][cursorPosition_X] == '\0') {
-                Settings_TypeString7[Settings_TypeIndex_APRS[cursorPosition_Y]][cursorPosition_X] = ' ';
-              }
-              break;
-            case SETTINGS_EDIT_TYPE_STRING100:
-              if (Settings_TypeString100[Settings_TypeIndex_APRS[cursorPosition_Y]][cursorPosition_X] == '\0') {
-                Settings_TypeString100[Settings_TypeIndex_APRS[cursorPosition_Y]][cursorPosition_X] = ' ';
-              }
-              break;
-            default:
-              break;
-          }
-        } else {
-          cursorPosition_X=0;
-        }
-      } else {
-        // enable edit mode
-        editMode_Settings_APRS = true;
-        // copy data to temp variable
+        // apply edited values
         switch (Settings_Type_APRS[cursorPosition_Y]) {
           case SETTINGS_EDIT_TYPE_BOOLEAN:
-            break;
-          case SETTINGS_EDIT_TYPE_INT:
-            break;
-          case SETTINGS_EDIT_TYPE_UINT:
-            itoa(Settings_TypeUInt[Settings_TypeIndex_APRS[cursorPosition_Y]],Settings_TempDispCharArr,10);
-            break;
-          case SETTINGS_EDIT_TYPE_LONG:
-            break;
-          case SETTINGS_EDIT_TYPE_ULONG:
-            break;
-          case SETTINGS_EDIT_TYPE_FLOAT:
-            break;
-          case SETTINGS_EDIT_TYPE_STRING2:
-            break;
-          case SETTINGS_EDIT_TYPE_STRING7:
-            break;
-          case SETTINGS_EDIT_TYPE_STRING100:
-            break;
-          default:
-            break;
-        }
-      }
-    }
-    if (ButtonFlag_Back_01 || keyboardInputChar == 27){ // 13 DEC - Enter Key // 8 DEC - Backspace Key // 27 DEC - ESC Key
-      ButtonFlag_Back_01 = false;
-      if (editMode_Settings_APRS) {
-        switch (Settings_Type_APRS[cursorPosition_Y]) {
-          case SETTINGS_EDIT_TYPE_BOOLEAN:
+              // disable edit mode
               editMode_Settings_APRS = false;
               cursorPosition_X = 0;
             break;
@@ -1587,6 +1521,41 @@ void handleButtons(){
           default:
             break;
         }
+      } else {
+        // enable edit mode
+        editMode_Settings_APRS = true;
+        // copy data to temp variable
+        switch (Settings_Type_APRS[cursorPosition_Y]) {
+          case SETTINGS_EDIT_TYPE_BOOLEAN:
+            break;
+          case SETTINGS_EDIT_TYPE_INT:
+            break;
+          case SETTINGS_EDIT_TYPE_UINT:
+            itoa(Settings_TypeUInt[Settings_TypeIndex_APRS[cursorPosition_Y]],Settings_TempDispCharArr,10);
+            break;
+          case SETTINGS_EDIT_TYPE_LONG:
+            break;
+          case SETTINGS_EDIT_TYPE_ULONG:
+            break;
+          case SETTINGS_EDIT_TYPE_FLOAT:
+            break;
+          case SETTINGS_EDIT_TYPE_STRING2:
+            break;
+          case SETTINGS_EDIT_TYPE_STRING7:
+            break;
+          case SETTINGS_EDIT_TYPE_STRING100:
+            break;
+          default:
+            break;
+        }
+      }
+    }
+    if (ButtonFlag_Back_01 || keyboardInputChar == 27){ // 13 DEC - Enter Key // 8 DEC - Backspace Key // 27 DEC - ESC Key
+      ButtonFlag_Back_01 = false;
+      if (editMode_Settings_APRS) {
+        // disable edit mode
+        editMode_Settings_APRS = false;
+        cursorPosition_X = 0;
       } else {
         if (settingsChanged) {
           currentDisplay = UI_DISPLAY_SETTINGS_SAVE;
