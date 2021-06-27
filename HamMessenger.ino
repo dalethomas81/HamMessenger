@@ -1177,39 +1177,37 @@ void handleDisplay_Settings(){
   if (displayRefresh_Global){
     // clear the buffer
     display.clearDisplay();
-    
+    // add global objects to buffer
+    handleDisplay_Global();
     int selectionRow = 0;
     switch (cursorPosition_Y) {
       case 0:
-        selectionRow = UI_DISPLAY_ROW_01;
-        break;
-      case 1:
         selectionRow = UI_DISPLAY_ROW_02;
         break;
-      case 2:
+      case 1:
         selectionRow = UI_DISPLAY_ROW_03;
         break;
-      case 3:
+      case 2:
         selectionRow = UI_DISPLAY_ROW_04;
         break;
       default:
-        selectionRow = UI_DISPLAY_ROW_BOTTOM;
+        selectionRow = UI_DISPLAY_ROW_02;
         break;
     }
       
     display.setCursor(0,selectionRow);
     display.print(F(">"));
     
-    display.setCursor(6,UI_DISPLAY_ROW_01);
+    display.setCursor(6,UI_DISPLAY_ROW_02);
     display.print(MenuItems_Settings[cursorPosition_Y>3 ? cursorPosition_Y-3 : 0]); // if greater than 3, follow else normal
     
-    display.setCursor(6,UI_DISPLAY_ROW_02);
+    display.setCursor(6,UI_DISPLAY_ROW_03);
     display.print(MenuItems_Settings[cursorPosition_Y>3 ? cursorPosition_Y-2 : 1]);
     
-    display.setCursor(6,UI_DISPLAY_ROW_03);
+    display.setCursor(6,UI_DISPLAY_ROW_04);
     display.print(MenuItems_Settings[cursorPosition_Y>3 ? cursorPosition_Y-1 : 2]);
     
-    //display.setCursor(6,UI_DISPLAY_ROW_04);
+    //display.setCursor(6,UI_DISPLAY_ROW_05);
     //display.print(MenuItems_Settings[cursorPosition_Y>3 ? cursorPosition_Y-0 : 3]);
 
     // display all content from buffer
