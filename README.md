@@ -37,9 +37,9 @@ __CMD:Settings:APRS:Preamble:<0 to 65,535>__ | Number of milliseconds of grey no
 __CMD:Settings:APRS:Tail:<0 to 65,535>__ | Number of milliseconds of grey noise after APRS message | 80
 &nbsp;
 __CMD:Settings:GPS:Update Frequency:<0 to 4,294,967,295>__ | Frequency that the GPS location is updated in memory | 10000
-__CMD:Settings:GPS:Position Tolerance:<3.4028235E-38 to 3.4028235E+38>__ | GPS position must change this much to register as a change | 0.000010
-__CMD:Settings:GPS:Destination Latitude:<3.4028235E-38 to 3.4028235E+38>__ | GPS latitude coordinates of destination | 51.508131
-__CMD:Settings:GPS:Destination Longitude:<3.4028235E-38 to 3.4028235E+38>__ | GPS longitude coordinates of destination | -0.128002
+__CMD:Settings:GPS:Position Tolerance:<-3.4028235E+38 to 3.4028235E+38>__ | GPS position must change this much to register as a change | 0.000010
+__CMD:Settings:GPS:Destination Latitude:<-3.4028235E+38 to 3.4028235E+38>__ | GPS latitude coordinates of destination | 51.508131
+__CMD:Settings:GPS:Destination Longitude:<-3.4028235E+38 to 3.4028235E+38>__ | GPS longitude coordinates of destination | -0.128002
 &nbsp;
 __CMD:Settings:Display:Timeout:<0 to 4,294,967,295>__ | Amount of time before Messages and Live Feed displays timeout and go home | 2000
 __CMD:Settings:Display:Brightness:<0 to 100>__ | Brightness of Oled | 100
