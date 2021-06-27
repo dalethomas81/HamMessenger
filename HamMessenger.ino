@@ -242,7 +242,7 @@ float Settings_TypeFloat[3] = {0.00001,34.790040,-82.790672}; // gps position to
 char Settings_TypeString2[7][2] = {'0','\0'};
 char Settings_TypeString7[5][7] = {'N','O','C','A','L','L','\0'};
 char Settings_TypeString100[3][100] = {'T','e','s','t','\0'};
-char Settings_TempDispCharArr[10];
+char Settings_TempDispCharArr[100];
 
 #define SETTINGS_APRS_BEACON_FREQUENCY        Settings_TypeULong[Settings_TypeIndex_APRS[0]]        // beacon frequency
 #define SETTINGS_APRS_RAW_PACKET              Settings_TypeString100[Settings_TypeIndex_APRS[1]]    // raw packet
@@ -1299,7 +1299,7 @@ void handleButtons(){
       //Settings_EditType = SETTINGS_EDIT_TYPE_NONE;
       //Serial.print(F("Entered APRS Settings:")); Serial.println(currentDisplay);
       for (int i=0; i<sizeof(Settings_TempDispCharArr);i++) {
-        Settings_TempDispCharArr[i] = '\0'; // raw packet
+        Settings_TempDispCharArr[i] = '\0';
       }
     }
     // monitor for changes
@@ -1379,67 +1379,43 @@ void handleButtons(){
           case SETTINGS_EDIT_TYPE_FLOAT:
             break;
           case SETTINGS_EDIT_TYPE_STRING2:
-            //chrCode = Settings_TypeString2[Settings_TypeIndex_APRS[cursorPosition_Y]][cursorPosition_X];
-            //if (chrCode >= 32 && chrCode < 126) {
-              if (characterIncrement) {
-                Settings_TypeString2[Settings_TypeIndex_APRS[cursorPosition_Y]][cursorPosition_X]++;
-                character_increment_timer = millis();
-                characterIncrement = false;
-              } else if (characterDelete) {
-                if (cursorPosition_X >= 0) {
-                  Settings_TypeString2[Settings_TypeIndex_APRS[cursorPosition_Y]][cursorPosition_X] = '\0';
-                }
-              } else if (keyboardInputChar >= 32 && keyboardInputChar <= 126) {
-                Settings_TypeString2[Settings_TypeIndex_APRS[cursorPosition_Y]][cursorPosition_X] = keyboardInputChar;
-                if (cursorPosition_X < 1) {
-                  cursorPosition_X++;
-                }
+            if (characterIncrement) {
+              Settings_TempDispCharArr[cursorPosition_X]++;
+              character_increment_timer = millis();
+              characterIncrement = false;
+            } else if (characterDelete) {
+              if (cursorPosition_X >= 0) {
+                Settings_TempDispCharArr[cursorPosition_X] = '\0';
               }
-            //} else {
-            //  Settings_TypeString2[Settings_TypeIndex_APRS[cursorPosition_Y]][cursorPosition_X] = ' ';
-            //}
+            } else if (keyboardInputChar >= 32 && keyboardInputChar <= 126) {
+              Settings_TempDispCharArr[cursorPosition_X] = keyboardInputChar;
+            }
             break;
           case SETTINGS_EDIT_TYPE_STRING7:
-            //chrCode = Settings_TypeString7[Settings_TypeIndex_APRS[cursorPosition_Y]][cursorPosition_X];
-            //if (chrCode >= 32 && chrCode < 126) {
-              if (characterIncrement) {
-                Settings_TypeString7[Settings_TypeIndex_APRS[cursorPosition_Y]][cursorPosition_X]++;
-                character_increment_timer = millis();
-                characterIncrement = false;
-              } else if (characterDelete) {
-                if (cursorPosition_X >= 0) {
-                  Settings_TypeString7[Settings_TypeIndex_APRS[cursorPosition_Y]][cursorPosition_X] = '\0';
-                }
-              } else if (keyboardInputChar >= 32 && keyboardInputChar <= 126) {
-                Settings_TypeString7[Settings_TypeIndex_APRS[cursorPosition_Y]][cursorPosition_X] = keyboardInputChar;
-                if (cursorPosition_X < 6) {
-                  cursorPosition_X++;
-                }
+            if (characterIncrement) {
+              Settings_TempDispCharArr[cursorPosition_X]++;
+              character_increment_timer = millis();
+              characterIncrement = false;
+            } else if (characterDelete) {
+              if (cursorPosition_X >= 0) {
+                Settings_TempDispCharArr[cursorPosition_X] = '\0';
               }
-            //} else {
-            //  Settings_TypeString7[Settings_TypeIndex_APRS[cursorPosition_Y]][cursorPosition_X] = ' ';
-            //}
+            } else if (keyboardInputChar >= 32 && keyboardInputChar <= 126) {
+              Settings_TempDispCharArr[cursorPosition_X] = keyboardInputChar;
+            }
             break;
           case SETTINGS_EDIT_TYPE_STRING100:
-            //chrCode = Settings_TypeString100[Settings_TypeIndex_APRS[cursorPosition_Y]][cursorPosition_X];
-            //if (chrCode >= 32 && chrCode < 126) {
-              if (characterIncrement) {
-                Settings_TypeString100[Settings_TypeIndex_APRS[cursorPosition_Y]][cursorPosition_X]++;
-                character_increment_timer = millis();
-                characterIncrement = false;
-              } else if (characterDelete) {
-                if (cursorPosition_X >= 0) {
-                  Settings_TypeString100[Settings_TypeIndex_APRS[cursorPosition_Y]][cursorPosition_X] = '\0';
-                }
-              } else if (keyboardInputChar >= 32 && keyboardInputChar <= 126) {
-                Settings_TypeString100[Settings_TypeIndex_APRS[cursorPosition_Y]][cursorPosition_X] = keyboardInputChar;
-                if (cursorPosition_X < 99) {
-                  cursorPosition_X++;
-                }
+            if (characterIncrement) {
+              Settings_TempDispCharArr[cursorPosition_X]++;
+              character_increment_timer = millis();
+              characterIncrement = false;
+            } else if (characterDelete) {
+              if (cursorPosition_X >= 0) {
+                Settings_TempDispCharArr[cursorPosition_X] = '\0';
               }
-            //} else {
-            //  Settings_TypeString100[Settings_TypeIndex_APRS[cursorPosition_Y]][cursorPosition_X] = ' ';
-            //}
+            } else if (keyboardInputChar >= 32 && keyboardInputChar <= 126) {
+              Settings_TempDispCharArr[cursorPosition_X] = keyboardInputChar;
+            }
             break;
           default:
             break;
@@ -1463,59 +1439,36 @@ void handleButtons(){
     if (ButtonFlag_Select_01 || keyboardInputChar == 13){ // 13 DEC - Enter Key // 8 DEC - Backspace Key
       ButtonFlag_Select_01 = false;
       if (editMode_Settings_APRS) {
+        editMode_Settings_APRS = false;
+        cursorPosition_X = 0;
         // apply edited values
         switch (Settings_Type_APRS[cursorPosition_Y]) {
           case SETTINGS_EDIT_TYPE_BOOLEAN:
-              // disable edit mode
-              editMode_Settings_APRS = false;
-              cursorPosition_X = 0;
             break;
           case SETTINGS_EDIT_TYPE_INT:
-              editMode_Settings_APRS = false;
-              cursorPosition_X = 0;
             break;
           case SETTINGS_EDIT_TYPE_UINT:
               Settings_TypeUInt[Settings_TypeIndex_APRS[cursorPosition_Y]] = strtoul(Settings_TempDispCharArr,NULL,10);
-              editMode_Settings_APRS = false;
-              cursorPosition_X = 0;
             break;
           case SETTINGS_EDIT_TYPE_LONG:
-              editMode_Settings_APRS = false;
-              cursorPosition_X = 0;
             break;
           case SETTINGS_EDIT_TYPE_ULONG:
-              editMode_Settings_APRS = false;
-              cursorPosition_X = 0;
             break;
           case SETTINGS_EDIT_TYPE_FLOAT:
-              editMode_Settings_APRS = false;
-              cursorPosition_X = 0;
             break;
           case SETTINGS_EDIT_TYPE_STRING2:
-            if (Settings_TypeString2[Settings_TypeIndex_APRS[cursorPosition_Y]][cursorPosition_X] == ' ') {
-              Settings_TypeString2[Settings_TypeIndex_APRS[cursorPosition_Y]][cursorPosition_X] = '\0';
-              cursorPosition_X--;
-            } else {
-              editMode_Settings_APRS = false;
-              cursorPosition_X = 0;
+            for (int i=0; i<sizeof(Settings_TypeString2[Settings_TypeIndex_APRS[cursorPosition_Y]]);i++) {
+              Settings_TypeString2[Settings_TypeIndex_APRS[cursorPosition_Y]][i] = Settings_TempDispCharArr[i];       
             }
             break;
           case SETTINGS_EDIT_TYPE_STRING7:
-            if (Settings_TypeString7[Settings_TypeIndex_APRS[cursorPosition_Y]][cursorPosition_X] == ' ') {
-              Settings_TypeString7[Settings_TypeIndex_APRS[cursorPosition_Y]][cursorPosition_X] = '\0';
-              cursorPosition_X--;
-            } else {
-              editMode_Settings_APRS = false;
-              cursorPosition_X = 0;
+            for (int i=0; i<sizeof(Settings_TypeString7[Settings_TypeIndex_APRS[cursorPosition_Y]]);i++) {
+              Settings_TypeString7[Settings_TypeIndex_APRS[cursorPosition_Y]][i] = Settings_TempDispCharArr[i];       
             }
             break;
           case SETTINGS_EDIT_TYPE_STRING100:
-            if (Settings_TypeString100[Settings_TypeIndex_APRS[cursorPosition_Y]][cursorPosition_X] == ' ') {
-              Settings_TypeString100[Settings_TypeIndex_APRS[cursorPosition_Y]][cursorPosition_X] = '\0';
-              cursorPosition_X--;
-            } else {
-              editMode_Settings_APRS = false;
-              cursorPosition_X = 0;
+            for (int i=0; i<sizeof(Settings_TypeString100[Settings_TypeIndex_APRS[cursorPosition_Y]]);i++) {
+              Settings_TypeString100[Settings_TypeIndex_APRS[cursorPosition_Y]][i] = Settings_TempDispCharArr[i];       
             }
             break;
           default:
@@ -1524,6 +1477,10 @@ void handleButtons(){
       } else {
         // enable edit mode
         editMode_Settings_APRS = true;
+        // clear the char array first
+        for (int i=0; i<sizeof(Settings_TempDispCharArr);i++) {
+          Settings_TempDispCharArr[i] = '\0';
+        }
         // copy data to temp variable
         switch (Settings_Type_APRS[cursorPosition_Y]) {
           case SETTINGS_EDIT_TYPE_BOOLEAN:
@@ -1540,10 +1497,19 @@ void handleButtons(){
           case SETTINGS_EDIT_TYPE_FLOAT:
             break;
           case SETTINGS_EDIT_TYPE_STRING2:
+            for (int i=0; i<strlen(Settings_TypeString2[Settings_TypeIndex_APRS[cursorPosition_Y]]);i++) {
+              Settings_TempDispCharArr[i] = Settings_TypeString2[Settings_TypeIndex_APRS[cursorPosition_Y]][i];       
+            }
             break;
           case SETTINGS_EDIT_TYPE_STRING7:
+            for (int i=0; i<strlen(Settings_TypeString7[Settings_TypeIndex_APRS[cursorPosition_Y]]);i++) {
+              Settings_TempDispCharArr[i] = Settings_TypeString7[Settings_TypeIndex_APRS[cursorPosition_Y]][i];       
+            }
             break;
           case SETTINGS_EDIT_TYPE_STRING100:
+            for (int i=0; i<strlen(Settings_TypeString100[Settings_TypeIndex_APRS[cursorPosition_Y]]);i++) {
+              Settings_TempDispCharArr[i] = Settings_TypeString100[Settings_TypeIndex_APRS[cursorPosition_Y]][i];       
+            }
             break;
           default:
             break;
@@ -1622,22 +1588,40 @@ void handleButtons(){
           display.print(Settings_TypeFloat[Settings_TypeIndex_APRS[cursorPosition_Y]]);
           break;
         case SETTINGS_EDIT_TYPE_STRING2:
-          Settings_EditValueSize = sizeof(Settings_TypeString2[Settings_TypeIndex_APRS[cursorPosition_Y]]) - 1;
           display.setCursor(0,UI_DISPLAY_ROW_BOTTOM-1);
-          display.print(Settings_TypeString2[Settings_TypeIndex_APRS[cursorPosition_Y]]);
-          cursorPosition_X = strlen(Settings_TypeString2[Settings_TypeIndex_APRS[cursorPosition_Y]]);
+          if (editMode_Settings_APRS) {
+            Settings_EditValueSize = sizeof(Settings_TempDispCharArr) - 1;
+            display.print(Settings_TempDispCharArr);
+            cursorPosition_X = strlen(Settings_TempDispCharArr);
+          } else {
+            Settings_EditValueSize = sizeof(Settings_TypeString2[Settings_TypeIndex_APRS[cursorPosition_Y]]) - 1;
+            display.print(Settings_TypeString2[Settings_TypeIndex_APRS[cursorPosition_Y]]);
+            cursorPosition_X = strlen(Settings_TypeString2[Settings_TypeIndex_APRS[cursorPosition_Y]]);
+          }
           break;
         case SETTINGS_EDIT_TYPE_STRING7:
-          Settings_EditValueSize = sizeof(Settings_TypeString7[Settings_TypeIndex_APRS[cursorPosition_Y]]) - 1;
           display.setCursor(0,UI_DISPLAY_ROW_BOTTOM-1);
-          display.print(Settings_TypeString7[Settings_TypeIndex_APRS[cursorPosition_Y]]);
-          cursorPosition_X = strlen(Settings_TypeString7[Settings_TypeIndex_APRS[cursorPosition_Y]]);
+          if (editMode_Settings_APRS) {
+            Settings_EditValueSize = sizeof(Settings_TempDispCharArr) - 1;
+            display.print(Settings_TempDispCharArr);
+            cursorPosition_X = strlen(Settings_TempDispCharArr);
+          } else {
+            Settings_EditValueSize = sizeof(Settings_TypeString7[Settings_TypeIndex_APRS[cursorPosition_Y]]) - 1;
+            display.print(Settings_TypeString7[Settings_TypeIndex_APRS[cursorPosition_Y]]);
+            cursorPosition_X = strlen(Settings_TypeString7[Settings_TypeIndex_APRS[cursorPosition_Y]]);
+          }
           break;
         case SETTINGS_EDIT_TYPE_STRING100:
-          Settings_EditValueSize = sizeof(Settings_TypeString100[Settings_TypeIndex_APRS[cursorPosition_Y]]) - 1;
           display.setCursor(0,UI_DISPLAY_ROW_BOTTOM-1);
-          display.print(Settings_TypeString100[Settings_TypeIndex_APRS[cursorPosition_Y]]);
-          cursorPosition_X = strlen(Settings_TypeString100[Settings_TypeIndex_APRS[cursorPosition_Y]]);
+          if (editMode_Settings_APRS) {
+            Settings_EditValueSize = sizeof(Settings_TempDispCharArr) - 1;
+            display.print(Settings_TempDispCharArr);
+            cursorPosition_X = strlen(Settings_TempDispCharArr);
+          } else {
+            Settings_EditValueSize = sizeof(Settings_TypeString100[Settings_TypeIndex_APRS[cursorPosition_Y]]) - 1;
+            display.print(Settings_TypeString100[Settings_TypeIndex_APRS[cursorPosition_Y]]);
+            cursorPosition_X = strlen(Settings_TypeString100[Settings_TypeIndex_APRS[cursorPosition_Y]]);
+          }
           break;
         default:
           break;
