@@ -1351,9 +1351,35 @@ void handleButtons(){
         //int chrCode = 0;
         switch (Settings_Type_APRS[cursorPosition_Y]) {
           case SETTINGS_EDIT_TYPE_BOOLEAN:
-            Settings_TypeBool[Settings_TypeIndex_APRS[cursorPosition_Y]] = !Settings_TypeBool[Settings_TypeIndex_APRS[cursorPosition_Y]];
+            if (keyboardInputChar == -74) {
+              if (Settings_TempDispCharArr[0] == 'T' || Settings_TempDispCharArr[0] == 't' || Settings_TempDispCharArr[0] == '1') {
+                strcpy(Settings_TempDispCharArr, "False");
+              } else {
+                strcpy(Settings_TempDispCharArr, "True");
+              }
+            }
             break;
           case SETTINGS_EDIT_TYPE_INT:
+              // TODO this is not validated because we have no settings of type int
+              if (characterIncrement) {
+                if (Settings_TempDispCharArr[cursorPosition_X] < 57) {
+                  Settings_TempDispCharArr[cursorPosition_X]++;
+                } else {
+                  Settings_TempDispCharArr[cursorPosition_X] = 0;
+                }
+                character_increment_timer = millis();
+                characterIncrement = false;
+              } else if (characterDelete) {
+                if (cursorPosition_X >= 0) {
+                  Settings_TempDispCharArr[cursorPosition_X] = '\0';
+                }
+              } else if (keyboardInputChar >= 48 && keyboardInputChar <= 57) {
+                Settings_TempDispCharArr[cursorPosition_X] = keyboardInputChar;
+              } else if (keyboardInputChar <= 45) { // 45 = '-'
+                int tempInt = strtoul(Settings_TempDispCharArr[cursorPosition_X],NULL,10);
+                tempInt = tempInt / -1;
+                itoa(tempInt, Settings_TempDispCharArr[cursorPosition_X], 10);
+              }
             break;
           case SETTINGS_EDIT_TYPE_UINT:
               if (characterIncrement) {
@@ -1373,10 +1399,57 @@ void handleButtons(){
               }
             break;
           case SETTINGS_EDIT_TYPE_LONG:
+              // TODO this is not validated because we have no settings of type long
+              if (characterIncrement) {
+                if (Settings_TempDispCharArr[cursorPosition_X] < 57) {
+                  Settings_TempDispCharArr[cursorPosition_X]++;
+                } else {
+                  Settings_TempDispCharArr[cursorPosition_X] = 0;
+                }
+                character_increment_timer = millis();
+                characterIncrement = false;
+              } else if (characterDelete) {
+                if (cursorPosition_X >= 0) {
+                  Settings_TempDispCharArr[cursorPosition_X] = '\0';
+                }
+              } else if (keyboardInputChar >= 48 && keyboardInputChar <= 57) {
+                Settings_TempDispCharArr[cursorPosition_X] = keyboardInputChar;
+              } else if (keyboardInputChar <= 45) { // 45 = '-'
+                int tempInt = strtoul(Settings_TempDispCharArr[cursorPosition_X],NULL,10);
+                tempInt = tempInt / -1;
+                itoa(tempInt, Settings_TempDispCharArr[cursorPosition_X], 10);
+              }
             break;
           case SETTINGS_EDIT_TYPE_ULONG:
+              if (characterIncrement) {
+                if (Settings_TempDispCharArr[cursorPosition_X] < 57) {
+                  Settings_TempDispCharArr[cursorPosition_X]++;
+                } else {
+                  Settings_TempDispCharArr[cursorPosition_X] = 0;
+                }
+                character_increment_timer = millis();
+                characterIncrement = false;
+              } else if (characterDelete) {
+                if (cursorPosition_X >= 0) {
+                  Settings_TempDispCharArr[cursorPosition_X] = '\0';
+                }
+              } else if (keyboardInputChar >= 48 && keyboardInputChar <= 57) {
+                Settings_TempDispCharArr[cursorPosition_X] = keyboardInputChar;
+              }
             break;
           case SETTINGS_EDIT_TYPE_FLOAT:
+              // TODO this is not validated because we have no settings of type float in aprs settings
+              if (characterDelete) {
+                if (cursorPosition_X >= 0) {
+                  Settings_TempDispCharArr[cursorPosition_X] = '\0';
+                }
+              } else if ((keyboardInputChar >= 48 && keyboardInputChar <= 57) || keyboardInputChar <= 46) { // 46 = '.'
+                Settings_TempDispCharArr[cursorPosition_X] = keyboardInputChar;
+              } else if (keyboardInputChar <= 45) { // 45 = '-'
+                double tempDouble = strtod(Settings_TempDispCharArr[cursorPosition_X],NULL);
+                tempDouble = tempDouble / -1.0;
+                dtostrf(tempDouble,3,6,Settings_TempDispCharArr[cursorPosition_X]); // https://www.programmingelectronics.com/dtostrf/
+              }
             break;
           case SETTINGS_EDIT_TYPE_STRING2:
             if (characterIncrement) {
@@ -1444,17 +1517,26 @@ void handleButtons(){
         // apply edited values
         switch (Settings_Type_APRS[cursorPosition_Y]) {
           case SETTINGS_EDIT_TYPE_BOOLEAN:
+            if (Settings_TempDispCharArr[0] == 'T' || Settings_TempDispCharArr[0] == 't' || Settings_TempDispCharArr[0] == '1') {
+              Settings_TypeBool[Settings_TypeIndex_APRS[cursorPosition_Y]] = 1;
+            } else {
+              Settings_TypeBool[Settings_TypeIndex_APRS[cursorPosition_Y]] = 0;
+            }
             break;
           case SETTINGS_EDIT_TYPE_INT:
+              Settings_TypeInt[Settings_TypeIndex_APRS[cursorPosition_Y]] = strtoul(Settings_TempDispCharArr,NULL,10);
             break;
           case SETTINGS_EDIT_TYPE_UINT:
               Settings_TypeUInt[Settings_TypeIndex_APRS[cursorPosition_Y]] = strtoul(Settings_TempDispCharArr,NULL,10);
             break;
           case SETTINGS_EDIT_TYPE_LONG:
+              Settings_TypeLong[Settings_TypeIndex_APRS[cursorPosition_Y]] = strtoul(Settings_TempDispCharArr,NULL,10);
             break;
           case SETTINGS_EDIT_TYPE_ULONG:
+              Settings_TypeULong[Settings_TypeIndex_APRS[cursorPosition_Y]] = strtoul(Settings_TempDispCharArr,NULL,10);
             break;
           case SETTINGS_EDIT_TYPE_FLOAT:
+              Settings_TypeFloat[Settings_TypeIndex_APRS[cursorPosition_Y]] = atof(Settings_TempDispCharArr);
             break;
           case SETTINGS_EDIT_TYPE_STRING2:
             for (int i=0; i<sizeof(Settings_TypeString2[Settings_TypeIndex_APRS[cursorPosition_Y]]);i++) {
@@ -1484,15 +1566,24 @@ void handleButtons(){
         // copy data to temp variable
         switch (Settings_Type_APRS[cursorPosition_Y]) {
           case SETTINGS_EDIT_TYPE_BOOLEAN:
+            if (Settings_TypeBool[Settings_TypeIndex_APRS[cursorPosition_Y]]) {
+              strcpy(Settings_TempDispCharArr, "True");
+            } else {
+              strcpy(Settings_TempDispCharArr, "False");
+            }
             break;
           case SETTINGS_EDIT_TYPE_INT:
+            itoa(Settings_TypeInt[Settings_TypeIndex_APRS[cursorPosition_Y]],Settings_TempDispCharArr,10);
             break;
           case SETTINGS_EDIT_TYPE_UINT:
+            // TODO find a way to do this with an unsigned integer (dont use itoa)
             itoa(Settings_TypeUInt[Settings_TypeIndex_APRS[cursorPosition_Y]],Settings_TempDispCharArr,10);
             break;
           case SETTINGS_EDIT_TYPE_LONG:
+            ltoa(Settings_TypeLong[Settings_TypeIndex_APRS[cursorPosition_Y]],Settings_TempDispCharArr,10);
             break;
           case SETTINGS_EDIT_TYPE_ULONG:
+            ultoa(Settings_TypeULong[Settings_TypeIndex_APRS[cursorPosition_Y]],Settings_TempDispCharArr,10);
             break;
           case SETTINGS_EDIT_TYPE_FLOAT:
             break;
@@ -1543,88 +1634,57 @@ void handleButtons(){
         }
       }
       // place the cursor
-      switch (Settings_Type_APRS[cursorPosition_Y]) {
-        case SETTINGS_EDIT_TYPE_BOOLEAN:
-          Settings_EditValueSize = 0;
-          display.setCursor(0,UI_DISPLAY_ROW_BOTTOM-1);
-          if (Settings_TypeBool[Settings_TypeIndex_APRS[cursorPosition_Y]]) {
-            display.print(F("True"));
-            cursorPosition_X = 4;
-          } else {
-            display.print(F("False"));
-            cursorPosition_X = 5;
-          }
-          break;
-        case SETTINGS_EDIT_TYPE_INT:
-          Settings_EditValueSize = numberOfDigits<int>(Settings_TypeInt[Settings_TypeIndex_APRS[cursorPosition_Y]]);
-          display.setCursor(0,UI_DISPLAY_ROW_BOTTOM-1);
-          display.print(Settings_TypeInt[Settings_TypeIndex_APRS[cursorPosition_Y]]);
-          break;
-        case SETTINGS_EDIT_TYPE_UINT:
-          display.setCursor(0,UI_DISPLAY_ROW_BOTTOM-1);
-          if (editMode_Settings_APRS) {
-            Settings_EditValueSize = sizeof(Settings_TempDispCharArr) - 1;
-            display.print(Settings_TempDispCharArr);
-            cursorPosition_X = strlen(Settings_TempDispCharArr);
-          } else {
+      display.setCursor(0,UI_DISPLAY_ROW_BOTTOM-1);
+      // print
+      if (editMode_Settings_APRS) {
+        Settings_EditValueSize = sizeof(Settings_TempDispCharArr) - 1;
+        display.print(Settings_TempDispCharArr);
+        cursorPosition_X = strlen(Settings_TempDispCharArr);
+      } else {
+        switch (Settings_Type_APRS[cursorPosition_Y]) {
+          case SETTINGS_EDIT_TYPE_BOOLEAN:
+            Settings_EditValueSize = 0;
+            if (Settings_TypeBool[Settings_TypeIndex_APRS[cursorPosition_Y]]) {
+              display.print(F("True"));
+            } else {
+              display.print(F("False"));
+            }
+            break;
+          case SETTINGS_EDIT_TYPE_INT:
+            Settings_EditValueSize = numberOfDigits<int>(Settings_TypeInt[Settings_TypeIndex_APRS[cursorPosition_Y]]);
+            display.print(Settings_TypeInt[Settings_TypeIndex_APRS[cursorPosition_Y]]);
+            break;
+          case SETTINGS_EDIT_TYPE_UINT:
             Settings_EditValueSize = numberOfDigits<unsigned int>(Settings_TypeUInt[Settings_TypeIndex_APRS[cursorPosition_Y]]);
             display.print(Settings_TypeUInt[Settings_TypeIndex_APRS[cursorPosition_Y]]);
-            cursorPosition_X = strlen(Settings_TypeUInt[Settings_TypeIndex_APRS[cursorPosition_Y]]);
-          }
-          break;
-        case SETTINGS_EDIT_TYPE_LONG:
-          Settings_EditValueSize = numberOfDigits<long>(Settings_TypeLong[Settings_TypeIndex_APRS[cursorPosition_Y]]);
-          display.setCursor(0,UI_DISPLAY_ROW_BOTTOM-1);
-          display.print(Settings_TypeLong[Settings_TypeIndex_APRS[cursorPosition_Y]]);
-          break;
-        case SETTINGS_EDIT_TYPE_ULONG:
-          Settings_EditValueSize = numberOfDigits<unsigned long>(Settings_TypeULong[Settings_TypeIndex_APRS[cursorPosition_Y]]);
-          display.setCursor(0,UI_DISPLAY_ROW_BOTTOM-1);
-          display.print(Settings_TypeULong[Settings_TypeIndex_APRS[cursorPosition_Y]]);
-          break;
-        case SETTINGS_EDIT_TYPE_FLOAT:
-          Settings_EditValueSize = numberOfDigits<float>(Settings_TypeFloat[Settings_TypeIndex_APRS[cursorPosition_Y]]);
-          display.setCursor(0,UI_DISPLAY_ROW_BOTTOM-1);
-          display.print(Settings_TypeFloat[Settings_TypeIndex_APRS[cursorPosition_Y]]);
-          break;
-        case SETTINGS_EDIT_TYPE_STRING2:
-          display.setCursor(0,UI_DISPLAY_ROW_BOTTOM-1);
-          if (editMode_Settings_APRS) {
-            Settings_EditValueSize = sizeof(Settings_TempDispCharArr) - 1;
-            display.print(Settings_TempDispCharArr);
-            cursorPosition_X = strlen(Settings_TempDispCharArr);
-          } else {
+            break;
+          case SETTINGS_EDIT_TYPE_LONG:
+            Settings_EditValueSize = numberOfDigits<long>(Settings_TypeLong[Settings_TypeIndex_APRS[cursorPosition_Y]]);
+            display.print(Settings_TypeLong[Settings_TypeIndex_APRS[cursorPosition_Y]]);
+            break;
+          case SETTINGS_EDIT_TYPE_ULONG:
+            Settings_EditValueSize = numberOfDigits<unsigned long>(Settings_TypeULong[Settings_TypeIndex_APRS[cursorPosition_Y]]);
+            display.print(Settings_TypeULong[Settings_TypeIndex_APRS[cursorPosition_Y]]);
+            break;
+          case SETTINGS_EDIT_TYPE_FLOAT:
+            Settings_EditValueSize = numberOfDigits<float>(Settings_TypeFloat[Settings_TypeIndex_APRS[cursorPosition_Y]]);
+            display.print(Settings_TypeFloat[Settings_TypeIndex_APRS[cursorPosition_Y]]);
+            break;
+          case SETTINGS_EDIT_TYPE_STRING2:
             Settings_EditValueSize = sizeof(Settings_TypeString2[Settings_TypeIndex_APRS[cursorPosition_Y]]) - 1;
             display.print(Settings_TypeString2[Settings_TypeIndex_APRS[cursorPosition_Y]]);
-            cursorPosition_X = strlen(Settings_TypeString2[Settings_TypeIndex_APRS[cursorPosition_Y]]);
-          }
-          break;
-        case SETTINGS_EDIT_TYPE_STRING7:
-          display.setCursor(0,UI_DISPLAY_ROW_BOTTOM-1);
-          if (editMode_Settings_APRS) {
-            Settings_EditValueSize = sizeof(Settings_TempDispCharArr) - 1;
-            display.print(Settings_TempDispCharArr);
-            cursorPosition_X = strlen(Settings_TempDispCharArr);
-          } else {
+            break;
+          case SETTINGS_EDIT_TYPE_STRING7:
             Settings_EditValueSize = sizeof(Settings_TypeString7[Settings_TypeIndex_APRS[cursorPosition_Y]]) - 1;
             display.print(Settings_TypeString7[Settings_TypeIndex_APRS[cursorPosition_Y]]);
-            cursorPosition_X = strlen(Settings_TypeString7[Settings_TypeIndex_APRS[cursorPosition_Y]]);
-          }
-          break;
-        case SETTINGS_EDIT_TYPE_STRING100:
-          display.setCursor(0,UI_DISPLAY_ROW_BOTTOM-1);
-          if (editMode_Settings_APRS) {
-            Settings_EditValueSize = sizeof(Settings_TempDispCharArr) - 1;
-            display.print(Settings_TempDispCharArr);
-            cursorPosition_X = strlen(Settings_TempDispCharArr);
-          } else {
+            break;
+          case SETTINGS_EDIT_TYPE_STRING100:
             Settings_EditValueSize = sizeof(Settings_TypeString100[Settings_TypeIndex_APRS[cursorPosition_Y]]) - 1;
             display.print(Settings_TypeString100[Settings_TypeIndex_APRS[cursorPosition_Y]]);
-            cursorPosition_X = strlen(Settings_TypeString100[Settings_TypeIndex_APRS[cursorPosition_Y]]);
-          }
-          break;
-        default:
-          break;
+            break;
+          default:
+            break;
+        }
       }
       
       int selectionRow = 0;
