@@ -2003,69 +2003,358 @@ void handleDisplay_Settings_Display(){
     settingsChanged = true;
   }
   // handle button context for current display
-  if (keyboardInputChar == KEYBOARD_UP_KEY){
-    if (cursorPosition_Y > 0){
-      cursorPosition_Y--;
-    } else {
-      cursorPosition_Y=ARRAY_SIZE(MenuItems_Settings_Display) - 1;
-    }
-  }
-  if (keyboardInputChar == KEYBOARD_DOWN_KEY){
-    if (cursorPosition_Y < ARRAY_SIZE(MenuItems_Settings_Display) - 1){
-      cursorPosition_Y++;
-    } else {
-      cursorPosition_Y=0;
+  if (KEYBOARD_PRINTABLE_CHARACTERS || KEYBOARD_DIRECTIONAL_KEYS || keyboardInputChar == KEYBOARD_BACKSPACE_KEY) {
+    if (editMode_Settings_Display){
+      bool characterDelete = false;
+      if (keyboardInputChar == KEYBOARD_LEFT_KEY) {
+        if (cursorPosition_X > 0) { 
+          cursorPosition_X--;
+        } else {
+          cursorPosition_X=Settings_EditValueSize;
+        }
+      }
+      if (keyboardInputChar == KEYBOARD_RIGHT_KEY) {
+        if (cursorPosition_X < Settings_EditValueSize) { 
+          cursorPosition_X++;
+        } else {
+          cursorPosition_X=0;
+        }
+      }
+      if (keyboardInputChar == KEYBOARD_BACKSPACE_KEY){
+        if (cursorPosition_X > 0) { 
+          cursorPosition_X--;
+          characterDelete = true;
+        }
+      }
+      
+      switch (Settings_Type_Display[cursorPosition_Y]) {
+        case SETTINGS_EDIT_TYPE_BOOLEAN:
+          if (keyboardInputChar == KEYBOARD_DOWN_KEY) {
+            if (Settings_TempDispCharArr[0] == 'T' || Settings_TempDispCharArr[0] == 't' || Settings_TempDispCharArr[0] == '1') {
+              strcpy(Settings_TempDispCharArr, "False");
+            } else {
+              strcpy(Settings_TempDispCharArr, "True");
+            }
+          }
+          break;
+        case SETTINGS_EDIT_TYPE_INT:
+            // TODO this is not validated because we have no settings of type int
+            if (characterDelete) {
+              if (cursorPosition_X >= 0) {
+                Settings_TempDispCharArr[cursorPosition_X] = '\0';
+              }
+            } else if (KEYBOARD_NUMBER_KEYS) {
+              Settings_TempDispCharArr[cursorPosition_X] = keyboardInputChar;
+            } else if (keyboardInputChar == KEYBOARD_MINUS_KEY) {
+              int tempInt = strtoul(Settings_TempDispCharArr[cursorPosition_X],NULL,10);
+              tempInt = tempInt / -1;
+              itoa(tempInt, Settings_TempDispCharArr[cursorPosition_X], 10);
+            }
+          break;
+        case SETTINGS_EDIT_TYPE_UINT:
+            if (characterDelete) {
+              if (cursorPosition_X >= 0) {
+                Settings_TempDispCharArr[cursorPosition_X] = '\0';
+              }
+            } else if (KEYBOARD_NUMBER_KEYS) {
+              Settings_TempDispCharArr[cursorPosition_X] = keyboardInputChar;
+            }
+          break;
+        case SETTINGS_EDIT_TYPE_LONG:
+            // TODO this is not validated because we have no settings of type long
+            if (characterDelete) {
+              if (cursorPosition_X >= 0) {
+                Settings_TempDispCharArr[cursorPosition_X] = '\0';
+              }
+            } else if (KEYBOARD_NUMBER_KEYS) {
+              Settings_TempDispCharArr[cursorPosition_X] = keyboardInputChar;
+            } else if (keyboardInputChar == KEYBOARD_MINUS_KEY) {
+              int tempInt = strtoul(Settings_TempDispCharArr[cursorPosition_X],NULL,10);
+              tempInt = tempInt / -1;
+              itoa(tempInt, Settings_TempDispCharArr[cursorPosition_X], 10);
+            }
+          break;
+        case SETTINGS_EDIT_TYPE_ULONG:
+            if (characterDelete) {
+              if (cursorPosition_X >= 0) {
+                Settings_TempDispCharArr[cursorPosition_X] = '\0';
+              }
+            } else if (KEYBOARD_NUMBER_KEYS) {
+              Settings_TempDispCharArr[cursorPosition_X] = keyboardInputChar;
+            }
+          break;
+        case SETTINGS_EDIT_TYPE_FLOAT:
+            // TODO this is not validated because we have no settings of type float in Display settings
+            if (characterDelete) {
+              if (cursorPosition_X >= 0) {
+                Settings_TempDispCharArr[cursorPosition_X] = '\0';
+              }
+            } else if (KEYBOARD_NUMBER_KEYS || keyboardInputChar <= KEYBOARD_PERIOD_KEY) {
+              Settings_TempDispCharArr[cursorPosition_X] = keyboardInputChar;
+            } else if (keyboardInputChar == KEYBOARD_MINUS_KEY) {
+              double tempDouble = strtod(Settings_TempDispCharArr[cursorPosition_X],NULL);
+              tempDouble = tempDouble / -1.0;
+              dtostrf(tempDouble,3,6,Settings_TempDispCharArr[cursorPosition_X]); // https://www.programmingelectronics.com/dtostrf/
+            }
+          break;
+        case SETTINGS_EDIT_TYPE_STRING2:
+          if (characterDelete) {
+            if (cursorPosition_X >= 0) {
+              Settings_TempDispCharArr[cursorPosition_X] = '\0';
+            }
+          } else if KEYBOARD_PRINTABLE_CHARACTERS {
+            Settings_TempDispCharArr[cursorPosition_X] = keyboardInputChar;
+          }
+          break;
+        case SETTINGS_EDIT_TYPE_STRING7:
+          if (characterDelete) {
+            if (cursorPosition_X >= 0) {
+              Settings_TempDispCharArr[cursorPosition_X] = '\0';
+            }
+          } else if KEYBOARD_PRINTABLE_CHARACTERS {
+            Settings_TempDispCharArr[cursorPosition_X] = keyboardInputChar;
+          }
+          break;
+        case SETTINGS_EDIT_TYPE_STRING100:
+          if (characterDelete) {
+            if (cursorPosition_X >= 0) {
+              Settings_TempDispCharArr[cursorPosition_X] = '\0';
+            }
+          } else if KEYBOARD_PRINTABLE_CHARACTERS {
+            Settings_TempDispCharArr[cursorPosition_X] = keyboardInputChar;
+          }
+          break;
+        default:
+          break;
+      }
+      characterDelete = false;
+    } else if (keyboardInputChar == KEYBOARD_UP_KEY) {
+      if (cursorPosition_Y > 0) {
+        cursorPosition_Y--;
+      } else {
+        cursorPosition_Y=ARRAY_SIZE(MenuItems_Settings_Display) - 1;
+      }
+    } else if (keyboardInputChar == KEYBOARD_DOWN_KEY) {
+      if (cursorPosition_Y < ARRAY_SIZE(MenuItems_Settings_Display) - 1) {
+        cursorPosition_Y++;
+      } else {
+        cursorPosition_Y=0;
+      }
     }
   }
   if (keyboardInputChar == KEYBOARD_ENTER_KEY){
-
+    if (editMode_Settings_Display) {
+      editMode_Settings_Display = false;
+      cursorPosition_X = 0;
+      // apply edited values
+      switch (Settings_Type_Display[cursorPosition_Y]) {
+        case SETTINGS_EDIT_TYPE_BOOLEAN:
+          if (Settings_TempDispCharArr[0] == 'T' || Settings_TempDispCharArr[0] == 't' || Settings_TempDispCharArr[0] == '1') {
+            Settings_TypeBool[Settings_TypeIndex_Display[cursorPosition_Y]] = 1;
+          } else {
+            Settings_TypeBool[Settings_TypeIndex_Display[cursorPosition_Y]] = 0;
+          }
+          break;
+        case SETTINGS_EDIT_TYPE_INT:
+            Settings_TypeInt[Settings_TypeIndex_Display[cursorPosition_Y]] = strtoul(Settings_TempDispCharArr,NULL,10);
+          break;
+        case SETTINGS_EDIT_TYPE_UINT:
+            Settings_TypeUInt[Settings_TypeIndex_Display[cursorPosition_Y]] = strtoul(Settings_TempDispCharArr,NULL,10);
+          break;
+        case SETTINGS_EDIT_TYPE_LONG:
+            Settings_TypeLong[Settings_TypeIndex_Display[cursorPosition_Y]] = strtoul(Settings_TempDispCharArr,NULL,10);
+          break;
+        case SETTINGS_EDIT_TYPE_ULONG:
+            Settings_TypeULong[Settings_TypeIndex_Display[cursorPosition_Y]] = strtoul(Settings_TempDispCharArr,NULL,10);
+          break;
+        case SETTINGS_EDIT_TYPE_FLOAT:
+            Settings_TypeFloat[Settings_TypeIndex_Display[cursorPosition_Y]] = atof(Settings_TempDispCharArr);
+          break;
+        case SETTINGS_EDIT_TYPE_STRING2:
+          for (int i=0; i<sizeof(Settings_TypeString2[Settings_TypeIndex_Display[cursorPosition_Y]]);i++) {
+            Settings_TypeString2[Settings_TypeIndex_Display[cursorPosition_Y]][i] = Settings_TempDispCharArr[i];       
+          }
+          break;
+        case SETTINGS_EDIT_TYPE_STRING7:
+          for (int i=0; i<sizeof(Settings_TypeString7[Settings_TypeIndex_Display[cursorPosition_Y]]);i++) {
+            Settings_TypeString7[Settings_TypeIndex_Display[cursorPosition_Y]][i] = Settings_TempDispCharArr[i];       
+          }
+          break;
+        case SETTINGS_EDIT_TYPE_STRING100:
+          for (int i=0; i<sizeof(Settings_TypeString100[Settings_TypeIndex_Display[cursorPosition_Y]]);i++) {
+            Settings_TypeString100[Settings_TypeIndex_Display[cursorPosition_Y]][i] = Settings_TempDispCharArr[i];       
+          }
+          break;
+        default:
+          break;
+      }
+    } else {
+      // enable edit mode
+      editMode_Settings_Display = true;
+      // clear the char array first
+      for (int i=0; i<sizeof(Settings_TempDispCharArr);i++) {
+        Settings_TempDispCharArr[i] = '\0';
+      }
+      // copy data to temp variable
+      switch (Settings_Type_Display[cursorPosition_Y]) {
+        case SETTINGS_EDIT_TYPE_BOOLEAN:
+          if (Settings_TypeBool[Settings_TypeIndex_Display[cursorPosition_Y]]) {
+            strcpy(Settings_TempDispCharArr, "True");
+          } else {
+            strcpy(Settings_TempDispCharArr, "False");
+          }
+          break;
+        case SETTINGS_EDIT_TYPE_INT:
+          itoa(Settings_TypeInt[Settings_TypeIndex_Display[cursorPosition_Y]],Settings_TempDispCharArr,10);
+          break;
+        case SETTINGS_EDIT_TYPE_UINT:
+          // TODO find a way to do this with an unsigned integer (dont use itoa)
+          itoa(Settings_TypeUInt[Settings_TypeIndex_Display[cursorPosition_Y]],Settings_TempDispCharArr,10);
+          break;
+        case SETTINGS_EDIT_TYPE_LONG:
+          ltoa(Settings_TypeLong[Settings_TypeIndex_Display[cursorPosition_Y]],Settings_TempDispCharArr,10);
+          break;
+        case SETTINGS_EDIT_TYPE_ULONG:
+          ultoa(Settings_TypeULong[Settings_TypeIndex_Display[cursorPosition_Y]],Settings_TempDispCharArr,10);
+          break;
+        case SETTINGS_EDIT_TYPE_FLOAT:
+          break;
+        case SETTINGS_EDIT_TYPE_STRING2:
+          for (int i=0; i<strlen(Settings_TypeString2[Settings_TypeIndex_Display[cursorPosition_Y]]);i++) {
+            Settings_TempDispCharArr[i] = Settings_TypeString2[Settings_TypeIndex_Display[cursorPosition_Y]][i];       
+          }
+          break;
+        case SETTINGS_EDIT_TYPE_STRING7:
+          for (int i=0; i<strlen(Settings_TypeString7[Settings_TypeIndex_Display[cursorPosition_Y]]);i++) {
+            Settings_TempDispCharArr[i] = Settings_TypeString7[Settings_TypeIndex_Display[cursorPosition_Y]][i];       
+          }
+          break;
+        case SETTINGS_EDIT_TYPE_STRING100:
+          for (int i=0; i<strlen(Settings_TypeString100[Settings_TypeIndex_Display[cursorPosition_Y]]);i++) {
+            Settings_TempDispCharArr[i] = Settings_TypeString100[Settings_TypeIndex_Display[cursorPosition_Y]][i];       
+          }
+          break;
+        default:
+          break;
+      }
+    }
   }
   if (keyboardInputChar == KEYBOARD_ESCAPE_KEY){
-    currentDisplay = previousDisplay_Settings_Display;
-    return;
+    if (editMode_Settings_Display) {
+      // disable edit mode
+      editMode_Settings_Display = false;
+      cursorPosition_X = 0;
+    } else {
+      if (settingsChanged) {
+        currentDisplay = UI_DISPLAY_SETTINGS_SAVE;
+        previousDisplay_Settings_Save = UI_DISPLAY_SETTINGS_DISPLAY;
+      } else {
+        currentDisplay = previousDisplay_Settings_Display;
+        return;
+      }
+    }
   }
   // build display
   if (displayRefresh_Global){
-  // clear the buffer
-  display.clearDisplay();
-  
-  int selectionRow = 0;
-  switch (cursorPosition_Y) {
-    case 0:
-      selectionRow = UI_DISPLAY_ROW_01;
-      break;
-    case 1:
-      selectionRow = UI_DISPLAY_ROW_02;
-      break;
-    case 2:
-      selectionRow = UI_DISPLAY_ROW_03;
-      break;
-    case 3:
-      selectionRow = UI_DISPLAY_ROW_04;
-      break;
-    default:
-      selectionRow = UI_DISPLAY_ROW_04;
-      break;
-  }
+    // clear the buffer
+    display.clearDisplay();
+    if (editMode_Settings_Display) {
+      if (displayBlink) {
+        display.setCursor(cursorPosition_X*6,UI_DISPLAY_ROW_BOTTOM);
+        display.print('_');
+      }
+    }
+    // place the cursor
+    display.setCursor(0,UI_DISPLAY_ROW_BOTTOM-1);
+    // print values to oled
+    if (editMode_Settings_Display) { // print temp variable currently being edited
+      Settings_EditValueSize = sizeof(Settings_TempDispCharArr) - 1;
+      display.print(Settings_TempDispCharArr);
+      cursorPosition_X = strlen(Settings_TempDispCharArr);
+    } else { // print value of setting stored in memory
+      switch (Settings_Type_Display[cursorPosition_Y]) {
+        case SETTINGS_EDIT_TYPE_BOOLEAN:
+          Settings_EditValueSize = 0;
+          if (Settings_TypeBool[Settings_TypeIndex_Display[cursorPosition_Y]]) {
+            display.print(F("True"));
+          } else {
+            display.print(F("False"));
+          }
+          break;
+        case SETTINGS_EDIT_TYPE_INT:
+          Settings_EditValueSize = numberOfDigits<int>(Settings_TypeInt[Settings_TypeIndex_Display[cursorPosition_Y]]);
+          display.print(Settings_TypeInt[Settings_TypeIndex_Display[cursorPosition_Y]]);
+          break;
+        case SETTINGS_EDIT_TYPE_UINT:
+          Settings_EditValueSize = numberOfDigits<unsigned int>(Settings_TypeUInt[Settings_TypeIndex_Display[cursorPosition_Y]]);
+          display.print(Settings_TypeUInt[Settings_TypeIndex_Display[cursorPosition_Y]]);
+          break;
+        case SETTINGS_EDIT_TYPE_LONG:
+          Settings_EditValueSize = numberOfDigits<long>(Settings_TypeLong[Settings_TypeIndex_Display[cursorPosition_Y]]);
+          display.print(Settings_TypeLong[Settings_TypeIndex_Display[cursorPosition_Y]]);
+          break;
+        case SETTINGS_EDIT_TYPE_ULONG:
+          Settings_EditValueSize = numberOfDigits<unsigned long>(Settings_TypeULong[Settings_TypeIndex_Display[cursorPosition_Y]]);
+          display.print(Settings_TypeULong[Settings_TypeIndex_Display[cursorPosition_Y]]);
+          break;
+        case SETTINGS_EDIT_TYPE_FLOAT:
+          Settings_EditValueSize = numberOfDigits<float>(Settings_TypeFloat[Settings_TypeIndex_Display[cursorPosition_Y]]);
+          display.print(Settings_TypeFloat[Settings_TypeIndex_Display[cursorPosition_Y]],6);
+          break;
+        case SETTINGS_EDIT_TYPE_STRING2:
+          Settings_EditValueSize = sizeof(Settings_TypeString2[Settings_TypeIndex_Display[cursorPosition_Y]]) - 1;
+          display.print(Settings_TypeString2[Settings_TypeIndex_Display[cursorPosition_Y]]);
+          break;
+        case SETTINGS_EDIT_TYPE_STRING7:
+          Settings_EditValueSize = sizeof(Settings_TypeString7[Settings_TypeIndex_Display[cursorPosition_Y]]) - 1;
+          display.print(Settings_TypeString7[Settings_TypeIndex_Display[cursorPosition_Y]]);
+          break;
+        case SETTINGS_EDIT_TYPE_STRING100:
+          Settings_EditValueSize = sizeof(Settings_TypeString100[Settings_TypeIndex_Display[cursorPosition_Y]]) - 1;
+          display.print(Settings_TypeString100[Settings_TypeIndex_Display[cursorPosition_Y]]);
+          break;
+        default:
+          break;
+      }
+    }
     
-  display.setCursor(0,selectionRow);
-  display.print(F(">"));
-  
-  display.setCursor(6,UI_DISPLAY_ROW_01);
-  display.print(MenuItems_Settings_Display[cursorPosition_Y>3 ? cursorPosition_Y-3 : 0]); // if greater than 3, follow else normal
-  
-  display.setCursor(6,UI_DISPLAY_ROW_02);
-  display.print(MenuItems_Settings_Display[cursorPosition_Y>3 ? cursorPosition_Y-2 : 1]);
-  
-  display.setCursor(6,UI_DISPLAY_ROW_03);
-  display.print(MenuItems_Settings_Display[cursorPosition_Y>3 ? cursorPosition_Y-1 : 2]);
-  
-  display.setCursor(6,UI_DISPLAY_ROW_04);
-  display.print(MenuItems_Settings_Display[cursorPosition_Y>3 ? cursorPosition_Y-0 : 3]);
+    int selectionRow = 0;
+    switch (cursorPosition_Y) {
+      case 0:
+        selectionRow = UI_DISPLAY_ROW_01;
+        break;
+      case 1:
+        selectionRow = UI_DISPLAY_ROW_02;
+        break;
+      case 2:
+        selectionRow = UI_DISPLAY_ROW_03;
+        break;
+      case 3:
+        selectionRow = UI_DISPLAY_ROW_04;
+        break;
+      default:
+        selectionRow = UI_DISPLAY_ROW_04;
+        break;
+    }
+      
+    display.setCursor(0,selectionRow);
+    display.print(F(">"));
+    
+    display.setCursor(6,UI_DISPLAY_ROW_01);
+    display.print(MenuItems_Settings_Display[cursorPosition_Y>3 ? cursorPosition_Y-3 : 0]); // if greater than 3, follow else normal
+    
+    display.setCursor(6,UI_DISPLAY_ROW_02);
+    display.print(MenuItems_Settings_Display[cursorPosition_Y>3 ? cursorPosition_Y-2 : 1]);
+    
+    display.setCursor(6,UI_DISPLAY_ROW_03);
+    display.print(MenuItems_Settings_Display[cursorPosition_Y>3 ? cursorPosition_Y-1 : 2]);
+    
+    display.setCursor(6,UI_DISPLAY_ROW_04);
+    display.print(MenuItems_Settings_Display[cursorPosition_Y>3 ? cursorPosition_Y-0 : 3]);
 
-  // display all content from buffer
-  display.display();
-} 
+    // display all content from buffer
+    display.display();
+  } 
 }
 
 void handleAprsBeacon(){
