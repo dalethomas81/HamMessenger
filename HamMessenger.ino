@@ -12,14 +12,18 @@
 #define CARDKB_ADDR 0x5F  // M5Stack Keyboard https://docs.m5stack.com/en/unit/cardkb
 char keyboardInputChar, keyboardInputCharLast;
 
-#define KEYBOARD_BACKSPACE_KEY  8
-#define KEYBOARD_ENTER_KEY      13
-#define KEYBOARD_ESCAPE_KEY     27
-#define KEYBOARD_MINUS_KEY      45
-#define KEYBOARD_RIGHT_KEY      -73
-#define KEYBOARD_DOWN_KEY       -74
-#define KEYBOARD_UP_KEY         -75
-#define KEYBOARD_LEFT_KEY       -76
+#define KEYBOARD_NUMBER_KEYS            (keyboardInputChar >= 48 && keyboardInputChar <= 57)
+#define KEYBOARD_DIRECTIONAL_KEYS       (keyboardInputChar >= -76 && keyboardInputChar <= -73)
+#define KEYBOARD_PRINTABLE_CHARACTERS   (keyboardInputChar >= 32 && keyboardInputChar <= 126)
+#define KEYBOARD_BACKSPACE_KEY          8
+#define KEYBOARD_ENTER_KEY              13
+#define KEYBOARD_ESCAPE_KEY             27
+#define KEYBOARD_MINUS_KEY              45
+#define KEYBOARD_PERIOD_KEY             46
+#define KEYBOARD_RIGHT_KEY              -73
+#define KEYBOARD_DOWN_KEY               -74
+#define KEYBOARD_UP_KEY                 -75
+#define KEYBOARD_LEFT_KEY               -76
 
 // sketch will write default settings if new build
 //const char version[] = "build "  __DATE__ " " __TIME__; 
@@ -926,23 +930,23 @@ void printOutSettings(){
       cursorPosition_Y = liveFeedBufferIndex;
     }
     // handle button context for current display
-    if (keyboardInputChar == KEYBOARD_UP_KEY){ // -74 DEC - Down Key // -75 DEC - Up Key // -73 DEC - Right Key // -76 DEC - Left Key
+    if (keyboardInputChar == KEYBOARD_UP_KEY){
       if (cursorPosition_Y > 0){
         cursorPosition_Y--;
       } else {
         cursorPosition_Y=liveFeedBufferIndex_RecordCount - 1;
       }
     }
-    if (keyboardInputChar == KEYBOARD_DOWN_KEY){ // -74 DEC - Down Key // -75 DEC - Up Key // -73 DEC - Right Key // -76 DEC - Left Key
+    if (keyboardInputChar == KEYBOARD_DOWN_KEY){
       if (cursorPosition_Y < liveFeedBufferIndex_RecordCount - 1){ // dont scroll past the number of records in the array
         cursorPosition_Y++;
       } else {
         cursorPosition_Y=0;
       }
     }
-    if (keyboardInputChar == KEYBOARD_ENTER_KEY){ // 13 DEC - Enter Key // 8 DEC - Backspace Key
+    if (keyboardInputChar == KEYBOARD_ENTER_KEY){
     }
-    if (keyboardInputChar == KEYBOARD_ESCAPE_KEY){ // 13 DEC - Enter Key // 8 DEC - Backspace Key // 27 DEC - ESC Key
+    if (keyboardInputChar == KEYBOARD_ESCAPE_KEY){
       currentDisplay = previousDisplay_LiveFeed;
       return;
     }
@@ -1231,7 +1235,7 @@ void printOutSettings(){
       settingsChanged = true;
     }
     // handle button context for current display
-    if ((keyboardInputChar >= 32 && keyboardInputChar <= 126) || (keyboardInputChar >= -76 && keyboardInputChar <= -73) || keyboardInputChar == KEYBOARD_BACKSPACE_KEY) { // -74 DEC - Down Key // -75 DEC - Up Key // -73 DEC - Right Key // -76 DEC - Left Key
+    if (KEYBOARD_PRINTABLE_CHARACTERS || KEYBOARD_DIRECTIONAL_KEYS || keyboardInputChar == KEYBOARD_BACKSPACE_KEY) { // -74 DEC - Down Key // -75 DEC - Up Key // -73 DEC - Right Key // -76 DEC - Left Key
       if (editMode_Settings_APRS){
         bool characterDelete = false;
         if (keyboardInputChar == KEYBOARD_LEFT_KEY) {
@@ -1271,7 +1275,7 @@ void printOutSettings(){
                 if (cursorPosition_X >= 0) {
                   Settings_TempDispCharArr[cursorPosition_X] = '\0';
                 }
-              } else if (keyboardInputChar >= 48 && keyboardInputChar <= 57) {
+              } else if (KEYBOARD_NUMBER_KEYS) {
                 Settings_TempDispCharArr[cursorPosition_X] = keyboardInputChar;
               } else if (keyboardInputChar == KEYBOARD_MINUS_KEY) {
                 int tempInt = strtoul(Settings_TempDispCharArr[cursorPosition_X],NULL,10);
@@ -1284,7 +1288,7 @@ void printOutSettings(){
                 if (cursorPosition_X >= 0) {
                   Settings_TempDispCharArr[cursorPosition_X] = '\0';
                 }
-              } else if (keyboardInputChar >= 48 && keyboardInputChar <= 57) {
+              } else if (KEYBOARD_NUMBER_KEYS) {
                 Settings_TempDispCharArr[cursorPosition_X] = keyboardInputChar;
               }
             break;
@@ -1294,7 +1298,7 @@ void printOutSettings(){
                 if (cursorPosition_X >= 0) {
                   Settings_TempDispCharArr[cursorPosition_X] = '\0';
                 }
-              } else if (keyboardInputChar >= 48 && keyboardInputChar <= 57) {
+              } else if (KEYBOARD_NUMBER_KEYS) {
                 Settings_TempDispCharArr[cursorPosition_X] = keyboardInputChar;
               } else if (keyboardInputChar == KEYBOARD_MINUS_KEY) {
                 int tempInt = strtoul(Settings_TempDispCharArr[cursorPosition_X],NULL,10);
@@ -1307,7 +1311,7 @@ void printOutSettings(){
                 if (cursorPosition_X >= 0) {
                   Settings_TempDispCharArr[cursorPosition_X] = '\0';
                 }
-              } else if (keyboardInputChar >= 48 && keyboardInputChar <= 57) {
+              } else if (KEYBOARD_NUMBER_KEYS) {
                 Settings_TempDispCharArr[cursorPosition_X] = keyboardInputChar;
               }
             break;
@@ -1317,7 +1321,7 @@ void printOutSettings(){
                 if (cursorPosition_X >= 0) {
                   Settings_TempDispCharArr[cursorPosition_X] = '\0';
                 }
-              } else if ((keyboardInputChar >= 48 && keyboardInputChar <= 57) || keyboardInputChar <= 46) { // 46 = '.'
+              } else if (KEYBOARD_NUMBER_KEYS || keyboardInputChar <= KEYBOARD_PERIOD_KEY) {
                 Settings_TempDispCharArr[cursorPosition_X] = keyboardInputChar;
               } else if (keyboardInputChar == KEYBOARD_MINUS_KEY) {
                 double tempDouble = strtod(Settings_TempDispCharArr[cursorPosition_X],NULL);
@@ -1330,7 +1334,7 @@ void printOutSettings(){
               if (cursorPosition_X >= 0) {
                 Settings_TempDispCharArr[cursorPosition_X] = '\0';
               }
-            } else if (keyboardInputChar >= 32 && keyboardInputChar <= 126) {
+            } else if KEYBOARD_PRINTABLE_CHARACTERS {
               Settings_TempDispCharArr[cursorPosition_X] = keyboardInputChar;
             }
             break;
@@ -1339,7 +1343,7 @@ void printOutSettings(){
               if (cursorPosition_X >= 0) {
                 Settings_TempDispCharArr[cursorPosition_X] = '\0';
               }
-            } else if (keyboardInputChar >= 32 && keyboardInputChar <= 126) {
+            } else if KEYBOARD_PRINTABLE_CHARACTERS {
               Settings_TempDispCharArr[cursorPosition_X] = keyboardInputChar;
             }
             break;
@@ -1348,7 +1352,7 @@ void printOutSettings(){
               if (cursorPosition_X >= 0) {
                 Settings_TempDispCharArr[cursorPosition_X] = '\0';
               }
-            } else if (keyboardInputChar >= 32 && keyboardInputChar <= 126) {
+            } else if KEYBOARD_PRINTABLE_CHARACTERS {
               Settings_TempDispCharArr[cursorPosition_X] = keyboardInputChar;
             }
             break;
