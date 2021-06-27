@@ -15,7 +15,7 @@ Command | Description | Example
 __?__ | Displays serial command examples
 __CMD:Settings:Print:__ | Prints the current settings
 __CMD:Settings:Save:__ | Saves settings to EEPROM
-nbsp; | nbsp; | &nbsp;
+&nbsp;
 __CMD:Settings:APRS:Beacon Frequency:<0 to 4,294,967,295>__ | Frequency at which position data will be transmitted in milliseconds | 60000
 __CMD:Settings:APRS:Raw Packet:<alphanumeric 99 char max>__ | APRS raw data to be sent | Q#EWR88$%$^T(w3)
 __CMD:Settings:APRS:Comment:<alphanumeric 99 char max>__ | APRS comment | Testing HamMessenger!
@@ -35,12 +35,12 @@ __CMD:Settings:APRS:Table:<alphanumeric 1 char max>__ | http://www.aprs.net/vm/D
 __CMD:Settings:APRS:Automatic ACK:<True/False>__ | Dictates if the modem will automatically ack messages | True (1)
 __CMD:Settings:APRS:Preamble:<0 to 65,535>__ | Number of milliseconds of grey noise before APRS message |350
 __CMD:Settings:APRS:Tail:<0 to 65,535>__ | Number of milliseconds of grey noise after APRS message | 80
-nbsp; | nbsp; | &nbsp;
+&nbsp;
 __CMD:Settings:GPS:Update Frequency:<0 to 4,294,967,295>__ | Frequency that the GPS location is updated in memory | 10000
 __CMD:Settings:GPS:Position Tolerance:<3.4028235E-38 to 3.4028235E+38>__ | GPS position must change this much to register as a change | 0.000010
 __CMD:Settings:GPS:Destination Latitude:<3.4028235E-38 to 3.4028235E+38>__ | GPS latitude coordinates of destination | 51.508131
 __CMD:Settings:GPS:Destination Longitude:<3.4028235E-38 to 3.4028235E+38>__ | GPS longitude coordinates of destination | -0.128002
-nbsp; | nbsp; | &nbsp;
+&nbsp;
 __CMD:Settings:Display:Timeout:<0 to 4,294,967,295>__ | Amount of time before Messages and Live Feed displays timeout and go home | 2000
 __CMD:Settings:Display:Brightness:<0 to 100>__ | Brightness of Oled | 100
 __CMD:Settings:Display:Show Position:<True/False>__ | Lat and Long position is shown on screen | True (1)
