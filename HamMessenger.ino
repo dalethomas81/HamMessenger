@@ -574,6 +574,227 @@ void printOutSettings(){
   Serial.println();
 }
 
+void handleDisplay_TempVarDisplay(int SettingsEditType){
+  bool characterDelete = false;
+  if (keyboardInputChar == KEYBOARD_LEFT_KEY) {
+    if (cursorPosition_X > 0) { 
+      cursorPosition_X--;
+    } else {
+      cursorPosition_X=Settings_EditValueSize;
+    }
+  }
+  if (keyboardInputChar == KEYBOARD_RIGHT_KEY) {
+    if (cursorPosition_X < Settings_EditValueSize) { 
+      cursorPosition_X++;
+    } else {
+      cursorPosition_X=0;
+    }
+  }
+  if (keyboardInputChar == KEYBOARD_BACKSPACE_KEY){
+    if (cursorPosition_X > 0) { 
+      cursorPosition_X--;
+      characterDelete = true;
+    }
+  }
+  switch (SettingsEditType) {
+    case SETTINGS_EDIT_TYPE_BOOLEAN:
+      if (keyboardInputChar == KEYBOARD_DOWN_KEY) {
+        if (Settings_TempDispCharArr[0] == 'T' || Settings_TempDispCharArr[0] == 't' || Settings_TempDispCharArr[0] == '1') {
+          strcpy(Settings_TempDispCharArr, "False");
+        } else {
+          strcpy(Settings_TempDispCharArr, "True");
+        }
+      }
+      break;
+    case SETTINGS_EDIT_TYPE_INT:
+        // TODO this is not validated because we have no settings of type int
+        if (characterDelete) {
+          if (cursorPosition_X >= 0) {
+            Settings_TempDispCharArr[cursorPosition_X] = '\0';
+          }
+        } else if (KEYBOARD_NUMBER_KEYS) {
+          Settings_TempDispCharArr[cursorPosition_X] = keyboardInputChar;
+        } else if (keyboardInputChar == KEYBOARD_MINUS_KEY) {
+          int tempInt = strtoul(Settings_TempDispCharArr,NULL,10);
+          tempInt = -tempInt;
+          itoa(tempInt, Settings_TempDispCharArr, 10);
+        }
+      break;
+    case SETTINGS_EDIT_TYPE_UINT:
+        if (characterDelete) {
+          if (cursorPosition_X >= 0) {
+            Settings_TempDispCharArr[cursorPosition_X] = '\0';
+          }
+        } else if (KEYBOARD_NUMBER_KEYS) {
+          Settings_TempDispCharArr[cursorPosition_X] = keyboardInputChar;
+        }
+      break;
+    case SETTINGS_EDIT_TYPE_LONG:
+        // TODO this is not validated because we have no settings of type long
+        if (characterDelete) {
+          if (cursorPosition_X >= 0) {
+            Settings_TempDispCharArr[cursorPosition_X] = '\0';
+          }
+        } else if (KEYBOARD_NUMBER_KEYS) {
+          Settings_TempDispCharArr[cursorPosition_X] = keyboardInputChar;
+        } else if (keyboardInputChar == KEYBOARD_MINUS_KEY) {
+          int tempInt = strtoul(Settings_TempDispCharArr,NULL,10);
+          tempInt = -tempInt;
+          itoa(tempInt, Settings_TempDispCharArr, 10);
+        }
+      break;
+    case SETTINGS_EDIT_TYPE_ULONG:
+        if (characterDelete) {
+          if (cursorPosition_X >= 0) {
+            Settings_TempDispCharArr[cursorPosition_X] = '\0';
+          }
+        } else if (KEYBOARD_NUMBER_KEYS) {
+          Settings_TempDispCharArr[cursorPosition_X] = keyboardInputChar;
+        }
+      break;
+    case SETTINGS_EDIT_TYPE_FLOAT:
+        // TODO this is not validated because we have no settings of type float in aprs settings
+        if (characterDelete) {
+          if (cursorPosition_X >= 0) {
+            Settings_TempDispCharArr[cursorPosition_X] = '\0';
+          }
+        } else if (KEYBOARD_NUMBER_KEYS || keyboardInputChar == KEYBOARD_PERIOD_KEY) {
+          Settings_TempDispCharArr[cursorPosition_X] = keyboardInputChar;
+        } else if (keyboardInputChar == KEYBOARD_MINUS_KEY) {
+          double tempDouble = strtod(Settings_TempDispCharArr,NULL);
+          tempDouble = -tempDouble;
+          dtostrf(tempDouble,3,6,Settings_TempDispCharArr); // https://www.programmingelectronics.com/dtostrf/
+        }
+      break;
+    case SETTINGS_EDIT_TYPE_STRING2:
+      if (characterDelete) {
+        if (cursorPosition_X >= 0) {
+          Settings_TempDispCharArr[cursorPosition_X] = '\0';
+        }
+      } else if KEYBOARD_PRINTABLE_CHARACTERS {
+        Settings_TempDispCharArr[cursorPosition_X] = keyboardInputChar;
+      }
+      break;
+    case SETTINGS_EDIT_TYPE_STRING7:
+      if (characterDelete) {
+        if (cursorPosition_X >= 0) {
+          Settings_TempDispCharArr[cursorPosition_X] = '\0';
+        }
+      } else if KEYBOARD_PRINTABLE_CHARACTERS {
+        Settings_TempDispCharArr[cursorPosition_X] = keyboardInputChar;
+      }
+      break;
+    case SETTINGS_EDIT_TYPE_STRING100:
+      if (characterDelete) {
+        if (cursorPosition_X >= 0) {
+          Settings_TempDispCharArr[cursorPosition_X] = '\0';
+        }
+      } else if KEYBOARD_PRINTABLE_CHARACTERS {
+        Settings_TempDispCharArr[cursorPosition_X] = keyboardInputChar;
+      }
+      break;
+    default:
+      break;
+  }
+  characterDelete = false;
+}
+
+void handleDisplay_TempVarApply(int SettingsType, int SettingsTypeIndex){
+  cursorPosition_X = 0;
+  // apply edited values
+  switch (SettingsType) {
+    case SETTINGS_EDIT_TYPE_BOOLEAN:
+      if (Settings_TempDispCharArr[0] == 'T' || Settings_TempDispCharArr[0] == 't' || Settings_TempDispCharArr[0] == '1') {
+        Settings_TypeBool[SettingsTypeIndex] = 1;
+      } else {
+        Settings_TypeBool[SettingsTypeIndex] = 0;
+      }
+      break;
+    case SETTINGS_EDIT_TYPE_INT:
+        Settings_TypeInt[SettingsTypeIndex] = strtoul(Settings_TempDispCharArr,NULL,10);
+      break;
+    case SETTINGS_EDIT_TYPE_UINT:
+        Settings_TypeUInt[SettingsTypeIndex] = strtoul(Settings_TempDispCharArr,NULL,10);
+      break;
+    case SETTINGS_EDIT_TYPE_LONG:
+        Settings_TypeLong[SettingsTypeIndex] = strtoul(Settings_TempDispCharArr,NULL,10);
+      break;
+    case SETTINGS_EDIT_TYPE_ULONG:
+        Settings_TypeULong[SettingsTypeIndex] = strtoul(Settings_TempDispCharArr,NULL,10);
+      break;
+    case SETTINGS_EDIT_TYPE_FLOAT:
+        Settings_TypeFloat[SettingsTypeIndex] = atof(Settings_TempDispCharArr);
+      break;
+    case SETTINGS_EDIT_TYPE_STRING2:
+      for (int i=0; i<sizeof(Settings_TypeString2[SettingsTypeIndex]);i++) {
+        Settings_TypeString2[SettingsTypeIndex][i] = Settings_TempDispCharArr[i];       
+      }
+      break;
+    case SETTINGS_EDIT_TYPE_STRING7:
+      for (int i=0; i<sizeof(Settings_TypeString7[SettingsTypeIndex]);i++) {
+        Settings_TypeString7[SettingsTypeIndex][i] = Settings_TempDispCharArr[i];       
+      }
+      break;
+    case SETTINGS_EDIT_TYPE_STRING100:
+      for (int i=0; i<sizeof(Settings_TypeString100[SettingsTypeIndex]);i++) {
+        Settings_TypeString100[SettingsTypeIndex][i] = Settings_TempDispCharArr[i];       
+      }
+      break;
+    default:
+      break;
+  }
+}
+
+void handleDisplay_TempVarCopy(int SettingsType, int SettingsTypeIndex){
+  // clear the char array first
+  for (int i=0; i<sizeof(Settings_TempDispCharArr);i++) {
+    Settings_TempDispCharArr[i] = '\0';
+  }
+  // copy data to temp variable
+  switch (SettingsType) {
+    case SETTINGS_EDIT_TYPE_BOOLEAN:
+      if (Settings_TypeBool[SettingsTypeIndex]) {
+        strcpy(Settings_TempDispCharArr, "True");
+      } else {
+        strcpy(Settings_TempDispCharArr, "False");
+      }
+      break;
+    case SETTINGS_EDIT_TYPE_INT:
+      itoa(Settings_TypeInt[SettingsTypeIndex],Settings_TempDispCharArr,10);
+      break;
+    case SETTINGS_EDIT_TYPE_UINT:
+      // TODO find a way to do this with an unsigned integer (dont use itoa)
+      itoa(Settings_TypeUInt[SettingsTypeIndex],Settings_TempDispCharArr,10);
+      break;
+    case SETTINGS_EDIT_TYPE_LONG:
+      ltoa(Settings_TypeLong[SettingsTypeIndex],Settings_TempDispCharArr,10);
+      break;
+    case SETTINGS_EDIT_TYPE_ULONG:
+      ultoa(Settings_TypeULong[SettingsTypeIndex],Settings_TempDispCharArr,10);
+      break;
+    case SETTINGS_EDIT_TYPE_FLOAT:
+      dtostrf(Settings_TypeFloat[SettingsTypeIndex],3,6,Settings_TempDispCharArr);
+      break;
+    case SETTINGS_EDIT_TYPE_STRING2:
+      for (int i=0; i<strlen(Settings_TypeString2[SettingsTypeIndex]);i++) {
+        Settings_TempDispCharArr[i] = Settings_TypeString2[SettingsTypeIndex][i];       
+      }
+      break;
+    case SETTINGS_EDIT_TYPE_STRING7:
+      for (int i=0; i<strlen(Settings_TypeString7[SettingsTypeIndex]);i++) {
+        Settings_TempDispCharArr[i] = Settings_TypeString7[SettingsTypeIndex][i];       
+      }
+      break;
+    case SETTINGS_EDIT_TYPE_STRING100:
+      for (int i=0; i<strlen(Settings_TypeString100[SettingsTypeIndex]);i++) {
+        Settings_TempDispCharArr[i] = Settings_TypeString100[SettingsTypeIndex][i];       
+      }
+      break;
+    default:
+      break;
+  }
+}
+
 void handleDisplays(){ 
   if (millis() - display_refresh_timer > DISPLAY_REFRESH_RATE){
     displayRefresh_Global = true;
@@ -1244,129 +1465,7 @@ void handleDisplay_Settings_APRS(){
   // handle button context for current display
   if (KEYBOARD_PRINTABLE_CHARACTERS || KEYBOARD_DIRECTIONAL_KEYS || keyboardInputChar == KEYBOARD_BACKSPACE_KEY) {
     if (editMode_Settings_APRS){
-      bool characterDelete = false;
-      if (keyboardInputChar == KEYBOARD_LEFT_KEY) {
-        if (cursorPosition_X > 0) { 
-          cursorPosition_X--;
-        } else {
-          cursorPosition_X=Settings_EditValueSize;
-        }
-      }
-      if (keyboardInputChar == KEYBOARD_RIGHT_KEY) {
-        if (cursorPosition_X < Settings_EditValueSize) { 
-          cursorPosition_X++;
-        } else {
-          cursorPosition_X=0;
-        }
-      }
-      if (keyboardInputChar == KEYBOARD_BACKSPACE_KEY){
-        if (cursorPosition_X > 0) { 
-          cursorPosition_X--;
-          characterDelete = true;
-        }
-      }
-      
-      switch (Settings_Type_APRS[cursorPosition_Y]) {
-        case SETTINGS_EDIT_TYPE_BOOLEAN:
-          if (keyboardInputChar == KEYBOARD_DOWN_KEY) {
-            if (Settings_TempDispCharArr[0] == 'T' || Settings_TempDispCharArr[0] == 't' || Settings_TempDispCharArr[0] == '1') {
-              strcpy(Settings_TempDispCharArr, "False");
-            } else {
-              strcpy(Settings_TempDispCharArr, "True");
-            }
-          }
-          break;
-        case SETTINGS_EDIT_TYPE_INT:
-            // TODO this is not validated because we have no settings of type int
-            if (characterDelete) {
-              if (cursorPosition_X >= 0) {
-                Settings_TempDispCharArr[cursorPosition_X] = '\0';
-              }
-            } else if (KEYBOARD_NUMBER_KEYS) {
-              Settings_TempDispCharArr[cursorPosition_X] = keyboardInputChar;
-            } else if (keyboardInputChar == KEYBOARD_MINUS_KEY) {
-              int tempInt = strtoul(Settings_TempDispCharArr,NULL,10);
-              tempInt = -tempInt;
-              itoa(tempInt, Settings_TempDispCharArr, 10);
-            }
-          break;
-        case SETTINGS_EDIT_TYPE_UINT:
-            if (characterDelete) {
-              if (cursorPosition_X >= 0) {
-                Settings_TempDispCharArr[cursorPosition_X] = '\0';
-              }
-            } else if (KEYBOARD_NUMBER_KEYS) {
-              Settings_TempDispCharArr[cursorPosition_X] = keyboardInputChar;
-            }
-          break;
-        case SETTINGS_EDIT_TYPE_LONG:
-            // TODO this is not validated because we have no settings of type long
-            if (characterDelete) {
-              if (cursorPosition_X >= 0) {
-                Settings_TempDispCharArr[cursorPosition_X] = '\0';
-              }
-            } else if (KEYBOARD_NUMBER_KEYS) {
-              Settings_TempDispCharArr[cursorPosition_X] = keyboardInputChar;
-            } else if (keyboardInputChar == KEYBOARD_MINUS_KEY) {
-              int tempInt = strtoul(Settings_TempDispCharArr,NULL,10);
-              tempInt = -tempInt;
-              itoa(tempInt, Settings_TempDispCharArr, 10);
-            }
-          break;
-        case SETTINGS_EDIT_TYPE_ULONG:
-            if (characterDelete) {
-              if (cursorPosition_X >= 0) {
-                Settings_TempDispCharArr[cursorPosition_X] = '\0';
-              }
-            } else if (KEYBOARD_NUMBER_KEYS) {
-              Settings_TempDispCharArr[cursorPosition_X] = keyboardInputChar;
-            }
-          break;
-        case SETTINGS_EDIT_TYPE_FLOAT:
-            // TODO this is not validated because we have no settings of type float in aprs settings
-            if (characterDelete) {
-              if (cursorPosition_X >= 0) {
-                Settings_TempDispCharArr[cursorPosition_X] = '\0';
-              }
-            } else if (KEYBOARD_NUMBER_KEYS || keyboardInputChar == KEYBOARD_PERIOD_KEY) {
-              Settings_TempDispCharArr[cursorPosition_X] = keyboardInputChar;
-            } else if (keyboardInputChar == KEYBOARD_MINUS_KEY) {
-              double tempDouble = strtod(Settings_TempDispCharArr,NULL);
-              tempDouble = -tempDouble;
-              dtostrf(tempDouble,3,6,Settings_TempDispCharArr); // https://www.programmingelectronics.com/dtostrf/
-            }
-          break;
-        case SETTINGS_EDIT_TYPE_STRING2:
-          if (characterDelete) {
-            if (cursorPosition_X >= 0) {
-              Settings_TempDispCharArr[cursorPosition_X] = '\0';
-            }
-          } else if KEYBOARD_PRINTABLE_CHARACTERS {
-            Settings_TempDispCharArr[cursorPosition_X] = keyboardInputChar;
-          }
-          break;
-        case SETTINGS_EDIT_TYPE_STRING7:
-          if (characterDelete) {
-            if (cursorPosition_X >= 0) {
-              Settings_TempDispCharArr[cursorPosition_X] = '\0';
-            }
-          } else if KEYBOARD_PRINTABLE_CHARACTERS {
-            Settings_TempDispCharArr[cursorPosition_X] = keyboardInputChar;
-          }
-          break;
-        case SETTINGS_EDIT_TYPE_STRING100:
-          if (characterDelete) {
-            if (cursorPosition_X >= 0) {
-              Settings_TempDispCharArr[cursorPosition_X] = '\0';
-            }
-          } else if KEYBOARD_PRINTABLE_CHARACTERS {
-            Settings_TempDispCharArr[cursorPosition_X] = keyboardInputChar;
-          }
-          break;
-        default:
-          break;
-      }
-      characterDelete = false;
+      handleDisplay_TempVarDisplay(Settings_Type_APRS[cursorPosition_Y]);
     } else if (keyboardInputChar == KEYBOARD_UP_KEY) {
       if (cursorPosition_Y > 0) {
         cursorPosition_Y--;
@@ -1384,99 +1483,11 @@ void handleDisplay_Settings_APRS(){
   if (keyboardInputChar == KEYBOARD_ENTER_KEY){
     if (editMode_Settings_APRS) {
       editMode_Settings_APRS = false;
-      cursorPosition_X = 0;
-      // apply edited values
-      switch (Settings_Type_APRS[cursorPosition_Y]) {
-        case SETTINGS_EDIT_TYPE_BOOLEAN:
-          if (Settings_TempDispCharArr[0] == 'T' || Settings_TempDispCharArr[0] == 't' || Settings_TempDispCharArr[0] == '1') {
-            Settings_TypeBool[Settings_TypeIndex_APRS[cursorPosition_Y]] = 1;
-          } else {
-            Settings_TypeBool[Settings_TypeIndex_APRS[cursorPosition_Y]] = 0;
-          }
-          break;
-        case SETTINGS_EDIT_TYPE_INT:
-            Settings_TypeInt[Settings_TypeIndex_APRS[cursorPosition_Y]] = strtoul(Settings_TempDispCharArr,NULL,10);
-          break;
-        case SETTINGS_EDIT_TYPE_UINT:
-            Settings_TypeUInt[Settings_TypeIndex_APRS[cursorPosition_Y]] = strtoul(Settings_TempDispCharArr,NULL,10);
-          break;
-        case SETTINGS_EDIT_TYPE_LONG:
-            Settings_TypeLong[Settings_TypeIndex_APRS[cursorPosition_Y]] = strtoul(Settings_TempDispCharArr,NULL,10);
-          break;
-        case SETTINGS_EDIT_TYPE_ULONG:
-            Settings_TypeULong[Settings_TypeIndex_APRS[cursorPosition_Y]] = strtoul(Settings_TempDispCharArr,NULL,10);
-          break;
-        case SETTINGS_EDIT_TYPE_FLOAT:
-            Settings_TypeFloat[Settings_TypeIndex_APRS[cursorPosition_Y]] = atof(Settings_TempDispCharArr);
-          break;
-        case SETTINGS_EDIT_TYPE_STRING2:
-          for (int i=0; i<sizeof(Settings_TypeString2[Settings_TypeIndex_APRS[cursorPosition_Y]]);i++) {
-            Settings_TypeString2[Settings_TypeIndex_APRS[cursorPosition_Y]][i] = Settings_TempDispCharArr[i];       
-          }
-          break;
-        case SETTINGS_EDIT_TYPE_STRING7:
-          for (int i=0; i<sizeof(Settings_TypeString7[Settings_TypeIndex_APRS[cursorPosition_Y]]);i++) {
-            Settings_TypeString7[Settings_TypeIndex_APRS[cursorPosition_Y]][i] = Settings_TempDispCharArr[i];       
-          }
-          break;
-        case SETTINGS_EDIT_TYPE_STRING100:
-          for (int i=0; i<sizeof(Settings_TypeString100[Settings_TypeIndex_APRS[cursorPosition_Y]]);i++) {
-            Settings_TypeString100[Settings_TypeIndex_APRS[cursorPosition_Y]][i] = Settings_TempDispCharArr[i];       
-          }
-          break;
-        default:
-          break;
-      }
+      handleDisplay_TempVarApply(Settings_Type_APRS[cursorPosition_Y],Settings_TypeIndex_APRS[cursorPosition_Y]);
     } else {
       // enable edit mode
       editMode_Settings_APRS = true;
-      // clear the char array first
-      for (int i=0; i<sizeof(Settings_TempDispCharArr);i++) {
-        Settings_TempDispCharArr[i] = '\0';
-      }
-      // copy data to temp variable
-      switch (Settings_Type_APRS[cursorPosition_Y]) {
-        case SETTINGS_EDIT_TYPE_BOOLEAN:
-          if (Settings_TypeBool[Settings_TypeIndex_APRS[cursorPosition_Y]]) {
-            strcpy(Settings_TempDispCharArr, "True");
-          } else {
-            strcpy(Settings_TempDispCharArr, "False");
-          }
-          break;
-        case SETTINGS_EDIT_TYPE_INT:
-          itoa(Settings_TypeInt[Settings_TypeIndex_APRS[cursorPosition_Y]],Settings_TempDispCharArr,10);
-          break;
-        case SETTINGS_EDIT_TYPE_UINT:
-          // TODO find a way to do this with an unsigned integer (dont use itoa)
-          itoa(Settings_TypeUInt[Settings_TypeIndex_APRS[cursorPosition_Y]],Settings_TempDispCharArr,10);
-          break;
-        case SETTINGS_EDIT_TYPE_LONG:
-          ltoa(Settings_TypeLong[Settings_TypeIndex_APRS[cursorPosition_Y]],Settings_TempDispCharArr,10);
-          break;
-        case SETTINGS_EDIT_TYPE_ULONG:
-          ultoa(Settings_TypeULong[Settings_TypeIndex_APRS[cursorPosition_Y]],Settings_TempDispCharArr,10);
-          break;
-        case SETTINGS_EDIT_TYPE_FLOAT:
-          dtostrf(Settings_TypeFloat[Settings_TypeIndex_APRS[cursorPosition_Y]],3,6,Settings_TempDispCharArr);
-          break;
-        case SETTINGS_EDIT_TYPE_STRING2:
-          for (int i=0; i<strlen(Settings_TypeString2[Settings_TypeIndex_APRS[cursorPosition_Y]]);i++) {
-            Settings_TempDispCharArr[i] = Settings_TypeString2[Settings_TypeIndex_APRS[cursorPosition_Y]][i];       
-          }
-          break;
-        case SETTINGS_EDIT_TYPE_STRING7:
-          for (int i=0; i<strlen(Settings_TypeString7[Settings_TypeIndex_APRS[cursorPosition_Y]]);i++) {
-            Settings_TempDispCharArr[i] = Settings_TypeString7[Settings_TypeIndex_APRS[cursorPosition_Y]][i];       
-          }
-          break;
-        case SETTINGS_EDIT_TYPE_STRING100:
-          for (int i=0; i<strlen(Settings_TypeString100[Settings_TypeIndex_APRS[cursorPosition_Y]]);i++) {
-            Settings_TempDispCharArr[i] = Settings_TypeString100[Settings_TypeIndex_APRS[cursorPosition_Y]][i];       
-          }
-          break;
-        default:
-          break;
-      }
+      handleDisplay_TempVarCopy(Settings_Type_APRS[cursorPosition_Y],Settings_TypeIndex_APRS[cursorPosition_Y]);
     }
   }
   if (keyboardInputChar == KEYBOARD_ESCAPE_KEY){
@@ -1624,129 +1635,7 @@ void handleDisplay_Settings_GPS(){
   // handle button context for current display
   if (KEYBOARD_PRINTABLE_CHARACTERS || KEYBOARD_DIRECTIONAL_KEYS || keyboardInputChar == KEYBOARD_BACKSPACE_KEY) {
     if (editMode_Settings_GPS){
-      bool characterDelete = false;
-      if (keyboardInputChar == KEYBOARD_LEFT_KEY) {
-        if (cursorPosition_X > 0) { 
-          cursorPosition_X--;
-        } else {
-          cursorPosition_X=Settings_EditValueSize;
-        }
-      }
-      if (keyboardInputChar == KEYBOARD_RIGHT_KEY) {
-        if (cursorPosition_X < Settings_EditValueSize) { 
-          cursorPosition_X++;
-        } else {
-          cursorPosition_X=0;
-        }
-      }
-      if (keyboardInputChar == KEYBOARD_BACKSPACE_KEY){
-        if (cursorPosition_X > 0) { 
-          cursorPosition_X--;
-          characterDelete = true;
-        }
-      }
-      
-      switch (Settings_Type_GPS[cursorPosition_Y]) {
-        case SETTINGS_EDIT_TYPE_BOOLEAN:
-          if (keyboardInputChar == KEYBOARD_DOWN_KEY) {
-            if (Settings_TempDispCharArr[0] == 'T' || Settings_TempDispCharArr[0] == 't' || Settings_TempDispCharArr[0] == '1') {
-              strcpy(Settings_TempDispCharArr, "False");
-            } else {
-              strcpy(Settings_TempDispCharArr, "True");
-            }
-          }
-          break;
-        case SETTINGS_EDIT_TYPE_INT:
-            // TODO this is not validated because we have no settings of type int
-            if (characterDelete) {
-              if (cursorPosition_X >= 0) {
-                Settings_TempDispCharArr[cursorPosition_X] = '\0';
-              }
-            } else if (KEYBOARD_NUMBER_KEYS) {
-              Settings_TempDispCharArr[cursorPosition_X] = keyboardInputChar;
-            } else if (keyboardInputChar == KEYBOARD_MINUS_KEY) {
-              int tempInt = strtoul(Settings_TempDispCharArr,NULL,10);
-              tempInt = -tempInt;
-              itoa(tempInt, Settings_TempDispCharArr, 10);
-            }
-          break;
-        case SETTINGS_EDIT_TYPE_UINT:
-            if (characterDelete) {
-              if (cursorPosition_X >= 0) {
-                Settings_TempDispCharArr[cursorPosition_X] = '\0';
-              }
-            } else if (KEYBOARD_NUMBER_KEYS) {
-              Settings_TempDispCharArr[cursorPosition_X] = keyboardInputChar;
-            }
-          break;
-        case SETTINGS_EDIT_TYPE_LONG:
-            // TODO this is not validated because we have no settings of type long
-            if (characterDelete) {
-              if (cursorPosition_X >= 0) {
-                Settings_TempDispCharArr[cursorPosition_X] = '\0';
-              }
-            } else if (KEYBOARD_NUMBER_KEYS) {
-              Settings_TempDispCharArr[cursorPosition_X] = keyboardInputChar;
-            } else if (keyboardInputChar == KEYBOARD_MINUS_KEY) {
-              int tempInt = strtoul(Settings_TempDispCharArr,NULL,10);
-              tempInt = -tempInt;
-              itoa(tempInt, Settings_TempDispCharArr, 10);
-            }
-          break;
-        case SETTINGS_EDIT_TYPE_ULONG:
-            if (characterDelete) {
-              if (cursorPosition_X >= 0) {
-                Settings_TempDispCharArr[cursorPosition_X] = '\0';
-              }
-            } else if (KEYBOARD_NUMBER_KEYS) {
-              Settings_TempDispCharArr[cursorPosition_X] = keyboardInputChar;
-            }
-          break;
-        case SETTINGS_EDIT_TYPE_FLOAT:
-            // TODO this is not validated because we have no settings of type float in GPS settings
-            if (characterDelete) {
-              if (cursorPosition_X >= 0) {
-                Settings_TempDispCharArr[cursorPosition_X] = '\0';
-              }
-            } else if (KEYBOARD_NUMBER_KEYS || keyboardInputChar == KEYBOARD_PERIOD_KEY) {
-              Settings_TempDispCharArr[cursorPosition_X] = keyboardInputChar;
-            } else if (keyboardInputChar == KEYBOARD_MINUS_KEY) {
-              double tempDouble = strtod(Settings_TempDispCharArr,NULL);
-              tempDouble = -tempDouble;
-              dtostrf(tempDouble,3,6,Settings_TempDispCharArr); // https://www.programmingelectronics.com/dtostrf/
-            }
-          break;
-        case SETTINGS_EDIT_TYPE_STRING2:
-          if (characterDelete) {
-            if (cursorPosition_X >= 0) {
-              Settings_TempDispCharArr[cursorPosition_X] = '\0';
-            }
-          } else if KEYBOARD_PRINTABLE_CHARACTERS {
-            Settings_TempDispCharArr[cursorPosition_X] = keyboardInputChar;
-          }
-          break;
-        case SETTINGS_EDIT_TYPE_STRING7:
-          if (characterDelete) {
-            if (cursorPosition_X >= 0) {
-              Settings_TempDispCharArr[cursorPosition_X] = '\0';
-            }
-          } else if KEYBOARD_PRINTABLE_CHARACTERS {
-            Settings_TempDispCharArr[cursorPosition_X] = keyboardInputChar;
-          }
-          break;
-        case SETTINGS_EDIT_TYPE_STRING100:
-          if (characterDelete) {
-            if (cursorPosition_X >= 0) {
-              Settings_TempDispCharArr[cursorPosition_X] = '\0';
-            }
-          } else if KEYBOARD_PRINTABLE_CHARACTERS {
-            Settings_TempDispCharArr[cursorPosition_X] = keyboardInputChar;
-          }
-          break;
-        default:
-          break;
-      }
-      characterDelete = false;
+      handleDisplay_TempVarDisplay(Settings_Type_GPS[cursorPosition_Y]);
     } else if (keyboardInputChar == KEYBOARD_UP_KEY) {
       if (cursorPosition_Y > 0) {
         cursorPosition_Y--;
@@ -1764,99 +1653,11 @@ void handleDisplay_Settings_GPS(){
   if (keyboardInputChar == KEYBOARD_ENTER_KEY){
     if (editMode_Settings_GPS) {
       editMode_Settings_GPS = false;
-      cursorPosition_X = 0;
-      // apply edited values
-      switch (Settings_Type_GPS[cursorPosition_Y]) {
-        case SETTINGS_EDIT_TYPE_BOOLEAN:
-          if (Settings_TempDispCharArr[0] == 'T' || Settings_TempDispCharArr[0] == 't' || Settings_TempDispCharArr[0] == '1') {
-            Settings_TypeBool[Settings_TypeIndex_GPS[cursorPosition_Y]] = 1;
-          } else {
-            Settings_TypeBool[Settings_TypeIndex_GPS[cursorPosition_Y]] = 0;
-          }
-          break;
-        case SETTINGS_EDIT_TYPE_INT:
-            Settings_TypeInt[Settings_TypeIndex_GPS[cursorPosition_Y]] = strtoul(Settings_TempDispCharArr,NULL,10);
-          break;
-        case SETTINGS_EDIT_TYPE_UINT:
-            Settings_TypeUInt[Settings_TypeIndex_GPS[cursorPosition_Y]] = strtoul(Settings_TempDispCharArr,NULL,10);
-          break;
-        case SETTINGS_EDIT_TYPE_LONG:
-            Settings_TypeLong[Settings_TypeIndex_GPS[cursorPosition_Y]] = strtoul(Settings_TempDispCharArr,NULL,10);
-          break;
-        case SETTINGS_EDIT_TYPE_ULONG:
-            Settings_TypeULong[Settings_TypeIndex_GPS[cursorPosition_Y]] = strtoul(Settings_TempDispCharArr,NULL,10);
-          break;
-        case SETTINGS_EDIT_TYPE_FLOAT:
-            Settings_TypeFloat[Settings_TypeIndex_GPS[cursorPosition_Y]] = atof(Settings_TempDispCharArr);
-          break;
-        case SETTINGS_EDIT_TYPE_STRING2:
-          for (int i=0; i<sizeof(Settings_TypeString2[Settings_TypeIndex_GPS[cursorPosition_Y]]);i++) {
-            Settings_TypeString2[Settings_TypeIndex_GPS[cursorPosition_Y]][i] = Settings_TempDispCharArr[i];       
-          }
-          break;
-        case SETTINGS_EDIT_TYPE_STRING7:
-          for (int i=0; i<sizeof(Settings_TypeString7[Settings_TypeIndex_GPS[cursorPosition_Y]]);i++) {
-            Settings_TypeString7[Settings_TypeIndex_GPS[cursorPosition_Y]][i] = Settings_TempDispCharArr[i];       
-          }
-          break;
-        case SETTINGS_EDIT_TYPE_STRING100:
-          for (int i=0; i<sizeof(Settings_TypeString100[Settings_TypeIndex_GPS[cursorPosition_Y]]);i++) {
-            Settings_TypeString100[Settings_TypeIndex_GPS[cursorPosition_Y]][i] = Settings_TempDispCharArr[i];       
-          }
-          break;
-        default:
-          break;
-      }
+      handleDisplay_TempVarApply(Settings_Type_GPS[cursorPosition_Y],Settings_TypeIndex_GPS[cursorPosition_Y]);
     } else {
       // enable edit mode
       editMode_Settings_GPS = true;
-      // clear the char array first
-      for (int i=0; i<sizeof(Settings_TempDispCharArr);i++) {
-        Settings_TempDispCharArr[i] = '\0';
-      }
-      // copy data to temp variable
-      switch (Settings_Type_GPS[cursorPosition_Y]) {
-        case SETTINGS_EDIT_TYPE_BOOLEAN:
-          if (Settings_TypeBool[Settings_TypeIndex_GPS[cursorPosition_Y]]) {
-            strcpy(Settings_TempDispCharArr, "True");
-          } else {
-            strcpy(Settings_TempDispCharArr, "False");
-          }
-          break;
-        case SETTINGS_EDIT_TYPE_INT:
-          itoa(Settings_TypeInt[Settings_TypeIndex_GPS[cursorPosition_Y]],Settings_TempDispCharArr,10);
-          break;
-        case SETTINGS_EDIT_TYPE_UINT:
-          // TODO find a way to do this with an unsigned integer (dont use itoa)
-          itoa(Settings_TypeUInt[Settings_TypeIndex_GPS[cursorPosition_Y]],Settings_TempDispCharArr,10);
-          break;
-        case SETTINGS_EDIT_TYPE_LONG:
-          ltoa(Settings_TypeLong[Settings_TypeIndex_GPS[cursorPosition_Y]],Settings_TempDispCharArr,10);
-          break;
-        case SETTINGS_EDIT_TYPE_ULONG:
-          ultoa(Settings_TypeULong[Settings_TypeIndex_GPS[cursorPosition_Y]],Settings_TempDispCharArr,10);
-          break;
-        case SETTINGS_EDIT_TYPE_FLOAT:
-          dtostrf(Settings_TypeFloat[Settings_TypeIndex_GPS[cursorPosition_Y]],3,6,Settings_TempDispCharArr);
-          break;
-        case SETTINGS_EDIT_TYPE_STRING2:
-          for (int i=0; i<strlen(Settings_TypeString2[Settings_TypeIndex_GPS[cursorPosition_Y]]);i++) {
-            Settings_TempDispCharArr[i] = Settings_TypeString2[Settings_TypeIndex_GPS[cursorPosition_Y]][i];       
-          }
-          break;
-        case SETTINGS_EDIT_TYPE_STRING7:
-          for (int i=0; i<strlen(Settings_TypeString7[Settings_TypeIndex_GPS[cursorPosition_Y]]);i++) {
-            Settings_TempDispCharArr[i] = Settings_TypeString7[Settings_TypeIndex_GPS[cursorPosition_Y]][i];       
-          }
-          break;
-        case SETTINGS_EDIT_TYPE_STRING100:
-          for (int i=0; i<strlen(Settings_TypeString100[Settings_TypeIndex_GPS[cursorPosition_Y]]);i++) {
-            Settings_TempDispCharArr[i] = Settings_TypeString100[Settings_TypeIndex_GPS[cursorPosition_Y]][i];       
-          }
-          break;
-        default:
-          break;
-      }
+      handleDisplay_TempVarCopy(Settings_Type_GPS[cursorPosition_Y],Settings_TypeIndex_GPS[cursorPosition_Y]);
     }
   }
   if (keyboardInputChar == KEYBOARD_ESCAPE_KEY){
@@ -2004,129 +1805,7 @@ void handleDisplay_Settings_Display(){
   // handle button context for current display
   if (KEYBOARD_PRINTABLE_CHARACTERS || KEYBOARD_DIRECTIONAL_KEYS || keyboardInputChar == KEYBOARD_BACKSPACE_KEY) {
     if (editMode_Settings_Display){
-      bool characterDelete = false;
-      if (keyboardInputChar == KEYBOARD_LEFT_KEY) {
-        if (cursorPosition_X > 0) { 
-          cursorPosition_X--;
-        } else {
-          cursorPosition_X=Settings_EditValueSize;
-        }
-      }
-      if (keyboardInputChar == KEYBOARD_RIGHT_KEY) {
-        if (cursorPosition_X < Settings_EditValueSize) { 
-          cursorPosition_X++;
-        } else {
-          cursorPosition_X=0;
-        }
-      }
-      if (keyboardInputChar == KEYBOARD_BACKSPACE_KEY){
-        if (cursorPosition_X > 0) { 
-          cursorPosition_X--;
-          characterDelete = true;
-        }
-      }
-      
-      switch (Settings_Type_Display[cursorPosition_Y]) {
-        case SETTINGS_EDIT_TYPE_BOOLEAN:
-          if (keyboardInputChar == KEYBOARD_DOWN_KEY) {
-            if (Settings_TempDispCharArr[0] == 'T' || Settings_TempDispCharArr[0] == 't' || Settings_TempDispCharArr[0] == '1') {
-              strcpy(Settings_TempDispCharArr, "False");
-            } else {
-              strcpy(Settings_TempDispCharArr, "True");
-            }
-          }
-          break;
-        case SETTINGS_EDIT_TYPE_INT:
-            // TODO this is not validated because we have no settings of type int
-            if (characterDelete) {
-              if (cursorPosition_X >= 0) {
-                Settings_TempDispCharArr[cursorPosition_X] = '\0';
-              }
-            } else if (KEYBOARD_NUMBER_KEYS) {
-              Settings_TempDispCharArr[cursorPosition_X] = keyboardInputChar;
-            } else if (keyboardInputChar == KEYBOARD_MINUS_KEY) {
-              int tempInt = strtoul(Settings_TempDispCharArr,NULL,10);
-              tempInt = -tempInt;
-              itoa(tempInt, Settings_TempDispCharArr, 10);
-            }
-          break;
-        case SETTINGS_EDIT_TYPE_UINT:
-            if (characterDelete) {
-              if (cursorPosition_X >= 0) {
-                Settings_TempDispCharArr[cursorPosition_X] = '\0';
-              }
-            } else if (KEYBOARD_NUMBER_KEYS) {
-              Settings_TempDispCharArr[cursorPosition_X] = keyboardInputChar;
-            }
-          break;
-        case SETTINGS_EDIT_TYPE_LONG:
-            // TODO this is not validated because we have no settings of type long
-            if (characterDelete) {
-              if (cursorPosition_X >= 0) {
-                Settings_TempDispCharArr[cursorPosition_X] = '\0';
-              }
-            } else if (KEYBOARD_NUMBER_KEYS) {
-              Settings_TempDispCharArr[cursorPosition_X] = keyboardInputChar;
-            } else if (keyboardInputChar == KEYBOARD_MINUS_KEY) {
-              int tempInt = strtoul(Settings_TempDispCharArr,NULL,10);
-              tempInt = -tempInt;
-              itoa(tempInt, Settings_TempDispCharArr, 10);
-            }
-          break;
-        case SETTINGS_EDIT_TYPE_ULONG:
-            if (characterDelete) {
-              if (cursorPosition_X >= 0) {
-                Settings_TempDispCharArr[cursorPosition_X] = '\0';
-              }
-            } else if (KEYBOARD_NUMBER_KEYS) {
-              Settings_TempDispCharArr[cursorPosition_X] = keyboardInputChar;
-            }
-          break;
-        case SETTINGS_EDIT_TYPE_FLOAT:
-            // TODO this is not validated because we have no settings of type float in Display settings
-            if (characterDelete) {
-              if (cursorPosition_X >= 0) {
-                Settings_TempDispCharArr[cursorPosition_X] = '\0';
-              }
-            } else if (KEYBOARD_NUMBER_KEYS || keyboardInputChar == KEYBOARD_PERIOD_KEY) {
-              Settings_TempDispCharArr[cursorPosition_X] = keyboardInputChar;
-            } else if (keyboardInputChar == KEYBOARD_MINUS_KEY) {
-              double tempDouble = strtod(Settings_TempDispCharArr,NULL);
-              tempDouble = -tempDouble;
-              dtostrf(tempDouble,3,6,Settings_TempDispCharArr); // https://www.programmingelectronics.com/dtostrf/
-            }
-          break;
-        case SETTINGS_EDIT_TYPE_STRING2:
-          if (characterDelete) {
-            if (cursorPosition_X >= 0) {
-              Settings_TempDispCharArr[cursorPosition_X] = '\0';
-            }
-          } else if KEYBOARD_PRINTABLE_CHARACTERS {
-            Settings_TempDispCharArr[cursorPosition_X] = keyboardInputChar;
-          }
-          break;
-        case SETTINGS_EDIT_TYPE_STRING7:
-          if (characterDelete) {
-            if (cursorPosition_X >= 0) {
-              Settings_TempDispCharArr[cursorPosition_X] = '\0';
-            }
-          } else if KEYBOARD_PRINTABLE_CHARACTERS {
-            Settings_TempDispCharArr[cursorPosition_X] = keyboardInputChar;
-          }
-          break;
-        case SETTINGS_EDIT_TYPE_STRING100:
-          if (characterDelete) {
-            if (cursorPosition_X >= 0) {
-              Settings_TempDispCharArr[cursorPosition_X] = '\0';
-            }
-          } else if KEYBOARD_PRINTABLE_CHARACTERS {
-            Settings_TempDispCharArr[cursorPosition_X] = keyboardInputChar;
-          }
-          break;
-        default:
-          break;
-      }
-      characterDelete = false;
+      handleDisplay_TempVarDisplay(Settings_Type_Display[cursorPosition_Y]);
     } else if (keyboardInputChar == KEYBOARD_UP_KEY) {
       if (cursorPosition_Y > 0) {
         cursorPosition_Y--;
@@ -2144,99 +1823,11 @@ void handleDisplay_Settings_Display(){
   if (keyboardInputChar == KEYBOARD_ENTER_KEY){
     if (editMode_Settings_Display) {
       editMode_Settings_Display = false;
-      cursorPosition_X = 0;
-      // apply edited values
-      switch (Settings_Type_Display[cursorPosition_Y]) {
-        case SETTINGS_EDIT_TYPE_BOOLEAN:
-          if (Settings_TempDispCharArr[0] == 'T' || Settings_TempDispCharArr[0] == 't' || Settings_TempDispCharArr[0] == '1') {
-            Settings_TypeBool[Settings_TypeIndex_Display[cursorPosition_Y]] = 1;
-          } else {
-            Settings_TypeBool[Settings_TypeIndex_Display[cursorPosition_Y]] = 0;
-          }
-          break;
-        case SETTINGS_EDIT_TYPE_INT:
-            Settings_TypeInt[Settings_TypeIndex_Display[cursorPosition_Y]] = strtoul(Settings_TempDispCharArr,NULL,10);
-          break;
-        case SETTINGS_EDIT_TYPE_UINT:
-            Settings_TypeUInt[Settings_TypeIndex_Display[cursorPosition_Y]] = strtoul(Settings_TempDispCharArr,NULL,10);
-          break;
-        case SETTINGS_EDIT_TYPE_LONG:
-            Settings_TypeLong[Settings_TypeIndex_Display[cursorPosition_Y]] = strtoul(Settings_TempDispCharArr,NULL,10);
-          break;
-        case SETTINGS_EDIT_TYPE_ULONG:
-            Settings_TypeULong[Settings_TypeIndex_Display[cursorPosition_Y]] = strtoul(Settings_TempDispCharArr,NULL,10);
-          break;
-        case SETTINGS_EDIT_TYPE_FLOAT:
-            Settings_TypeFloat[Settings_TypeIndex_Display[cursorPosition_Y]] = atof(Settings_TempDispCharArr);
-          break;
-        case SETTINGS_EDIT_TYPE_STRING2:
-          for (int i=0; i<sizeof(Settings_TypeString2[Settings_TypeIndex_Display[cursorPosition_Y]]);i++) {
-            Settings_TypeString2[Settings_TypeIndex_Display[cursorPosition_Y]][i] = Settings_TempDispCharArr[i];       
-          }
-          break;
-        case SETTINGS_EDIT_TYPE_STRING7:
-          for (int i=0; i<sizeof(Settings_TypeString7[Settings_TypeIndex_Display[cursorPosition_Y]]);i++) {
-            Settings_TypeString7[Settings_TypeIndex_Display[cursorPosition_Y]][i] = Settings_TempDispCharArr[i];       
-          }
-          break;
-        case SETTINGS_EDIT_TYPE_STRING100:
-          for (int i=0; i<sizeof(Settings_TypeString100[Settings_TypeIndex_Display[cursorPosition_Y]]);i++) {
-            Settings_TypeString100[Settings_TypeIndex_Display[cursorPosition_Y]][i] = Settings_TempDispCharArr[i];       
-          }
-          break;
-        default:
-          break;
-      }
+      handleDisplay_TempVarApply(Settings_Type_Display[cursorPosition_Y],Settings_TypeIndex_Display[cursorPosition_Y]);
     } else {
       // enable edit mode
       editMode_Settings_Display = true;
-      // clear the char array first
-      for (int i=0; i<sizeof(Settings_TempDispCharArr);i++) {
-        Settings_TempDispCharArr[i] = '\0';
-      }
-      // copy data to temp variable
-      switch (Settings_Type_Display[cursorPosition_Y]) {
-        case SETTINGS_EDIT_TYPE_BOOLEAN:
-          if (Settings_TypeBool[Settings_TypeIndex_Display[cursorPosition_Y]]) {
-            strcpy(Settings_TempDispCharArr, "True");
-          } else {
-            strcpy(Settings_TempDispCharArr, "False");
-          }
-          break;
-        case SETTINGS_EDIT_TYPE_INT:
-          itoa(Settings_TypeInt[Settings_TypeIndex_Display[cursorPosition_Y]],Settings_TempDispCharArr,10);
-          break;
-        case SETTINGS_EDIT_TYPE_UINT:
-          // TODO find a way to do this with an unsigned integer (dont use itoa)
-          itoa(Settings_TypeUInt[Settings_TypeIndex_Display[cursorPosition_Y]],Settings_TempDispCharArr,10);
-          break;
-        case SETTINGS_EDIT_TYPE_LONG:
-          ltoa(Settings_TypeLong[Settings_TypeIndex_Display[cursorPosition_Y]],Settings_TempDispCharArr,10);
-          break;
-        case SETTINGS_EDIT_TYPE_ULONG:
-          ultoa(Settings_TypeULong[Settings_TypeIndex_Display[cursorPosition_Y]],Settings_TempDispCharArr,10);
-          break;
-        case SETTINGS_EDIT_TYPE_FLOAT:
-          dtostrf(Settings_TypeFloat[Settings_TypeIndex_Display[cursorPosition_Y]],3,6,Settings_TempDispCharArr);
-          break;
-        case SETTINGS_EDIT_TYPE_STRING2:
-          for (int i=0; i<strlen(Settings_TypeString2[Settings_TypeIndex_Display[cursorPosition_Y]]);i++) {
-            Settings_TempDispCharArr[i] = Settings_TypeString2[Settings_TypeIndex_Display[cursorPosition_Y]][i];       
-          }
-          break;
-        case SETTINGS_EDIT_TYPE_STRING7:
-          for (int i=0; i<strlen(Settings_TypeString7[Settings_TypeIndex_Display[cursorPosition_Y]]);i++) {
-            Settings_TempDispCharArr[i] = Settings_TypeString7[Settings_TypeIndex_Display[cursorPosition_Y]][i];       
-          }
-          break;
-        case SETTINGS_EDIT_TYPE_STRING100:
-          for (int i=0; i<strlen(Settings_TypeString100[Settings_TypeIndex_Display[cursorPosition_Y]]);i++) {
-            Settings_TempDispCharArr[i] = Settings_TypeString100[Settings_TypeIndex_Display[cursorPosition_Y]][i];       
-          }
-          break;
-        default:
-          break;
-      }
+      handleDisplay_TempVarCopy(Settings_Type_Display[cursorPosition_Y],Settings_TypeIndex_Display[cursorPosition_Y]);
     }
   }
   if (keyboardInputChar == KEYBOARD_ESCAPE_KEY){
