@@ -1286,9 +1286,9 @@ void handleDisplay_Settings_APRS(){
             } else if (KEYBOARD_NUMBER_KEYS) {
               Settings_TempDispCharArr[cursorPosition_X] = keyboardInputChar;
             } else if (keyboardInputChar == KEYBOARD_MINUS_KEY) {
-              int tempInt = strtoul(Settings_TempDispCharArr[cursorPosition_X],NULL,10);
-              tempInt = tempInt / -1;
-              itoa(tempInt, Settings_TempDispCharArr[cursorPosition_X], 10);
+              int tempInt = strtoul(Settings_TempDispCharArr,NULL,10);
+              tempInt = -tempInt;
+              itoa(tempInt, Settings_TempDispCharArr, 10);
             }
           break;
         case SETTINGS_EDIT_TYPE_UINT:
@@ -1309,9 +1309,9 @@ void handleDisplay_Settings_APRS(){
             } else if (KEYBOARD_NUMBER_KEYS) {
               Settings_TempDispCharArr[cursorPosition_X] = keyboardInputChar;
             } else if (keyboardInputChar == KEYBOARD_MINUS_KEY) {
-              int tempInt = strtoul(Settings_TempDispCharArr[cursorPosition_X],NULL,10);
-              tempInt = tempInt / -1;
-              itoa(tempInt, Settings_TempDispCharArr[cursorPosition_X], 10);
+              int tempInt = strtoul(Settings_TempDispCharArr,NULL,10);
+              tempInt = -tempInt;
+              itoa(tempInt, Settings_TempDispCharArr, 10);
             }
           break;
         case SETTINGS_EDIT_TYPE_ULONG:
@@ -1329,12 +1329,12 @@ void handleDisplay_Settings_APRS(){
               if (cursorPosition_X >= 0) {
                 Settings_TempDispCharArr[cursorPosition_X] = '\0';
               }
-            } else if (KEYBOARD_NUMBER_KEYS || keyboardInputChar <= KEYBOARD_PERIOD_KEY) {
+            } else if (KEYBOARD_NUMBER_KEYS || keyboardInputChar == KEYBOARD_PERIOD_KEY) {
               Settings_TempDispCharArr[cursorPosition_X] = keyboardInputChar;
             } else if (keyboardInputChar == KEYBOARD_MINUS_KEY) {
-              double tempDouble = strtod(Settings_TempDispCharArr[cursorPosition_X],NULL);
-              tempDouble = tempDouble / -1.0;
-              dtostrf(tempDouble,3,6,Settings_TempDispCharArr[cursorPosition_X]); // https://www.programmingelectronics.com/dtostrf/
+              double tempDouble = strtod(Settings_TempDispCharArr,NULL);
+              tempDouble = -tempDouble;
+              dtostrf(tempDouble,3,6,Settings_TempDispCharArr); // https://www.programmingelectronics.com/dtostrf/
             }
           break;
         case SETTINGS_EDIT_TYPE_STRING2:
@@ -1666,9 +1666,9 @@ void handleDisplay_Settings_GPS(){
             } else if (KEYBOARD_NUMBER_KEYS) {
               Settings_TempDispCharArr[cursorPosition_X] = keyboardInputChar;
             } else if (keyboardInputChar == KEYBOARD_MINUS_KEY) {
-              int tempInt = strtoul(Settings_TempDispCharArr[cursorPosition_X],NULL,10);
-              tempInt = tempInt / -1;
-              itoa(tempInt, Settings_TempDispCharArr[cursorPosition_X], 10);
+              int tempInt = strtoul(Settings_TempDispCharArr,NULL,10);
+              tempInt = -tempInt;
+              itoa(tempInt, Settings_TempDispCharArr, 10);
             }
           break;
         case SETTINGS_EDIT_TYPE_UINT:
@@ -1689,9 +1689,9 @@ void handleDisplay_Settings_GPS(){
             } else if (KEYBOARD_NUMBER_KEYS) {
               Settings_TempDispCharArr[cursorPosition_X] = keyboardInputChar;
             } else if (keyboardInputChar == KEYBOARD_MINUS_KEY) {
-              int tempInt = strtoul(Settings_TempDispCharArr[cursorPosition_X],NULL,10);
-              tempInt = tempInt / -1;
-              itoa(tempInt, Settings_TempDispCharArr[cursorPosition_X], 10);
+              int tempInt = strtoul(Settings_TempDispCharArr,NULL,10);
+              tempInt = -tempInt;
+              itoa(tempInt, Settings_TempDispCharArr, 10);
             }
           break;
         case SETTINGS_EDIT_TYPE_ULONG:
@@ -1709,12 +1709,12 @@ void handleDisplay_Settings_GPS(){
               if (cursorPosition_X >= 0) {
                 Settings_TempDispCharArr[cursorPosition_X] = '\0';
               }
-            } else if (KEYBOARD_NUMBER_KEYS || keyboardInputChar <= KEYBOARD_PERIOD_KEY) {
+            } else if (KEYBOARD_NUMBER_KEYS || keyboardInputChar == KEYBOARD_PERIOD_KEY) {
               Settings_TempDispCharArr[cursorPosition_X] = keyboardInputChar;
             } else if (keyboardInputChar == KEYBOARD_MINUS_KEY) {
-              double tempDouble = strtod(Settings_TempDispCharArr[cursorPosition_X],NULL);
-              tempDouble = tempDouble / -1.0;
-              dtostrf(tempDouble,3,6,Settings_TempDispCharArr[cursorPosition_X]); // https://www.programmingelectronics.com/dtostrf/
+              double tempDouble = strtod(Settings_TempDispCharArr,NULL);
+              tempDouble = -tempDouble;
+              dtostrf(tempDouble,3,6,Settings_TempDispCharArr); // https://www.programmingelectronics.com/dtostrf/
             }
           break;
         case SETTINGS_EDIT_TYPE_STRING2:
@@ -2046,9 +2046,9 @@ void handleDisplay_Settings_Display(){
             } else if (KEYBOARD_NUMBER_KEYS) {
               Settings_TempDispCharArr[cursorPosition_X] = keyboardInputChar;
             } else if (keyboardInputChar == KEYBOARD_MINUS_KEY) {
-              int tempInt = strtoul(Settings_TempDispCharArr[cursorPosition_X],NULL,10);
-              tempInt = tempInt / -1;
-              itoa(tempInt, Settings_TempDispCharArr[cursorPosition_X], 10);
+              int tempInt = strtoul(Settings_TempDispCharArr,NULL,10);
+              tempInt = -tempInt;
+              itoa(tempInt, Settings_TempDispCharArr, 10);
             }
           break;
         case SETTINGS_EDIT_TYPE_UINT:
@@ -2069,9 +2069,9 @@ void handleDisplay_Settings_Display(){
             } else if (KEYBOARD_NUMBER_KEYS) {
               Settings_TempDispCharArr[cursorPosition_X] = keyboardInputChar;
             } else if (keyboardInputChar == KEYBOARD_MINUS_KEY) {
-              int tempInt = strtoul(Settings_TempDispCharArr[cursorPosition_X],NULL,10);
-              tempInt = tempInt / -1;
-              itoa(tempInt, Settings_TempDispCharArr[cursorPosition_X], 10);
+              int tempInt = strtoul(Settings_TempDispCharArr,NULL,10);
+              tempInt = -tempInt;
+              itoa(tempInt, Settings_TempDispCharArr, 10);
             }
           break;
         case SETTINGS_EDIT_TYPE_ULONG:
@@ -2089,12 +2089,12 @@ void handleDisplay_Settings_Display(){
               if (cursorPosition_X >= 0) {
                 Settings_TempDispCharArr[cursorPosition_X] = '\0';
               }
-            } else if (KEYBOARD_NUMBER_KEYS || keyboardInputChar <= KEYBOARD_PERIOD_KEY) {
+            } else if (KEYBOARD_NUMBER_KEYS || keyboardInputChar == KEYBOARD_PERIOD_KEY) {
               Settings_TempDispCharArr[cursorPosition_X] = keyboardInputChar;
             } else if (keyboardInputChar == KEYBOARD_MINUS_KEY) {
-              double tempDouble = strtod(Settings_TempDispCharArr[cursorPosition_X],NULL);
-              tempDouble = tempDouble / -1.0;
-              dtostrf(tempDouble,3,6,Settings_TempDispCharArr[cursorPosition_X]); // https://www.programmingelectronics.com/dtostrf/
+              double tempDouble = strtod(Settings_TempDispCharArr,NULL);
+              tempDouble = -tempDouble;
+              dtostrf(tempDouble,3,6,Settings_TempDispCharArr); // https://www.programmingelectronics.com/dtostrf/
             }
           break;
         case SETTINGS_EDIT_TYPE_STRING2:
