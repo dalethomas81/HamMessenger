@@ -53,6 +53,8 @@ __CMD:Settings:Display:Scroll Speed:<0 to 65,535>__ | Speed in milliseconds that
 TODO (repo):
 - add schematics
 - add parts list
+- add menu layout
+- add instructions
 
 TODO (hardware):
 - add shielding to components (controller freezes if radio too close during Txing)
@@ -60,7 +62,7 @@ TODO (hardware):
 - design case
 
 TODO (software):
-- add edit functionality to GPS and Display settings
+- add "quick message" functionality. currently to send a message you need to use serial commands.
 - add ability to program the radio for 'plug-n-play' experience (is this possible?)
 
 Keyboard:
