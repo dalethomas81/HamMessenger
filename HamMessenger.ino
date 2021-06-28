@@ -211,7 +211,7 @@ long Voltage = 0;
 #define SETTINGS_EDIT_TYPE_STRING7      8
 #define SETTINGS_EDIT_TYPE_STRING100    9
                         
-const char *MenuItems_Settings[] = {"Settings - APRS","Settings - GPS","Settings - Display"};
+const char *MenuItems_Settings[] = {"Settings - APRS","Settings - GPS","Settings - Display","Settings - Test"};
 const char *MenuItems_Settings_APRS[] = {"Beacon Frequency","Raw Packet","Comment","Message","Recipient Callsign","Recipient SSID", "My Callsign","Callsign SSID", 
                                         "Destination Callsign", "Destination SSID", "PATH1 Callsign", "PATH1 SSID", "PATH2 Callsign", "PATH2 SSID",
                                         "Symbol", "Table", "Automatic ACK", "Preamble", "Tail"};
@@ -1474,36 +1474,23 @@ void handleDisplay_Settings(){
     display.clearDisplay();
     // add global objects to buffer
     handleDisplay_Global();
-    int selectionRow = 0;
-    switch (cursorPosition_Y) {
-      case 0:
-        selectionRow = UI_DISPLAY_ROW_02;
-        break;
-      case 1:
-        selectionRow = UI_DISPLAY_ROW_03;
-        break;
-      case 2:
-        selectionRow = UI_DISPLAY_ROW_04;
-        break;
-      default:
-        selectionRow = UI_DISPLAY_ROW_02;
-        break;
-    }
+    // determine the row
+    int selectionRow = handleDisplay_GetSelectionRow(cursorPosition_Y);
       
     display.setCursor(0,selectionRow);
     display.print(F(">"));
     
-    display.setCursor(6,UI_DISPLAY_ROW_02);
+    display.setCursor(6,UI_DISPLAY_ROW_01);
     display.print(MenuItems_Settings[cursorPosition_Y>3 ? cursorPosition_Y-3 : 0]); // if greater than 3, follow else normal
     
-    display.setCursor(6,UI_DISPLAY_ROW_03);
+    display.setCursor(6,UI_DISPLAY_ROW_02);
     display.print(MenuItems_Settings[cursorPosition_Y>3 ? cursorPosition_Y-2 : 1]);
     
-    display.setCursor(6,UI_DISPLAY_ROW_04);
+    display.setCursor(6,UI_DISPLAY_ROW_03);
     display.print(MenuItems_Settings[cursorPosition_Y>3 ? cursorPosition_Y-1 : 2]);
     
-    //display.setCursor(6,UI_DISPLAY_ROW_05);
-    //display.print(MenuItems_Settings[cursorPosition_Y>3 ? cursorPosition_Y-0 : 3]);
+    display.setCursor(6,UI_DISPLAY_ROW_04);
+    display.print(MenuItems_Settings[cursorPosition_Y>3 ? cursorPosition_Y-0 : 3]);
 
     // display all content from buffer
     display.display();
