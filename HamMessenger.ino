@@ -795,6 +795,53 @@ void handleDisplay_TempVarCopy(int SettingsType, int SettingsTypeIndex){
   }
 }
 
+void handleDisplay_PrintValStoredInMem(int SettingsType, int SettingsTypeIndex){
+  switch (SettingsType) {
+    case SETTINGS_EDIT_TYPE_BOOLEAN:
+      Settings_EditValueSize = 0;
+      if (Settings_TypeBool[SettingsTypeIndex]) {
+        display.print(F("True"));
+      } else {
+        display.print(F("False"));
+      }
+      break;
+    case SETTINGS_EDIT_TYPE_INT:
+      Settings_EditValueSize = numberOfDigits<int>(Settings_TypeInt[SettingsTypeIndex]);
+      display.print(Settings_TypeInt[SettingsTypeIndex]);
+      break;
+    case SETTINGS_EDIT_TYPE_UINT:
+      Settings_EditValueSize = numberOfDigits<unsigned int>(Settings_TypeUInt[SettingsTypeIndex]);
+      display.print(Settings_TypeUInt[SettingsTypeIndex]);
+      break;
+    case SETTINGS_EDIT_TYPE_LONG:
+      Settings_EditValueSize = numberOfDigits<long>(Settings_TypeLong[SettingsTypeIndex]);
+      display.print(Settings_TypeLong[SettingsTypeIndex]);
+      break;
+    case SETTINGS_EDIT_TYPE_ULONG:
+      Settings_EditValueSize = numberOfDigits<unsigned long>(Settings_TypeULong[SettingsTypeIndex]);
+      display.print(Settings_TypeULong[SettingsTypeIndex]);
+      break;
+    case SETTINGS_EDIT_TYPE_FLOAT:
+      Settings_EditValueSize = numberOfDigits<float>(Settings_TypeFloat[SettingsTypeIndex]);
+      display.print(Settings_TypeFloat[SettingsTypeIndex],6);
+      break;
+    case SETTINGS_EDIT_TYPE_STRING2:
+      Settings_EditValueSize = sizeof(Settings_TypeString2[SettingsTypeIndex]) - 1;
+      display.print(Settings_TypeString2[SettingsTypeIndex]);
+      break;
+    case SETTINGS_EDIT_TYPE_STRING7:
+      Settings_EditValueSize = sizeof(Settings_TypeString7[SettingsTypeIndex]) - 1;
+      display.print(Settings_TypeString7[SettingsTypeIndex]);
+      break;
+    case SETTINGS_EDIT_TYPE_STRING100:
+      Settings_EditValueSize = sizeof(Settings_TypeString100[SettingsTypeIndex]) - 1;
+      display.print(Settings_TypeString100[SettingsTypeIndex]);
+      break;
+    default:
+      break;
+  }
+}
+
 void handleDisplays(){ 
   if (millis() - display_refresh_timer > DISPLAY_REFRESH_RATE){
     displayRefresh_Global = true;
@@ -1522,51 +1569,8 @@ void handleDisplay_Settings_APRS(){
       Settings_EditValueSize = sizeof(Settings_TempDispCharArr) - 1;
       display.print(Settings_TempDispCharArr);
       cursorPosition_X = strlen(Settings_TempDispCharArr);
-    } else { // print value of setting stored in memory
-      switch (Settings_Type_APRS[cursorPosition_Y]) {
-        case SETTINGS_EDIT_TYPE_BOOLEAN:
-          Settings_EditValueSize = 0;
-          if (Settings_TypeBool[Settings_TypeIndex_APRS[cursorPosition_Y]]) {
-            display.print(F("True"));
-          } else {
-            display.print(F("False"));
-          }
-          break;
-        case SETTINGS_EDIT_TYPE_INT:
-          Settings_EditValueSize = numberOfDigits<int>(Settings_TypeInt[Settings_TypeIndex_APRS[cursorPosition_Y]]);
-          display.print(Settings_TypeInt[Settings_TypeIndex_APRS[cursorPosition_Y]]);
-          break;
-        case SETTINGS_EDIT_TYPE_UINT:
-          Settings_EditValueSize = numberOfDigits<unsigned int>(Settings_TypeUInt[Settings_TypeIndex_APRS[cursorPosition_Y]]);
-          display.print(Settings_TypeUInt[Settings_TypeIndex_APRS[cursorPosition_Y]]);
-          break;
-        case SETTINGS_EDIT_TYPE_LONG:
-          Settings_EditValueSize = numberOfDigits<long>(Settings_TypeLong[Settings_TypeIndex_APRS[cursorPosition_Y]]);
-          display.print(Settings_TypeLong[Settings_TypeIndex_APRS[cursorPosition_Y]]);
-          break;
-        case SETTINGS_EDIT_TYPE_ULONG:
-          Settings_EditValueSize = numberOfDigits<unsigned long>(Settings_TypeULong[Settings_TypeIndex_APRS[cursorPosition_Y]]);
-          display.print(Settings_TypeULong[Settings_TypeIndex_APRS[cursorPosition_Y]]);
-          break;
-        case SETTINGS_EDIT_TYPE_FLOAT:
-          Settings_EditValueSize = numberOfDigits<float>(Settings_TypeFloat[Settings_TypeIndex_APRS[cursorPosition_Y]]);
-          display.print(Settings_TypeFloat[Settings_TypeIndex_APRS[cursorPosition_Y]],6);
-          break;
-        case SETTINGS_EDIT_TYPE_STRING2:
-          Settings_EditValueSize = sizeof(Settings_TypeString2[Settings_TypeIndex_APRS[cursorPosition_Y]]) - 1;
-          display.print(Settings_TypeString2[Settings_TypeIndex_APRS[cursorPosition_Y]]);
-          break;
-        case SETTINGS_EDIT_TYPE_STRING7:
-          Settings_EditValueSize = sizeof(Settings_TypeString7[Settings_TypeIndex_APRS[cursorPosition_Y]]) - 1;
-          display.print(Settings_TypeString7[Settings_TypeIndex_APRS[cursorPosition_Y]]);
-          break;
-        case SETTINGS_EDIT_TYPE_STRING100:
-          Settings_EditValueSize = sizeof(Settings_TypeString100[Settings_TypeIndex_APRS[cursorPosition_Y]]) - 1;
-          display.print(Settings_TypeString100[Settings_TypeIndex_APRS[cursorPosition_Y]]);
-          break;
-        default:
-          break;
-      }
+    } else {
+      handleDisplay_PrintValStoredInMem(Settings_Type_APRS[cursorPosition_Y],Settings_TypeIndex_APRS[cursorPosition_Y]);
     }
     
     int selectionRow = 0;
@@ -1692,51 +1696,8 @@ void handleDisplay_Settings_GPS(){
       Settings_EditValueSize = sizeof(Settings_TempDispCharArr) - 1;
       display.print(Settings_TempDispCharArr);
       cursorPosition_X = strlen(Settings_TempDispCharArr);
-    } else { // print value of setting stored in memory
-      switch (Settings_Type_GPS[cursorPosition_Y]) {
-        case SETTINGS_EDIT_TYPE_BOOLEAN:
-          Settings_EditValueSize = 0;
-          if (Settings_TypeBool[Settings_TypeIndex_GPS[cursorPosition_Y]]) {
-            display.print(F("True"));
-          } else {
-            display.print(F("False"));
-          }
-          break;
-        case SETTINGS_EDIT_TYPE_INT:
-          Settings_EditValueSize = numberOfDigits<int>(Settings_TypeInt[Settings_TypeIndex_GPS[cursorPosition_Y]]);
-          display.print(Settings_TypeInt[Settings_TypeIndex_GPS[cursorPosition_Y]]);
-          break;
-        case SETTINGS_EDIT_TYPE_UINT:
-          Settings_EditValueSize = numberOfDigits<unsigned int>(Settings_TypeUInt[Settings_TypeIndex_GPS[cursorPosition_Y]]);
-          display.print(Settings_TypeUInt[Settings_TypeIndex_GPS[cursorPosition_Y]]);
-          break;
-        case SETTINGS_EDIT_TYPE_LONG:
-          Settings_EditValueSize = numberOfDigits<long>(Settings_TypeLong[Settings_TypeIndex_GPS[cursorPosition_Y]]);
-          display.print(Settings_TypeLong[Settings_TypeIndex_GPS[cursorPosition_Y]]);
-          break;
-        case SETTINGS_EDIT_TYPE_ULONG:
-          Settings_EditValueSize = numberOfDigits<unsigned long>(Settings_TypeULong[Settings_TypeIndex_GPS[cursorPosition_Y]]);
-          display.print(Settings_TypeULong[Settings_TypeIndex_GPS[cursorPosition_Y]]);
-          break;
-        case SETTINGS_EDIT_TYPE_FLOAT:
-          Settings_EditValueSize = numberOfDigits<float>(Settings_TypeFloat[Settings_TypeIndex_GPS[cursorPosition_Y]]);
-          display.print(Settings_TypeFloat[Settings_TypeIndex_GPS[cursorPosition_Y]],6);
-          break;
-        case SETTINGS_EDIT_TYPE_STRING2:
-          Settings_EditValueSize = sizeof(Settings_TypeString2[Settings_TypeIndex_GPS[cursorPosition_Y]]) - 1;
-          display.print(Settings_TypeString2[Settings_TypeIndex_GPS[cursorPosition_Y]]);
-          break;
-        case SETTINGS_EDIT_TYPE_STRING7:
-          Settings_EditValueSize = sizeof(Settings_TypeString7[Settings_TypeIndex_GPS[cursorPosition_Y]]) - 1;
-          display.print(Settings_TypeString7[Settings_TypeIndex_GPS[cursorPosition_Y]]);
-          break;
-        case SETTINGS_EDIT_TYPE_STRING100:
-          Settings_EditValueSize = sizeof(Settings_TypeString100[Settings_TypeIndex_GPS[cursorPosition_Y]]) - 1;
-          display.print(Settings_TypeString100[Settings_TypeIndex_GPS[cursorPosition_Y]]);
-          break;
-        default:
-          break;
-      }
+    } else {
+      handleDisplay_PrintValStoredInMem(Settings_Type_GPS[cursorPosition_Y],Settings_TypeIndex_GPS[cursorPosition_Y]);
     }
     
     int selectionRow = 0;
@@ -1862,51 +1823,8 @@ void handleDisplay_Settings_Display(){
       Settings_EditValueSize = sizeof(Settings_TempDispCharArr) - 1;
       display.print(Settings_TempDispCharArr);
       cursorPosition_X = strlen(Settings_TempDispCharArr);
-    } else { // print value of setting stored in memory
-      switch (Settings_Type_Display[cursorPosition_Y]) {
-        case SETTINGS_EDIT_TYPE_BOOLEAN:
-          Settings_EditValueSize = 0;
-          if (Settings_TypeBool[Settings_TypeIndex_Display[cursorPosition_Y]]) {
-            display.print(F("True"));
-          } else {
-            display.print(F("False"));
-          }
-          break;
-        case SETTINGS_EDIT_TYPE_INT:
-          Settings_EditValueSize = numberOfDigits<int>(Settings_TypeInt[Settings_TypeIndex_Display[cursorPosition_Y]]);
-          display.print(Settings_TypeInt[Settings_TypeIndex_Display[cursorPosition_Y]]);
-          break;
-        case SETTINGS_EDIT_TYPE_UINT:
-          Settings_EditValueSize = numberOfDigits<unsigned int>(Settings_TypeUInt[Settings_TypeIndex_Display[cursorPosition_Y]]);
-          display.print(Settings_TypeUInt[Settings_TypeIndex_Display[cursorPosition_Y]]);
-          break;
-        case SETTINGS_EDIT_TYPE_LONG:
-          Settings_EditValueSize = numberOfDigits<long>(Settings_TypeLong[Settings_TypeIndex_Display[cursorPosition_Y]]);
-          display.print(Settings_TypeLong[Settings_TypeIndex_Display[cursorPosition_Y]]);
-          break;
-        case SETTINGS_EDIT_TYPE_ULONG:
-          Settings_EditValueSize = numberOfDigits<unsigned long>(Settings_TypeULong[Settings_TypeIndex_Display[cursorPosition_Y]]);
-          display.print(Settings_TypeULong[Settings_TypeIndex_Display[cursorPosition_Y]]);
-          break;
-        case SETTINGS_EDIT_TYPE_FLOAT:
-          Settings_EditValueSize = numberOfDigits<float>(Settings_TypeFloat[Settings_TypeIndex_Display[cursorPosition_Y]]);
-          display.print(Settings_TypeFloat[Settings_TypeIndex_Display[cursorPosition_Y]],6);
-          break;
-        case SETTINGS_EDIT_TYPE_STRING2:
-          Settings_EditValueSize = sizeof(Settings_TypeString2[Settings_TypeIndex_Display[cursorPosition_Y]]) - 1;
-          display.print(Settings_TypeString2[Settings_TypeIndex_Display[cursorPosition_Y]]);
-          break;
-        case SETTINGS_EDIT_TYPE_STRING7:
-          Settings_EditValueSize = sizeof(Settings_TypeString7[Settings_TypeIndex_Display[cursorPosition_Y]]) - 1;
-          display.print(Settings_TypeString7[Settings_TypeIndex_Display[cursorPosition_Y]]);
-          break;
-        case SETTINGS_EDIT_TYPE_STRING100:
-          Settings_EditValueSize = sizeof(Settings_TypeString100[Settings_TypeIndex_Display[cursorPosition_Y]]) - 1;
-          display.print(Settings_TypeString100[Settings_TypeIndex_Display[cursorPosition_Y]]);
-          break;
-        default:
-          break;
-      }
+    } else {
+      handleDisplay_PrintValStoredInMem(Settings_Type_Display[cursorPosition_Y],Settings_TypeIndex_Display[cursorPosition_Y]);
     }
     
     int selectionRow = 0;
