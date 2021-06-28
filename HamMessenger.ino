@@ -842,6 +842,34 @@ void handleDisplay_PrintValStoredInMem(int SettingsType, int SettingsTypeIndex){
   }
 }
 
+void handleDisplay_PrintTempVal(){
+  Settings_EditValueSize = sizeof(Settings_TempDispCharArr) - 1;
+  display.print(Settings_TempDispCharArr);
+  cursorPosition_X = strlen(Settings_TempDispCharArr);
+}
+
+int handleDisplay_GetSelectionRow(int cursorPosition){
+  int selectionRow = 0;
+  switch (cursorPosition) {
+    case 0:
+      selectionRow = UI_DISPLAY_ROW_01;
+      break;
+    case 1:
+      selectionRow = UI_DISPLAY_ROW_02;
+      break;
+    case 2:
+      selectionRow = UI_DISPLAY_ROW_03;
+      break;
+    case 3:
+      selectionRow = UI_DISPLAY_ROW_04;
+      break;
+    default:
+      selectionRow = UI_DISPLAY_ROW_04;
+      break;
+  }
+  return selectionRow;
+}
+
 void handleDisplays(){ 
   if (millis() - display_refresh_timer > DISPLAY_REFRESH_RATE){
     displayRefresh_Global = true;
@@ -1565,32 +1593,13 @@ void handleDisplay_Settings_APRS(){
     // place the cursor
     display.setCursor(0,UI_DISPLAY_ROW_BOTTOM-1);
     // print values to oled
-    if (editMode_Settings_APRS) { // print temp variable currently being edited
-      Settings_EditValueSize = sizeof(Settings_TempDispCharArr) - 1;
-      display.print(Settings_TempDispCharArr);
-      cursorPosition_X = strlen(Settings_TempDispCharArr);
+    if (editMode_Settings_APRS) {
+      handleDisplay_PrintTempVal();
     } else {
       handleDisplay_PrintValStoredInMem(Settings_Type_APRS[cursorPosition_Y],Settings_TypeIndex_APRS[cursorPosition_Y]);
     }
-    
-    int selectionRow = 0;
-    switch (cursorPosition_Y) {
-      case 0:
-        selectionRow = UI_DISPLAY_ROW_01;
-        break;
-      case 1:
-        selectionRow = UI_DISPLAY_ROW_02;
-        break;
-      case 2:
-        selectionRow = UI_DISPLAY_ROW_03;
-        break;
-      case 3:
-        selectionRow = UI_DISPLAY_ROW_04;
-        break;
-      default:
-        selectionRow = UI_DISPLAY_ROW_04;
-        break;
-    }
+    // determine the row
+    int selectionRow = handleDisplay_GetSelectionRow(cursorPosition_Y);
       
     display.setCursor(0,selectionRow);
     display.print(F(">"));
@@ -1692,32 +1701,13 @@ void handleDisplay_Settings_GPS(){
     // place the cursor
     display.setCursor(0,UI_DISPLAY_ROW_BOTTOM-1);
     // print values to oled
-    if (editMode_Settings_GPS) { // print temp variable currently being edited
-      Settings_EditValueSize = sizeof(Settings_TempDispCharArr) - 1;
-      display.print(Settings_TempDispCharArr);
-      cursorPosition_X = strlen(Settings_TempDispCharArr);
+    if (editMode_Settings_GPS) {
+      handleDisplay_PrintTempVal();
     } else {
       handleDisplay_PrintValStoredInMem(Settings_Type_GPS[cursorPosition_Y],Settings_TypeIndex_GPS[cursorPosition_Y]);
     }
-    
-    int selectionRow = 0;
-    switch (cursorPosition_Y) {
-      case 0:
-        selectionRow = UI_DISPLAY_ROW_01;
-        break;
-      case 1:
-        selectionRow = UI_DISPLAY_ROW_02;
-        break;
-      case 2:
-        selectionRow = UI_DISPLAY_ROW_03;
-        break;
-      case 3:
-        selectionRow = UI_DISPLAY_ROW_04;
-        break;
-      default:
-        selectionRow = UI_DISPLAY_ROW_04;
-        break;
-    }
+    // determine the row
+    int selectionRow = handleDisplay_GetSelectionRow(cursorPosition_Y);
       
     display.setCursor(0,selectionRow);
     display.print(F(">"));
@@ -1819,32 +1809,13 @@ void handleDisplay_Settings_Display(){
     // place the cursor
     display.setCursor(0,UI_DISPLAY_ROW_BOTTOM-1);
     // print values to oled
-    if (editMode_Settings_Display) { // print temp variable currently being edited
-      Settings_EditValueSize = sizeof(Settings_TempDispCharArr) - 1;
-      display.print(Settings_TempDispCharArr);
-      cursorPosition_X = strlen(Settings_TempDispCharArr);
+    if (editMode_Settings_Display) {
+      handleDisplay_PrintTempVal();
     } else {
       handleDisplay_PrintValStoredInMem(Settings_Type_Display[cursorPosition_Y],Settings_TypeIndex_Display[cursorPosition_Y]);
     }
-    
-    int selectionRow = 0;
-    switch (cursorPosition_Y) {
-      case 0:
-        selectionRow = UI_DISPLAY_ROW_01;
-        break;
-      case 1:
-        selectionRow = UI_DISPLAY_ROW_02;
-        break;
-      case 2:
-        selectionRow = UI_DISPLAY_ROW_03;
-        break;
-      case 3:
-        selectionRow = UI_DISPLAY_ROW_04;
-        break;
-      default:
-        selectionRow = UI_DISPLAY_ROW_04;
-        break;
-    }
+    // determine the row
+    int selectionRow = handleDisplay_GetSelectionRow(cursorPosition_Y);
       
     display.setCursor(0,selectionRow);
     display.print(F(">"));
