@@ -1,5 +1,9 @@
 // http://www.aprs.net/vm/DOS/PROTOCOL.HTM
 
+// sketch will write default settings if new build
+//const char version[] = "build "  __DATE__ " " __TIME__; 
+const char version[] = __DATE__ " " __TIME__; 
+
 #include <Adafruit_GFX.h>
 //#include <Adafruit_SSD1306.h>
 #include <Adafruit_SH1106.h>
@@ -8,8 +12,9 @@
 #include <SPI.h>
 #include <SD.h>
 
-#include <Wire.h>         // M5Stack Keyboard 
-#define CARDKB_ADDR 0x5F  // M5Stack Keyboard https://docs.m5stack.com/en/unit/cardkb
+// M5Stack Keyboard https://docs.m5stack.com/en/unit/cardkb
+#include <Wire.h> 
+#define CARDKB_ADDR 0x5F  
 char keyboardInputChar, keyboardInputCharLast;
 
 #define KEYBOARD_NUMBER_KEYS            (keyboardInputChar >= 48 && keyboardInputChar <= 57)
@@ -25,21 +30,17 @@ char keyboardInputChar, keyboardInputCharLast;
 #define KEYBOARD_UP_KEY                 -75
 #define KEYBOARD_LEFT_KEY               -76
 
-// sketch will write default settings if new build
-//const char version[] = "build "  __DATE__ " " __TIME__; 
-const char version[] = __DATE__ " " __TIME__; 
-
 #if !defined(ARRAY_SIZE)
     #define ARRAY_SIZE(x) (sizeof((x)) / sizeof((x)[0]))
 #endif
 
+// oled display
 //#define SCREEN_WIDTH 128 // OLED display width, in pixels
 //#define SCREEN_HEIGHT 64 // OLED display height, in pixels
 
 #define DISPLAY_REFRESH_RATE                  100
 #define DISPLAY_REFRESH_RATE_SCROLL           80       // min 60
 #define DISPLAY_BLINK_RATE                    500
-#define CHARACTER_INCREMENT_RATE              350
 #define UI_DISPLAY_HOME                       10000
 #define UI_DISPLAY_MESSAGES                   11000
 #define UI_DISPLAY_LIVEFEED                   12000
@@ -97,13 +98,9 @@ Adafruit_SH1106 display(OLED_RESET);
 #error("Height incorrect, please fix Adafruit_SH1106.h!");
 #endif
 
+// neo-6m GPS
 TinyGPSPlus gps;
-
-//#define GPS_REPORT_FREQUENCY 10000            // how often to check for updated GPS info
 #define DESTINATION_REPORT_FREQUENCY 20000    // how often distance to target is sent to serial - will be removed
-//#define APRS_COMMENT_FREQUENCY 300000         // how often a comment is sent with position
-#define MAXIMUM_MODEM_COMMAND_RATE 100        // maximum rate that commands can be sent to modem
-
 unsigned long gps_report_timer, destination_report_timer, modem_command_timer, aprs_beacon_timer, display_refresh_timer, display_refresh_timer_scroll;
 unsigned long leave_display_timer_MessageFeed, leave_display_timer_Livefeed, leave_display_timer_Settings;
 unsigned long leave_display_timer_Settings_APRS, leave_display_timer_Settings_GPS, leave_display_timer_Settings_Display;
@@ -111,7 +108,6 @@ unsigned long voltage_check_timer;
 unsigned long processor_scan_time, scanTime;
 unsigned long display_blink_timer;
 unsigned long button_hold_timer_down, character_increment_timer;
-unsigned long character_increment_rate = CHARACTER_INCREMENT_RATE;
 
 // http://ember2ash.com/lat.htm
 float fltCurrentLatDeg = 0;
@@ -178,6 +174,9 @@ struct GPS {
   GPS_Time Time;
 } GPSData;
 
+
+#define MAXIMUM_MODEM_COMMAND_RATE 100        // maximum rate that commands can be sent to modem
+
 #define LIVEFEED_BUFFER_SIZE  5
 int liveFeedBufferIndex = -1, oldliveFeedBufferIndex = -1, liveFeedBufferIndex_RecordCount = 0;
 bool liveFeedIsEmpty = true;
@@ -200,19 +199,19 @@ long Voltage = 0;
 #define VOLTAGE_CHECK_RATE      10000
 
 // settings
-#define EEPROM_SETTINGS_START_ADDR    1000
-#define SETTINGS_EDIT_TYPE_NONE        0
-#define SETTINGS_EDIT_TYPE_BOOLEAN     1
-#define SETTINGS_EDIT_TYPE_INT         2
-#define SETTINGS_EDIT_TYPE_UINT        3
-#define SETTINGS_EDIT_TYPE_LONG        4
-#define SETTINGS_EDIT_TYPE_ULONG       5
-#define SETTINGS_EDIT_TYPE_FLOAT       6
-#define SETTINGS_EDIT_TYPE_STRING2     7
-#define SETTINGS_EDIT_TYPE_STRING7     8
-#define SETTINGS_EDIT_TYPE_STRING100   9
+#define EEPROM_SETTINGS_START_ADDR      1000
+#define SETTINGS_EDIT_TYPE_NONE         0
+#define SETTINGS_EDIT_TYPE_BOOLEAN      1
+#define SETTINGS_EDIT_TYPE_INT          2
+#define SETTINGS_EDIT_TYPE_UINT         3
+#define SETTINGS_EDIT_TYPE_LONG         4
+#define SETTINGS_EDIT_TYPE_ULONG        5
+#define SETTINGS_EDIT_TYPE_FLOAT        6
+#define SETTINGS_EDIT_TYPE_STRING2      7
+#define SETTINGS_EDIT_TYPE_STRING7      8
+#define SETTINGS_EDIT_TYPE_STRING100    9
                         
-const char *MenuItems_Settings[] = {"APRS","GPS","Display"};
+const char *MenuItems_Settings[] = {"Settings - APRS","Settings - GPS","Settings - Display"};
 const char *MenuItems_Settings_APRS[] = {"Beacon Frequency","Raw Packet","Comment","Message","Recipient Callsign","Recipient SSID", "My Callsign","Callsign SSID", 
                                         "Destination Callsign", "Destination SSID", "PATH1 Callsign", "PATH1 SSID", "PATH2 Callsign", "PATH2 SSID",
                                         "Symbol", "Table", "Automatic ACK", "Preamble", "Tail"};

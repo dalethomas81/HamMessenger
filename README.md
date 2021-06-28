@@ -60,10 +60,12 @@ TODO (hardware):
 - add shielding to components (controller freezes if radio too close during Txing)
 - design pcb
 - design case
+- remove buttons
 
 TODO (software):
 - add "quick message" functionality. currently to send a message you need to use serial commands.
 - add ability to program the radio for 'plug-n-play' experience (is this possible?)
+- add store and recall messages in SD card to save dynamic memory
 
 Keyboard:
 https://github.com/m5stack/M5-ProductExampleCodes/tree/master/Unit/CARDKB
