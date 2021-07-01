@@ -18,6 +18,7 @@ I will add some videos and pictures of the device in action asap. Please feel fr
 Full instructions on how to operate HamMessenger will go here. For now, just a few notes :)
 
 -HamMessenger will beacon your location and comment according to the 'Beacon Frequency' settings in APRS Settings.
+
 -To send a direct message to a station, select 'Messages' on the home screen and press the right arrow on the keyboard. A message will be sent according to the settings in APRS Settings.
 
 ## Serial commands
