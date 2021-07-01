@@ -282,7 +282,7 @@ const char Initialized[] = {"Initialized01"};
 File myFile;
 
 template <typename T>
-T numberOfDigits(T number) {
+T numberOfDigits(T number){
   // https://studyfied.com/program/cpp-basic/count-number-of-digits-in-a-given-integer/
   // https://stackoverflow.com/questions/8627625/is-it-possible-to-make-function-that-will-accept-multiple-data-types-for-given-a/8627646
 
@@ -351,7 +351,7 @@ void makeInitialized(){
   }*/
 }
 
-void applyDefaultsToSettings() {
+void applyDefaultsToSettings(){
   Serial.println(F("Applying defaults to settings..."));
   SETTINGS_APRS_BEACON_FREQUENCY = 300000;                // beacon frequency
   char strTemp1[] = {"HamMessenger!"};
@@ -412,7 +412,7 @@ void applyDefaultsToSettings() {
   writeSettingsToEeprom();
 }
 
-void writeSettingsToEeprom() {
+void writeSettingsToEeprom(){
   Serial.println(F("Writing settings..."));
   
   /*Settings Settings_Default;
@@ -1023,6 +1023,15 @@ void handleDisplay_Home(){
       cursorPosition_Y=0;
     }
   }
+  if (keyboardInputChar == KEYBOARD_LEFT_KEY){
+  }
+  if (keyboardInputChar == KEYBOARD_RIGHT_KEY){
+    if (cursorPosition_Y == 0){
+      // send message if the right arrow is pressed while messages is highlighted.
+      // this is a temporary solution until a proper messaging screen can be developed.
+      blnModemCmdFlag_Msg = true;
+    }
+  }
   if (keyboardInputChar == KEYBOARD_ENTER_KEY){
     switch (cursorPosition_Y){
       case 0:
@@ -1332,7 +1341,7 @@ void handleDisplay_LiveFeed(){
   }
 }
 
-void handleDisplay_Settings_Save() {
+void handleDisplay_Settings_Save(){
   // on first show
   if (!displayInitialized_Settings_Save){
     // reset other displays
@@ -2463,7 +2472,7 @@ void handleVoltage(){
   }
 }
 
-void handleSettings() {  
+void handleSettings(){  
   if (applySettings){
     applySettings=false;
     applySettings_Seq=1;
@@ -2659,7 +2668,7 @@ void getDataTypeExample(int dataType, char* outExample){
   }
 }
 
-void printOutSerialCommands() {
+void printOutSerialCommands(){
 
   // CMD:Modem:cNOCALL
   // CMD:Settings:Save:
@@ -2735,7 +2744,7 @@ int Settings_Type_Display[] = {SETTINGS_EDIT_TYPE_ULONG, SETTINGS_EDIT_TYPE_UINT
   }
 }
 
-void handleSerial() {
+void handleSerial(){
   // the gps module continuously prints to the cpu
   readGPS();
   // when the modem processes a message or responds to a command it will print to the cpu
@@ -3153,7 +3162,7 @@ void handleSerial() {
   }
 }
 
-void handleKeyboard() {
+void handleKeyboard(){
   keyboardInputChar = 0;
   Wire.requestFrom(CARDKB_ADDR, 1);
   while(Wire.available())
@@ -3168,7 +3177,7 @@ void handleKeyboard() {
 }
 
 void setup(){
-  
+
   // Open serial communications and wait for port to open:
   Serial.begin(115200);
   Serial1.begin(9600); // modem

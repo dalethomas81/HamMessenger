@@ -10,6 +10,13 @@ I will add some videos and pictures of the device in action asap. Please feel fr
 
 ![alt text](https://github.com/dalethomas81/HamMessenger/blob/master/Media/IMG_3982.jpeg)
 
+# Operation
+
+Full instructions on how to operate HamMessenger will go here. For now, just a few notes :)
+
+-HamMessenger will beacon your location and comment according to the 'Beacon Frequency' settings in APRS Settings.
+-To send a direct message to a station, select 'Messages' on the home screen and press the right arrow on the keyboard. A message will be sent according to the settings in APRS Settings.
+
 ## Serial commands
 
 Command | Description | Example
@@ -63,7 +70,7 @@ TODO (hardware):
 - remove buttons
 
 TODO (software):
-- add "quick message" functionality. currently to send a message you need to use serial commands.
+- add "quick message" functionality. currently to send a message you highlight 'Messages' on the home screen and press the right key.
 - add ability to program the radio for 'plug-n-play' experience (is this possible?)
 - add store and recall messages in SD card to save dynamic memory
 
