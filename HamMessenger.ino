@@ -211,7 +211,7 @@ long Voltage = 0;
 #define SETTINGS_EDIT_TYPE_STRING7      8
 #define SETTINGS_EDIT_TYPE_STRING100    9
                         
-const char *MenuItems_Settings[] = {"Settings - APRS","Settings - GPS","Settings - Display"};
+const char *MenuItems_Settings[] = {"APRS","GPS","Display"};
 const char *MenuItems_Settings_APRS[] = {"Beacon Frequency","Raw Packet","Comment","Message","Recipient Callsign","Recipient SSID", "My Callsign","Callsign SSID", 
                                         "Destination Callsign", "Destination SSID", "PATH1 Callsign", "PATH1 SSID", "PATH2 Callsign", "PATH2 SSID",
                                         "Symbol", "Table", "Automatic ACK", "Preamble", "Tail"};
@@ -1488,18 +1488,25 @@ void handleDisplay_Settings(){
       
     display.setCursor(0,selectionRow);
     display.print(F(">"));
+
+    int NumOfSettings = ARRAY_SIZE(MenuItems_Settings);
     
-    display.setCursor(6,UI_DISPLAY_ROW_01);
-    display.print(MenuItems_Settings[cursorPosition_Y>3 ? cursorPosition_Y-3 : 0]); // if greater than 3, follow else normal
-    
-    display.setCursor(6,UI_DISPLAY_ROW_02);
-    display.print(MenuItems_Settings[cursorPosition_Y>3 ? cursorPosition_Y-2 : 1]);
-    
-    display.setCursor(6,UI_DISPLAY_ROW_03);
-    display.print(MenuItems_Settings[cursorPosition_Y>3 ? cursorPosition_Y-1 : 2]);
-    
-    display.setCursor(6,UI_DISPLAY_ROW_04);
-    display.print(MenuItems_Settings[cursorPosition_Y>3 ? cursorPosition_Y-0 : 3]);
+    if (NumOfSettings >= 1) {
+      display.setCursor(6,UI_DISPLAY_ROW_01);
+      display.print(MenuItems_Settings[cursorPosition_Y>3 ? cursorPosition_Y-3 : 0]);
+    }
+    if (NumOfSettings >= 2) {
+      display.setCursor(6,UI_DISPLAY_ROW_02);
+      display.print(MenuItems_Settings[cursorPosition_Y>3 ? cursorPosition_Y-2 : 1]);
+    }
+    if (NumOfSettings >= 3) {
+      display.setCursor(6,UI_DISPLAY_ROW_03);
+      display.print(MenuItems_Settings[cursorPosition_Y>3 ? cursorPosition_Y-1 : 2]);
+    }
+    if (NumOfSettings >= 4) {
+      display.setCursor(6,UI_DISPLAY_ROW_04);
+      display.print(MenuItems_Settings[cursorPosition_Y>3 ? cursorPosition_Y-0 : 3]);
+    }
 
     // display all content from buffer
     display.display();
@@ -1599,18 +1606,25 @@ void handleDisplay_Settings_APRS(){
       
     display.setCursor(0,selectionRow);
     display.print(F(">"));
+
+    int NumOfSettings = ARRAY_SIZE(MenuItems_Settings_APRS);
     
-    display.setCursor(6,UI_DISPLAY_ROW_01);
-    display.print(MenuItems_Settings_APRS[cursorPosition_Y>3 ? cursorPosition_Y-3 : 0]); // if greater than 3, follow else normal
-    
-    display.setCursor(6,UI_DISPLAY_ROW_02);
-    display.print(MenuItems_Settings_APRS[cursorPosition_Y>3 ? cursorPosition_Y-2 : 1]);
-    
-    display.setCursor(6,UI_DISPLAY_ROW_03);
-    display.print(MenuItems_Settings_APRS[cursorPosition_Y>3 ? cursorPosition_Y-1 : 2]);
-    
-    display.setCursor(6,UI_DISPLAY_ROW_04);
-    display.print(MenuItems_Settings_APRS[cursorPosition_Y>3 ? cursorPosition_Y-0 : 3]);
+    if (NumOfSettings >= 1) {
+      display.setCursor(6,UI_DISPLAY_ROW_01);
+      display.print(MenuItems_Settings_APRS[cursorPosition_Y>3 ? cursorPosition_Y-3 : 0]);
+    }
+    if (NumOfSettings >= 2) {
+      display.setCursor(6,UI_DISPLAY_ROW_02);
+      display.print(MenuItems_Settings_APRS[cursorPosition_Y>3 ? cursorPosition_Y-2 : 1]);
+    }
+    if (NumOfSettings >= 3) {
+      display.setCursor(6,UI_DISPLAY_ROW_03);
+      display.print(MenuItems_Settings_APRS[cursorPosition_Y>3 ? cursorPosition_Y-1 : 2]);
+    }
+    if (NumOfSettings >= 4) {
+      display.setCursor(6,UI_DISPLAY_ROW_04);
+      display.print(MenuItems_Settings_APRS[cursorPosition_Y>3 ? cursorPosition_Y-0 : 3]);
+    }
 
     // display all content from buffer
     display.display();
@@ -1707,18 +1721,25 @@ void handleDisplay_Settings_GPS(){
       
     display.setCursor(0,selectionRow);
     display.print(F(">"));
+
+    int NumOfSettings = ARRAY_SIZE(MenuItems_Settings_GPS);
     
-    display.setCursor(6,UI_DISPLAY_ROW_01);
-    display.print(MenuItems_Settings_GPS[cursorPosition_Y>3 ? cursorPosition_Y-3 : 0]); // if greater than 3, follow else normal
-    
-    display.setCursor(6,UI_DISPLAY_ROW_02);
-    display.print(MenuItems_Settings_GPS[cursorPosition_Y>3 ? cursorPosition_Y-2 : 1]);
-    
-    display.setCursor(6,UI_DISPLAY_ROW_03);
-    display.print(MenuItems_Settings_GPS[cursorPosition_Y>3 ? cursorPosition_Y-1 : 2]);
-    
-    display.setCursor(6,UI_DISPLAY_ROW_04);
-    display.print(MenuItems_Settings_GPS[cursorPosition_Y>3 ? cursorPosition_Y-0 : 3]);
+    if (NumOfSettings >= 1) {
+      display.setCursor(6,UI_DISPLAY_ROW_01);
+      display.print(MenuItems_Settings_GPS[cursorPosition_Y>3 ? cursorPosition_Y-3 : 0]);
+    }
+    if (NumOfSettings >= 2) {
+      display.setCursor(6,UI_DISPLAY_ROW_02);
+      display.print(MenuItems_Settings_GPS[cursorPosition_Y>3 ? cursorPosition_Y-2 : 1]);
+    }
+    if (NumOfSettings >= 3) {
+      display.setCursor(6,UI_DISPLAY_ROW_03);
+      display.print(MenuItems_Settings_GPS[cursorPosition_Y>3 ? cursorPosition_Y-1 : 2]);
+    }
+    if (NumOfSettings >= 4) {
+      display.setCursor(6,UI_DISPLAY_ROW_04);
+      display.print(MenuItems_Settings_GPS[cursorPosition_Y>3 ? cursorPosition_Y-0 : 3]);
+    }
 
     // display all content from buffer
     display.display();
@@ -1815,18 +1836,25 @@ void handleDisplay_Settings_Display(){
       
     display.setCursor(0,selectionRow);
     display.print(F(">"));
+
+    int NumOfSettings = ARRAY_SIZE(MenuItems_Settings_Display);
     
-    display.setCursor(6,UI_DISPLAY_ROW_01);
-    display.print(MenuItems_Settings_Display[cursorPosition_Y>3 ? cursorPosition_Y-3 : 0]); // if greater than 3, follow else normal
-    
-    display.setCursor(6,UI_DISPLAY_ROW_02);
-    display.print(MenuItems_Settings_Display[cursorPosition_Y>3 ? cursorPosition_Y-2 : 1]);
-    
-    display.setCursor(6,UI_DISPLAY_ROW_03);
-    display.print(MenuItems_Settings_Display[cursorPosition_Y>3 ? cursorPosition_Y-1 : 2]);
-    
-    display.setCursor(6,UI_DISPLAY_ROW_04);
-    display.print(MenuItems_Settings_Display[cursorPosition_Y>3 ? cursorPosition_Y-0 : 3]);
+    if (NumOfSettings >= 1) {
+      display.setCursor(6,UI_DISPLAY_ROW_01);
+      display.print(MenuItems_Settings_Display[cursorPosition_Y>3 ? cursorPosition_Y-3 : 0]);
+    }
+    if (NumOfSettings >= 2) {
+      display.setCursor(6,UI_DISPLAY_ROW_02);
+      display.print(MenuItems_Settings_Display[cursorPosition_Y>3 ? cursorPosition_Y-2 : 1]);
+    }
+    if (NumOfSettings >= 3) {
+      display.setCursor(6,UI_DISPLAY_ROW_03);
+      display.print(MenuItems_Settings_Display[cursorPosition_Y>3 ? cursorPosition_Y-1 : 2]);
+    }
+    if (NumOfSettings >= 4) {
+      display.setCursor(6,UI_DISPLAY_ROW_04);
+      display.print(MenuItems_Settings_Display[cursorPosition_Y>3 ? cursorPosition_Y-0 : 3]);
+    }
 
     // display all content from buffer
     display.display();
@@ -2042,7 +2070,7 @@ int sendModemCommand(char *cmd, int const cmdLen, char *val, int const valLen){
 
 void readModem(){
   bool gotFormatRaw = false; 
-  char modemData[500]; // this should be smaller. what is max APRS message length?
+  char modemData[256]; // what is max APRS message length?
   if (Serial1.available()){
     memset(modemData,'\0',sizeof(modemData));
     Serial1.readBytesUntil('\n', modemData, sizeof(modemData));
