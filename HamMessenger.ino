@@ -211,7 +211,7 @@ long Voltage = 0;
 #define SETTINGS_EDIT_TYPE_STRING7      8
 #define SETTINGS_EDIT_TYPE_STRING100    9
                         
-const char *MenuItems_Settings[] = {"Settings - APRS","Settings - GPS","Settings - Display","Settings - Test"};
+const char *MenuItems_Settings[] = {"Settings - APRS","Settings - GPS","Settings - Display"};
 const char *MenuItems_Settings_APRS[] = {"Beacon Frequency","Raw Packet","Comment","Message","Recipient Callsign","Recipient SSID", "My Callsign","Callsign SSID", 
                                         "Destination Callsign", "Destination SSID", "PATH1 Callsign", "PATH1 SSID", "PATH2 Callsign", "PATH2 SSID",
                                         "Symbol", "Table", "Automatic ACK", "Preamble", "Tail"};
@@ -2778,7 +2778,7 @@ void handleSerial() {
       i++; // i should be sitting at the ':'. go ahead and skip that.
       char inData_Value[300] = {'\0'};
       int k = 0;
-      if (strstr(SettingGroup, "APRS") != NULL) {
+      if (strstr(SettingGroup, MenuItems_Settings[0]) != NULL) { // APRS
         // get the setting
         char Setting[30]={'\0'};
         int j_s_APRS = 0;
@@ -2854,7 +2854,11 @@ void handleSerial() {
             i++; k++;
           }
           //Serial.print(DataEntered);Serial.println(inData_Value); 
-          SETTINGS_APRS_RECIPIENT_SSID[0] = inData_Value[0];
+          //SETTINGS_APRS_RECIPIENT_SSID[0] = inData_Value[0];
+          memset(SETTINGS_APRS_RECIPIENT_SSID,'\0',sizeof(SETTINGS_APRS_RECIPIENT_SSID)); 
+          for (int i=0; inData_Value[i]!='\0';i++) {
+             SETTINGS_APRS_RECIPIENT_SSID[i] = inData_Value[i]; 
+          }
           
         } else if (strstr(Setting, MenuItems_Settings_APRS[6]) != NULL) { // "My Callsign"
           while (inData[i] != '\n' && inData[i] != '\0') {
@@ -2873,7 +2877,11 @@ void handleSerial() {
             i++; k++;
           }
           //Serial.print(DataEntered);Serial.println(inData_Value); 
-          SETTINGS_APRS_CALLSIGN_SSID[0] = inData_Value[0];
+          //SETTINGS_APRS_CALLSIGN_SSID[0] = inData_Value[0];
+          memset(SETTINGS_APRS_CALLSIGN_SSID,'\0',sizeof(SETTINGS_APRS_CALLSIGN_SSID)); 
+          for (int i=0; inData_Value[i]!='\0';i++) {
+             SETTINGS_APRS_CALLSIGN_SSID[i] = inData_Value[i]; 
+          }
           
         } else if (strstr(Setting, MenuItems_Settings_APRS[8]) != NULL) { // "Destination Callsign"
           while (inData[i] != '\n' && inData[i] != '\0') {
@@ -2892,7 +2900,11 @@ void handleSerial() {
             i++; k++;
           }
           //Serial.print(DataEntered);Serial.println(inData_Value); 
-          SETTINGS_APRS_DESTINATION_SSID[0] = inData_Value[0];
+          //SETTINGS_APRS_DESTINATION_SSID[0] = inData_Value[0]; 
+          memset(SETTINGS_APRS_DESTINATION_SSID,'\0',sizeof(SETTINGS_APRS_DESTINATION_SSID)); 
+          for (int i=0; inData_Value[i]!='\0';i++) {
+             SETTINGS_APRS_DESTINATION_SSID[i] = inData_Value[i]; 
+          }
           
         } else if (strstr(Setting, MenuItems_Settings_APRS[10]) != NULL) { // "PATH1 Callsign"
           while (inData[i] != '\n' && inData[i] != '\0') {
@@ -2911,7 +2923,11 @@ void handleSerial() {
             i++; k++;
           }
           //Serial.print(DataEntered);Serial.println(inData_Value); 
-          SETTINGS_APRS_PATH1_SSID[0] = inData_Value[0];
+          //SETTINGS_APRS_PATH1_SSID[0] = inData_Value[0];
+          memset(SETTINGS_APRS_PATH1_SSID,'\0',sizeof(SETTINGS_APRS_PATH1_SSID)); 
+          for (int i=0; inData_Value[i]!='\0';i++) {
+             SETTINGS_APRS_PATH1_SSID[i] = inData_Value[i]; 
+          }
           
         } else if (strstr(Setting, MenuItems_Settings_APRS[12]) != NULL) { // "PATH2 Callsign"
           while (inData[i] != '\n' && inData[i] != '\0') {
@@ -2930,7 +2946,11 @@ void handleSerial() {
             i++; k++;
           }
           //Serial.print(DataEntered);Serial.println(inData_Value); 
-          SETTINGS_APRS_PATH2_SSID[0] = inData_Value[0];
+          //SETTINGS_APRS_PATH2_SSID[0] = inData_Value[0];
+          memset(SETTINGS_APRS_PATH2_SSID,'\0',sizeof(SETTINGS_APRS_PATH2_SSID)); 
+          for (int i=0; inData_Value[i]!='\0';i++) {
+             SETTINGS_APRS_PATH2_SSID[i] = inData_Value[i]; 
+          }
           
         } else if (strstr(Setting, MenuItems_Settings_APRS[14]) != NULL) { // "Symbol"
           while (inData[i] != '\n' && inData[i] != '\0') {
@@ -2938,7 +2958,11 @@ void handleSerial() {
             i++; k++;
           }
           //Serial.print(DataEntered);Serial.println(inData_Value); 
-          SETTINGS_APRS_SYMBOL[0] = inData_Value[0];
+          //SETTINGS_APRS_SYMBOL[0] = inData_Value[0];
+          memset(SETTINGS_APRS_SYMBOL,'\0',sizeof(SETTINGS_APRS_SYMBOL)); 
+          for (int i=0; inData_Value[i]!='\0';i++) {
+             SETTINGS_APRS_SYMBOL[i] = inData_Value[i]; 
+          }
           
         } else if (strstr(Setting, MenuItems_Settings_APRS[15]) != NULL) { // "Table"
           while (inData[i] != '\n' && inData[i] != '\0') {
@@ -3003,7 +3027,7 @@ void handleSerial() {
         } else {
           Serial.println(InvalidCommand);
         }
-      } else if (strstr(SettingGroup, "GPS") != NULL) {
+      } else if (strstr(SettingGroup, MenuItems_Settings[1]) != NULL) { // GPS
         // get the setting
         char Setting[30]={'\0'};
         int j_s_GPS = 0;
@@ -3023,7 +3047,7 @@ void handleSerial() {
         } else {
           Serial.println(InvalidCommand);
         }
-      } else if (strstr(SettingGroup, "Display") != NULL) {
+      } else if (strstr(SettingGroup, MenuItems_Settings[2]) != NULL) { // Display
         // get the setting
         char Setting[30]={'\0'};
         int j_s_Display = 0;
