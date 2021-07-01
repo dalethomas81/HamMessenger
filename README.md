@@ -20,7 +20,7 @@ __CMD:Settings:Save:__ | Saves settings to EEPROM
 __CMD:Modem:__ | Writes commands directly to the modem. See https://github.com/markqvist/MicroAPRS#serial-commands | CMD:Modem:cNOCALL
 &nbsp;
 __CMD:Settings:APRS:Beacon Frequency:<0 to 4,294,967,295>__ | Frequency at which position data will be transmitted in milliseconds | 60000
-__CMD:Settings:APRS:Raw Packet:<alphanumeric 99 char max>__ | APRS raw data to be sent | See https://aprs.fi/?c=raw&call= (login required)
+__CMD:Settings:APRS:Raw Packet:<alphanumeric 99 char max>__ | !:ZZ5ABC-1 :Hi there!{01 | See https://aprs.fi/?c=raw&call= (login required)
 __CMD:Settings:APRS:Comment:<alphanumeric 99 char max>__ | APRS comment | Testing HamMessenger!
 __CMD:Settings:APRS:Message:<alphanumeric 99 char max>__ | APRS message to recipient | Hi!
 __CMD:Settings:APRS:Recipient Callsign:<alphanumeric 6 char max>__ | Callsign of the recipient | NOCALL
