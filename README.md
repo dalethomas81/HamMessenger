@@ -8,6 +8,9 @@ At the core of the the project is the [MicroAPRS](https://github.com/markqvist/M
 
 I will add some videos and pictures of the device in action asap. Please feel free to contribute to the project. I am very busy outside of this project so any help is greatly appreciated :)
 
+
+![alt text](https://github.com/dalethomas81/HamMessenger/blob/master/Media/926EDB43-D454-4EA1-B1C2-569C25EFE7AD.jpeg)
+
 ![alt text](https://github.com/dalethomas81/HamMessenger/blob/master/Media/IMG_3982.jpeg)
 
 # Operation
