@@ -134,6 +134,8 @@ bool blnModemCmdFlag_SetH=false;
 bool blnAprsAutomaticCommentEnabled = true;
 bool applySettings=false, saveModemSettings=false;
 int applySettings_Seq=0;
+bool sendMessage=false;
+int sendMessage_Seq=0;
 
 // London                                 LAT:51.508131     LNG:-0.128002
 //double DESTINATION_LAT = 51.508131, DESTINATION_LON = -0.128002;
@@ -1029,7 +1031,7 @@ void handleDisplay_Home(){
     if (cursorPosition_Y == 0){
       // send message if the right arrow is pressed while messages is highlighted.
       // this is a temporary solution until a proper messaging screen can be developed.
-      blnModemCmdFlag_Msg = true;
+      sendMessage = true;
     }
   }
   if (keyboardInputChar == KEYBOARD_ENTER_KEY){
@@ -1867,6 +1869,33 @@ void handleAprsBeacon(){
       blnModemCmdFlag_Cmt=true;
     }
     aprs_beacon_timer = millis();
+  }
+}
+
+void handleSendMessage(){  
+  if (sendMessage){
+    sendMessage=false;
+    sendMessage_Seq=1;
+  }
+  switch (sendMessage_Seq){
+    case 0:
+      break;
+    case 1: // set recipient callsign
+      blnModemCmdFlag_MsgRecipient=true;
+      sendMessage_Seq++;
+      break;
+    case 2: // wait for complete and set recipient ssid
+      if (!blnModemCmdFlag_MsgRecipient) {
+        blnModemCmdFlag_MsgRecipientSSID=true;
+        sendMessage_Seq++;
+      }
+      break;
+    case 3: // wait for complete and set message and end sequence
+      if (!blnModemCmdFlag_MsgRecipientSSID) {
+        blnModemCmdFlag_Msg=true;
+        sendMessage_Seq=0;
+      }
+      break;
   }
 }
 
@@ -3289,6 +3318,7 @@ void loop(){
   handleSettings();
   handleDisplays();
   handleSerial();
+  handleSendMessage();
   handleModemCommands();
   handleAprsBeacon();
   handleVoltage();
