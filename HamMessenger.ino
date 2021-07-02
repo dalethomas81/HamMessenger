@@ -9,13 +9,11 @@ const char version[] = __DATE__ " " __TIME__;
 #include <Adafruit_SH1106.h>
 #include <TinyGPS++.h>
 #include <EEPROM.h>
-#include <SPI.h>
-#include <SD.h>
 
 // M5Stack Keyboard https://docs.m5stack.com/en/unit/cardkb
 #include <Wire.h> 
 #define CARDKB_ADDR 0x5F  
-char keyboardInputChar, keyboardInputCharLast;
+char keyboardInputChar;
 
 #define KEYBOARD_NUMBER_KEYS            (keyboardInputChar >= 48 && keyboardInputChar <= 57)
 #define KEYBOARD_DIRECTIONAL_KEYS       (keyboardInputChar >= -76 && keyboardInputChar <= -73)
@@ -176,7 +174,6 @@ struct GPS {
   GPS_Time Time;
 } GPSData;
 
-
 #define MAXIMUM_MODEM_COMMAND_RATE 100        // maximum rate that commands can be sent to modem
 
 #define LIVEFEED_BUFFER_SIZE  5
@@ -271,7 +268,6 @@ char Settings_TempDispCharArr[100];
 #define SETTINGS_DISPLAY_SCROLL_MESSAGES      Settings_TypeBool[Settings_TypeIndex_Display[3]]         // scroll messages
 #define SETTINGS_DISPLAY_SCROLL_SPEED         Settings_TypeUInt[Settings_TypeIndex_Display[4]]         // scroll speed
 
-
 // store common strings here
 const char DataEntered[] = {"Data entered="};
 const char InvalidCommand[] = {"Invalid command."};
@@ -279,9 +275,6 @@ const char InvalidData_UnsignedInt[] = {"Invalid data. Expected unsigned integer
 const char InvalidData_UnsignedLong[] = {"Invalid data. Expected unsigned long 0-4294967295 instead got "};
 const char InvalidData_TrueFalse[] = {"Invalid data. Expected True/False or 1/0"};
 const char Initialized[] = {"Initialized01"};
-
-// SD card 
-File myFile;
 
 template <typename T>
 T numberOfDigits(T number){
@@ -3228,7 +3221,6 @@ void handleKeyboard(){
     if (c != 0)
     {
       keyboardInputChar = c;
-      keyboardInputCharLast = keyboardInputChar;
     }
   }
 }
@@ -3254,44 +3246,6 @@ void setup(){
   applySettings=true;
   //saveModemSettings=true; // comment out so that the modem doesnt write to its eeprom on every boot!
   printOutSettings();
-
-  // initialize SD card controller
-  if (!SD.begin(53)) {
-    Serial.println(F("Could not connect to SD card controller. Halting."));
-    while (1);
-  }
-  
-  /*
-  // open the file. note that only one file can be open at a time,
-  // so you have to close this one before opening another.
-  myFile = SD.open("test.txt", FILE_WRITE);  // if the file opened okay, write to it:
-  if (myFile) {
-    Serial.print(F("Writing to test.txt..."));
-    myFile.println(F("testing 1, 2, 3."));
-    // close the file:
-    myFile.close();
-    Serial.println(F("done."));
-  } else {
-    // if the file didn't open, print an error:
-    Serial.println(F("error opening test.txt"));
-  }
-
-  // re-open the file for reading:
-  myFile = SD.open("test.txt");
-  if (myFile) {
-    Serial.println(F("test.txt:"));
-
-    // read from the file until there's nothing else in it:
-    while (myFile.available()) {
-      Serial.write(myFile.read());
-    }
-    // close the file:
-    myFile.close();
-  } else {
-    // if the file didn't open, print an error:
-    Serial.println(F("error opening test.txt"));
-  }
-*/
 
   // inputs
   pinMode(rxPin, INPUT);
