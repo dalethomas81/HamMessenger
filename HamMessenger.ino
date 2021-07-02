@@ -58,6 +58,7 @@ char keyboardInputChar;
 #define UI_DISPLAY_ROW_BOTTOM                 56
 
 unsigned char currentDisplay = UI_DISPLAY_HOME;
+unsigned char currentDisplayLast = currentDisplay;
 unsigned char previousDisplay = UI_DISPLAY_HOME;
 int cursorPosition_X = 0, cursorPosition_X_Last = 0;
 int cursorPosition_Y = 0, cursorPosition_Y_Last = 0;
@@ -65,10 +66,7 @@ int ScrollingIndex_LiveFeed, ScrollingIndex_LiveFeed_minX;
 int ScrollingIndex_MessageFeed, ScrollingIndex_MessageFeed_minX;
 
 // do something on first show of display
-bool displayInitialized_Home = false, displayInitialized_Messages = false;
-bool displayInitialized_LiveFeed = false, displayInitialized_Settings = false, displayInitialized_Settings_Save = false;
-bool displayInitialized_Settings_APRS = false, displayInitialized_Settings_GPS = false;
-bool displayInitialized_Settings_Display = false;
+bool displayInitialized = false;
 // leave the display after a timeout period
 bool leaveDisplay_MessageFeed = false, leaveDisplay_LiveFeed = false, leaveDisplay_Settings = false, leaveDisplay_Settings_Save = false;
 bool leaveDisplay_Settings_APRS = false, leaveDisplay_Settings_GPS = false, leaveDisplay_Settings_Display = false;
@@ -872,6 +870,12 @@ void handleDisplays(){
     display_blink_timer = millis();
   }
 
+  // when display changes call for the new display to initialize
+  if (currentDisplay != currentDisplayLast) {
+    currentDisplayLast = currentDisplay;
+    displayInitialized = false;
+  }
+
   // add display objects to buffer
   switch (currentDisplay) {
     case UI_DISPLAY_HOME:
@@ -943,13 +947,11 @@ void handleDisplay_Startup(){
 
 void handleDisplay_Global(){ 
   if (digitalRead(rxPin) == HIGH){
-    //Serial.println(F("[Rx]"));
     display.setCursor(0,UI_DISPLAY_ROW_TOP);
     display.print(F("Rx"));
     }
   
   if (digitalRead(txPin) == HIGH){
-    //Serial.println(F("[Tx]"));
     display.setCursor(15,UI_DISPLAY_ROW_TOP);
     display.print(F("Tx"));
   }
@@ -981,20 +983,12 @@ void handleDisplay_Global(){
 
 void handleDisplay_Home(){
   // on first show
-  if (!displayInitialized_Home){
-    // reset other displays
-    displayInitialized_Messages = false;
-    displayInitialized_LiveFeed = false;
-    displayInitialized_Settings = false;
-    displayInitialized_Settings_APRS = false;
-    displayInitialized_Settings_GPS = false;
-    displayInitialized_Settings_Display = false;
-    displayInitialized_Home = true;
+  if (!displayInitialized){
+    displayInitialized = true;
     cursorPosition_X = 0;
     cursorPosition_Y = 0;
     cursorPosition_X_Last = 0;
     cursorPosition_Y_Last = 0;
-    //Serial.print(F("Entered Display Home:")); Serial.println(currentDisplay);
   }
   // handle button context for current display
   if (keyboardInputChar == KEYBOARD_UP_KEY){
@@ -1083,15 +1077,8 @@ void handleDisplay_Messages(){
   //  Radio 1: SRC: [NOCALL-3] DST: [APRS-0] PATH: [WIDE1-1] [WIDE2-2] DATA: :NOCALL-3 :ack006
   
   // on first show
-  if (!displayInitialized_Messages){
-    // reset other displays
-    displayInitialized_Home = false;
-    displayInitialized_Messages = true;
-    displayInitialized_Settings = false;
-    displayInitialized_Settings_APRS = false;
-    displayInitialized_Settings_GPS = false;
-    displayInitialized_Settings_Display = false;
-    displayInitialized_LiveFeed = false;
+  if (!displayInitialized){
+    displayInitialized= true;
     cursorPosition_X = 0;
     if (incomingMessageBufferIndex >= 0) {
       cursorPosition_Y = incomingMessageBufferIndex;
@@ -1206,15 +1193,8 @@ void handleDisplay_Messages(){
 
 void handleDisplay_LiveFeed(){
   // on first show
-  if (!displayInitialized_LiveFeed){
-    // reset other displays
-    displayInitialized_Home = false;
-    displayInitialized_Messages = false;
-    displayInitialized_Settings = false;
-    displayInitialized_Settings_APRS = false;
-    displayInitialized_Settings_GPS = false;
-    displayInitialized_Settings_Display = false;
-    displayInitialized_LiveFeed = true;
+  if (!displayInitialized){
+    displayInitialized = true;
     cursorPosition_X = 0;
     if (liveFeedBufferIndex >= 0) {
       cursorPosition_Y = liveFeedBufferIndex;
@@ -1329,21 +1309,12 @@ void handleDisplay_LiveFeed(){
 
 void handleDisplay_Settings_Save(){
   // on first show
-  if (!displayInitialized_Settings_Save){
-    // reset other displays
-    displayInitialized_Home = false;
-    displayInitialized_Messages = false;
-    displayInitialized_LiveFeed = false;
-    displayInitialized_Settings = false;
-    displayInitialized_Settings_APRS = false;
-    displayInitialized_Settings_GPS = false;
-    displayInitialized_Settings_Display = false;
-    displayInitialized_Settings_Save = true;
+  if (!displayInitialized){
+    displayInitialized= true;
     cursorPosition_X = 0;
     cursorPosition_Y = 0;
     cursorPosition_X_Last = 0;
     cursorPosition_Y_Last = 0;
-    //Serial.print(F("Entered Settings Save:")); Serial.println(currentDisplay);
   }
   // handle button context for current display
   if (keyboardInputChar == KEYBOARD_UP_KEY){
@@ -1411,21 +1382,12 @@ void handleDisplay_Settings_Save(){
 
 void handleDisplay_Settings(){
   // on first show
-  if (!displayInitialized_Settings){
-    // reset other displays
-    displayInitialized_Home = false;
-    displayInitialized_Messages = false;
-    displayInitialized_LiveFeed = false;
-    displayInitialized_Settings = true;
-    displayInitialized_Settings_APRS = false;
-    displayInitialized_Settings_GPS = false;
-    displayInitialized_Settings_Display = false;
-    displayInitialized_Settings_Save = false;
+  if (!displayInitialized){
+    displayInitialized = true;
     cursorPosition_X = 0;
     cursorPosition_Y = 0;
     cursorPosition_X_Last = 0;
     cursorPosition_Y_Last = 0;
-    //Serial.print(F("Entered Settings:")); Serial.println(currentDisplay);
   }
   // handle button context for current display
   if (keyboardInputChar == KEYBOARD_UP_KEY){
@@ -1501,16 +1463,8 @@ void handleDisplay_Settings(){
 
 void handleDisplay_Settings_APRS(){
   // on first show
-  if (!displayInitialized_Settings_APRS){
-    // reset other displays
-    displayInitialized_Home = false;
-    displayInitialized_Messages = false;
-    displayInitialized_LiveFeed = false;
-    displayInitialized_Settings = false;
-    displayInitialized_Settings_APRS = true;
-    displayInitialized_Settings_GPS = false;
-    displayInitialized_Settings_Display = false;
-    displayInitialized_Settings_Save = false;
+  if (!displayInitialized){
+    displayInitialized = true;
     cursorPosition_X = 0;
     cursorPosition_Y = 0;
     cursorPosition_X_Last = 0;
@@ -1619,16 +1573,8 @@ void handleDisplay_Settings_APRS(){
 
 void handleDisplay_Settings_GPS(){
   // on first show
-  if (!displayInitialized_Settings_GPS){
-    // reset other displays
-    displayInitialized_Home = false;
-    displayInitialized_Messages = false;
-    displayInitialized_LiveFeed = false;
-    displayInitialized_Settings = false;
-    displayInitialized_Settings_APRS = false;
-    displayInitialized_Settings_GPS = true;
-    displayInitialized_Settings_Display = false;
-    displayInitialized_Settings_Save = false;
+  if (!displayInitialized){
+    displayInitialized = true;
     cursorPosition_X = 0;
     cursorPosition_Y = 0;
     cursorPosition_X_Last = 0;
@@ -1734,16 +1680,8 @@ void handleDisplay_Settings_GPS(){
 
 void handleDisplay_Settings_Display(){
   // on first show
-  if (!displayInitialized_Settings_Display){
-    // reset other displays
-    displayInitialized_Home = false;
-    displayInitialized_Messages = false;
-    displayInitialized_LiveFeed = false;
-    displayInitialized_Settings = false;
-    displayInitialized_Settings_APRS = false;
-    displayInitialized_Settings_GPS = false;
-    displayInitialized_Settings_Display = true;
-    displayInitialized_Settings_Save = false;
+  if (!displayInitialized){
+    displayInitialized = true;
     cursorPosition_X = 0;
     cursorPosition_Y = 0;
     cursorPosition_X_Last = 0;
