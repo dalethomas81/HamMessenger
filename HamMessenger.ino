@@ -280,9 +280,6 @@ const char InvalidData_UnsignedLong[] = {"Invalid data. Expected unsigned long 0
 const char InvalidData_TrueFalse[] = {"Invalid data. Expected True/False or 1/0"};
 const char Initialized[] = {"Initialized01"};
 
-// SD card 
-File myFile;
-
 template <typename T>
 T numberOfDigits(T number){
   // https://studyfied.com/program/cpp-basic/count-number-of-digits-in-a-given-integer/
@@ -3261,7 +3258,9 @@ void setup(){
     while (1);
   }
   
-  /*
+  // SD card 
+  File myFile;
+
   // open the file. note that only one file can be open at a time,
   // so you have to close this one before opening another.
   myFile = SD.open("test.txt", FILE_WRITE);  // if the file opened okay, write to it:
@@ -3291,7 +3290,6 @@ void setup(){
     // if the file didn't open, print an error:
     Serial.println(F("error opening test.txt"));
   }
-*/
 
   // inputs
   pinMode(rxPin, INPUT);
