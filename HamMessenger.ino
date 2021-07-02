@@ -73,7 +73,7 @@ bool leaveDisplay_Settings_APRS = false, leaveDisplay_Settings_GPS = false, leav
 // refresh the displays
 bool displayRefresh_Global = true, displayRefresh_Scroll = true;
 // go into edit mode in the settings
-bool editMode_Settings_APRS = false, editMode_Settings_GPS = false, editMode_Settings_Display = false;
+bool editMode_Settings = false;
 bool displayBlink = false, characterIncrement = false;
 int Settings_EditType = 0;
 int Settings_EditValueSize = 0;
@@ -857,6 +857,7 @@ int handleDisplay_GetSelectionRow(int cursorPosition){
 }
 
 void handleDisplays(){ 
+  // run timers
   if (millis() - display_refresh_timer > DISPLAY_REFRESH_RATE){
     displayRefresh_Global = true;
     display_refresh_timer = millis();
@@ -1073,8 +1074,8 @@ void handleDisplay_Home(){
 
 void handleDisplay_Messages(){
   //  Radio 1: CMD: Modem:#Hi!
-  //  Radio 2: SRC: [NOCALL-3] DST: [APRS-0] PATH: [WIDE1-1] [WIDE2-2] DATA: :NOCALL-3 :Hi!{006
-  //  Radio 1: SRC: [NOCALL-3] DST: [APRS-0] PATH: [WIDE1-1] [WIDE2-2] DATA: :NOCALL-3 :ack006
+  //  Radio 1: SRC: [NOCALL-3] DST: [APRS-0] PATH: [WIDE1-1] [WIDE2-2] DATA: :NOCALL-3 :Hi!{006
+  //  Radio 2: SRC: [NOCALL-3] DST: [APRS-0] PATH: [WIDE1-1] [WIDE2-2] DATA: :NOCALL-3 :ack006
   
   // on first show
   if (!displayInitialized){
@@ -1422,7 +1423,7 @@ void handleDisplay_Settings(){
     previousDisplay = UI_DISPLAY_SETTINGS;
   }
   if (keyboardInputChar == KEYBOARD_ESCAPE_KEY){
-    currentDisplay = previousDisplay;
+    currentDisplay = UI_DISPLAY_HOME;
     return;
   }
   // build display
@@ -1469,7 +1470,7 @@ void handleDisplay_Settings_APRS(){
     cursorPosition_Y = 0;
     cursorPosition_X_Last = 0;
     cursorPosition_Y_Last = 0;
-    editMode_Settings_APRS = false;
+    editMode_Settings = false;
     Settings_EditValueSize = 0;
     settingsChanged = false;
     for (int i=0; i<sizeof(Settings_TempDispCharArr);i++) {
@@ -1477,12 +1478,12 @@ void handleDisplay_Settings_APRS(){
     }
   }
   // monitor for changes
-  if (editMode_Settings_APRS) {
+  if (editMode_Settings) {
     settingsChanged = true;
   }
   // handle button context for current display
   if (KEYBOARD_PRINTABLE_CHARACTERS || KEYBOARD_DIRECTIONAL_KEYS || keyboardInputChar == KEYBOARD_BACKSPACE_KEY) {
-    if (editMode_Settings_APRS){
+    if (editMode_Settings){
       handleDisplay_TempVarDisplay(Settings_Type_APRS[cursorPosition_Y]);
     } else if (keyboardInputChar == KEYBOARD_UP_KEY) {
       if (cursorPosition_Y > 0) {
@@ -1499,19 +1500,19 @@ void handleDisplay_Settings_APRS(){
     }
   }
   if (keyboardInputChar == KEYBOARD_ENTER_KEY){
-    if (editMode_Settings_APRS) {
-      editMode_Settings_APRS = false;
+    if (editMode_Settings) {
+      editMode_Settings = false;
       handleDisplay_TempVarApply(Settings_Type_APRS[cursorPosition_Y],Settings_TypeIndex_APRS[cursorPosition_Y]);
     } else {
       // enable edit mode
-      editMode_Settings_APRS = true;
+      editMode_Settings = true;
       handleDisplay_TempVarCopy(Settings_Type_APRS[cursorPosition_Y],Settings_TypeIndex_APRS[cursorPosition_Y]);
     }
   }
   if (keyboardInputChar == KEYBOARD_ESCAPE_KEY){
-    if (editMode_Settings_APRS) {
+    if (editMode_Settings) {
       // disable edit mode
-      editMode_Settings_APRS = false;
+      editMode_Settings = false;
       cursorPosition_X = 0;
     } else {
       if (settingsChanged) {
@@ -1527,7 +1528,7 @@ void handleDisplay_Settings_APRS(){
   if (displayRefresh_Global){
     // clear the buffer
     display.clearDisplay();
-    if (editMode_Settings_APRS) {
+    if (editMode_Settings) {
       if (displayBlink) {
         display.setCursor(cursorPosition_X*6,UI_DISPLAY_ROW_BOTTOM);
         display.print('_');
@@ -1536,7 +1537,7 @@ void handleDisplay_Settings_APRS(){
     // place the cursor
     display.setCursor(0,UI_DISPLAY_ROW_BOTTOM-1);
     // print values to oled
-    if (editMode_Settings_APRS) {
+    if (editMode_Settings) {
       handleDisplay_PrintTempVal();
     } else {
       handleDisplay_PrintValStoredInMem(Settings_Type_APRS[cursorPosition_Y],Settings_TypeIndex_APRS[cursorPosition_Y]);
@@ -1579,17 +1580,20 @@ void handleDisplay_Settings_GPS(){
     cursorPosition_Y = 0;
     cursorPosition_X_Last = 0;
     cursorPosition_Y_Last = 0;
-    editMode_Settings_GPS = false;
+    editMode_Settings = false;
     Settings_EditValueSize = 0;
     settingsChanged = false;
+    for (int i=0; i<sizeof(Settings_TempDispCharArr);i++) {
+      Settings_TempDispCharArr[i] = '\0';
+    }
   }
   // monitor for changes
-  if (editMode_Settings_GPS) {
+  if (editMode_Settings) {
     settingsChanged = true;
   }
   // handle button context for current display
   if (KEYBOARD_PRINTABLE_CHARACTERS || KEYBOARD_DIRECTIONAL_KEYS || keyboardInputChar == KEYBOARD_BACKSPACE_KEY) {
-    if (editMode_Settings_GPS){
+    if (editMode_Settings){
       handleDisplay_TempVarDisplay(Settings_Type_GPS[cursorPosition_Y]);
     } else if (keyboardInputChar == KEYBOARD_UP_KEY) {
       if (cursorPosition_Y > 0) {
@@ -1606,19 +1610,19 @@ void handleDisplay_Settings_GPS(){
     }
   }
   if (keyboardInputChar == KEYBOARD_ENTER_KEY){
-    if (editMode_Settings_GPS) {
-      editMode_Settings_GPS = false;
+    if (editMode_Settings) {
+      editMode_Settings = false;
       handleDisplay_TempVarApply(Settings_Type_GPS[cursorPosition_Y],Settings_TypeIndex_GPS[cursorPosition_Y]);
     } else {
       // enable edit mode
-      editMode_Settings_GPS = true;
+      editMode_Settings = true;
       handleDisplay_TempVarCopy(Settings_Type_GPS[cursorPosition_Y],Settings_TypeIndex_GPS[cursorPosition_Y]);
     }
   }
   if (keyboardInputChar == KEYBOARD_ESCAPE_KEY){
-    if (editMode_Settings_GPS) {
+    if (editMode_Settings) {
       // disable edit mode
-      editMode_Settings_GPS = false;
+      editMode_Settings = false;
       cursorPosition_X = 0;
     } else {
       if (settingsChanged) {
@@ -1634,7 +1638,7 @@ void handleDisplay_Settings_GPS(){
   if (displayRefresh_Global){
     // clear the buffer
     display.clearDisplay();
-    if (editMode_Settings_GPS) {
+    if (editMode_Settings) {
       if (displayBlink) {
         display.setCursor(cursorPosition_X*6,UI_DISPLAY_ROW_BOTTOM);
         display.print('_');
@@ -1643,7 +1647,7 @@ void handleDisplay_Settings_GPS(){
     // place the cursor
     display.setCursor(0,UI_DISPLAY_ROW_BOTTOM-1);
     // print values to oled
-    if (editMode_Settings_GPS) {
+    if (editMode_Settings) {
       handleDisplay_PrintTempVal();
     } else {
       handleDisplay_PrintValStoredInMem(Settings_Type_GPS[cursorPosition_Y],Settings_TypeIndex_GPS[cursorPosition_Y]);
@@ -1686,17 +1690,20 @@ void handleDisplay_Settings_Display(){
     cursorPosition_Y = 0;
     cursorPosition_X_Last = 0;
     cursorPosition_Y_Last = 0;
-    editMode_Settings_Display = false;
+    editMode_Settings = false;
     Settings_EditValueSize = 0;
     settingsChanged = false;
+    for (int i=0; i<sizeof(Settings_TempDispCharArr);i++) {
+      Settings_TempDispCharArr[i] = '\0';
+    }
   }
   // monitor for changes
-  if (editMode_Settings_Display) {
+  if (editMode_Settings) {
     settingsChanged = true;
   }
   // handle button context for current display
   if (KEYBOARD_PRINTABLE_CHARACTERS || KEYBOARD_DIRECTIONAL_KEYS || keyboardInputChar == KEYBOARD_BACKSPACE_KEY) {
-    if (editMode_Settings_Display){
+    if (editMode_Settings){
       handleDisplay_TempVarDisplay(Settings_Type_Display[cursorPosition_Y]);
     } else if (keyboardInputChar == KEYBOARD_UP_KEY) {
       if (cursorPosition_Y > 0) {
@@ -1713,19 +1720,19 @@ void handleDisplay_Settings_Display(){
     }
   }
   if (keyboardInputChar == KEYBOARD_ENTER_KEY){
-    if (editMode_Settings_Display) {
-      editMode_Settings_Display = false;
+    if (editMode_Settings) {
+      editMode_Settings = false;
       handleDisplay_TempVarApply(Settings_Type_Display[cursorPosition_Y],Settings_TypeIndex_Display[cursorPosition_Y]);
     } else {
       // enable edit mode
-      editMode_Settings_Display = true;
+      editMode_Settings = true;
       handleDisplay_TempVarCopy(Settings_Type_Display[cursorPosition_Y],Settings_TypeIndex_Display[cursorPosition_Y]);
     }
   }
   if (keyboardInputChar == KEYBOARD_ESCAPE_KEY){
-    if (editMode_Settings_Display) {
+    if (editMode_Settings) {
       // disable edit mode
-      editMode_Settings_Display = false;
+      editMode_Settings = false;
       cursorPosition_X = 0;
     } else {
       if (settingsChanged) {
@@ -1741,7 +1748,7 @@ void handleDisplay_Settings_Display(){
   if (displayRefresh_Global){
     // clear the buffer
     display.clearDisplay();
-    if (editMode_Settings_Display) {
+    if (editMode_Settings) {
       if (displayBlink) {
         display.setCursor(cursorPosition_X*6,UI_DISPLAY_ROW_BOTTOM);
         display.print('_');
@@ -1750,7 +1757,7 @@ void handleDisplay_Settings_Display(){
     // place the cursor
     display.setCursor(0,UI_DISPLAY_ROW_BOTTOM-1);
     // print values to oled
-    if (editMode_Settings_Display) {
+    if (editMode_Settings) {
       handleDisplay_PrintTempVal();
     } else {
       handleDisplay_PrintValStoredInMem(Settings_Type_Display[cursorPosition_Y],Settings_TypeIndex_Display[cursorPosition_Y]);

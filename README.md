@@ -62,7 +62,7 @@ __CMD:Settings:Display:Scroll Messages:<True/False>__ | Messages are scrolled on
 __CMD:Settings:Display:Scroll Speed:<0 to 65,535>__ | Speed in milliseconds that each pixel of messages is scrolled | 4
 
 TODO (repo):
-- add schematics
+- complete schematics (80%)
 - add parts list
 - add menu layout
 - add instructions
@@ -77,6 +77,7 @@ TODO (software):
 - add "quick message" functionality. currently to send a message you highlight 'Messages' on the home screen and press the right key.
 - add ability to program the radio for 'plug-n-play' experience (is this possible?)
 - add store and recall messages in SD card to save dynamic memory
+- handle acknowledgement and retries for messages
 
 Arduino:
 https://www.arduino.cc/en/pmwiki.php?n=Main/ArduinoBoardProMini
