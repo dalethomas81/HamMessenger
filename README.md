@@ -77,7 +77,7 @@ TODO (software):
 - add "quick message" functionality. currently to send a message you highlight 'Messages' on the home screen and press the right key.
 - add ability to program the radio for 'plug-n-play' experience (is this possible?)
 - add store and recall messages in SD card to save dynamic memory
-- handle acknowledgement and retries for messages
+- add feature to be selective about message acknowledgments. currently any acknowlegment (from a second conversation) will reset the messaging sequencer.
 
 Arduino:
 https://www.arduino.cc/en/pmwiki.php?n=Main/ArduinoBoardProMini
