@@ -35,7 +35,6 @@ char keyboardInputChar;
 // oled display
 //#define SCREEN_WIDTH 128 // OLED display width, in pixels
 //#define SCREEN_HEIGHT 64 // OLED display height, in pixels
-
 #define DISPLAY_REFRESH_RATE                  100
 #define DISPLAY_REFRESH_RATE_SCROLL           80       // min 60
 #define DISPLAY_BLINK_RATE                    500
@@ -60,10 +59,10 @@ char keyboardInputChar;
 unsigned char currentDisplay = UI_DISPLAY_HOME;
 unsigned char currentDisplayLast = currentDisplay;
 unsigned char previousDisplay = UI_DISPLAY_HOME;
-int cursorPosition_X = 0, cursorPosition_X_Last = 0;
-int cursorPosition_Y = 0, cursorPosition_Y_Last = 0;
-int ScrollingIndex_LiveFeed, ScrollingIndex_LiveFeed_minX;
-int ScrollingIndex_MessageFeed, ScrollingIndex_MessageFeed_minX;
+unsigned char cursorPosition_X = 0, cursorPosition_X_Last = 0;
+unsigned char cursorPosition_Y = 0, cursorPosition_Y_Last = 0;
+short int ScrollingIndex_LiveFeed, ScrollingIndex_LiveFeed_minX;
+short int ScrollingIndex_MessageFeed, ScrollingIndex_MessageFeed_minX;
 
 // do something on first show of display
 bool displayInitialized = false;
@@ -75,8 +74,8 @@ bool displayRefresh_Global = true, displayRefresh_Scroll = true;
 // go into edit mode in the settings
 bool editMode_Settings = false;
 bool displayBlink = false, characterIncrement = false;
-int Settings_EditType = 0;
-int Settings_EditValueSize = 0;
+unsigned char Settings_EditType = 0;
+unsigned char Settings_EditValueSize = 0;
 bool settingsChanged = false;
 
 // Declaration for an SSD1306 display connected to I2C (SDA, SCL pins)
@@ -97,6 +96,7 @@ unsigned long voltage_check_timer;
 unsigned long processor_scan_time, scanTime;
 unsigned long display_blink_timer;
 unsigned long button_hold_timer_down, character_increment_timer;
+unsigned long message_retry_timer;
 
 // http://ember2ash.com/lat.htm
 float fltCurrentLatDeg = 0;
@@ -122,9 +122,9 @@ bool blnModemCmdFlag_SetS=false, blnModemCmdFlag_SetC=false;
 bool blnModemCmdFlag_SetH=false;
 bool blnAprsAutomaticCommentEnabled = true;
 bool applySettings=false, saveModemSettings=false;
-int applySettings_Seq=0;
-bool sendMessage=false;
-int sendMessage_Seq=0;
+unsigned char applySettings_Seq=0;
+bool sendMessage=false, sendMessage_Ack=false;
+unsigned char sendMessage_Seq=0, sendMessage_Retrys;
 
 // London                                 LAT:51.508131     LNG:-0.128002
 //double DESTINATION_LAT = 51.508131, DESTINATION_LON = -0.128002;
@@ -168,12 +168,12 @@ struct GPS {
 #define MAXIMUM_MODEM_COMMAND_RATE 100        // maximum rate that commands can be sent to modem
 
 #define LIVEFEED_BUFFER_SIZE  5
-int liveFeedBufferIndex = -1, oldliveFeedBufferIndex = -1, liveFeedBufferIndex_RecordCount = 0;
+long liveFeedBufferIndex = -1, oldliveFeedBufferIndex = -1, liveFeedBufferIndex_RecordCount = 0;
 bool liveFeedIsEmpty = true;
 APRSFormat_Raw LiveFeedBuffer[LIVEFEED_BUFFER_SIZE] = {'\0'};
 
 #define INCOMING_MESSAGE_BUFFER_SIZE 5
-int incomingMessageBufferIndex = -1, oldIncomingMessageBufferIndex = -1, incomingMessageBufferIndex_RecordCount = 0;
+long incomingMessageBufferIndex = -1, oldIncomingMessageBufferIndex = -1, incomingMessageBufferIndex_RecordCount = 0;
 bool messageFeedIsEmpty = true;
 APRSFormat_Msg IncomingMessageBuffer[INCOMING_MESSAGE_BUFFER_SIZE];
 
@@ -182,13 +182,15 @@ APRSFormat_Msg IncomingMessageBuffer[INCOMING_MESSAGE_BUFFER_SIZE];
 #define txPin A6
 
 // voltage settings
-int VoltagePercent = 0;
+unsigned char VoltagePercent = 0;
 long Voltage = 0;
 #define BATT_CHARGED            7200
 #define BATT_DISCHARGED         5600
 #define VOLTAGE_CHECK_RATE      10000
 
 // settings
+#define MAX_MESSAGE_RETRIES             5     // this will later go into editable eeprom settings from the ui
+#define MESSAGE_RETRY_RATE              10000  // this will later go into editable eeprom settings from the ui
 #define EEPROM_SETTINGS_START_ADDR      1000
 #define SETTINGS_EDIT_TYPE_NONE         0
 #define SETTINGS_EDIT_TYPE_BOOLEAN      1
@@ -208,14 +210,14 @@ const char *MenuItems_Settings_APRS[] = {"Beacon Frequency","Raw Packet","Commen
 const char *MenuItems_Settings_GPS[] = {"Update Frequency","Position Tolerance","Destination Latitude","Destination Longitude"};
 const char *MenuItems_Settings_Display[] = {"Timeout", "Brightness", "Show Position", "Scroll Messages", "Scroll Speed"};
 
-int Settings_Type_APRS[] = {SETTINGS_EDIT_TYPE_ULONG,SETTINGS_EDIT_TYPE_STRING100,SETTINGS_EDIT_TYPE_STRING100,SETTINGS_EDIT_TYPE_STRING100,SETTINGS_EDIT_TYPE_STRING7,SETTINGS_EDIT_TYPE_STRING2,SETTINGS_EDIT_TYPE_STRING7,SETTINGS_EDIT_TYPE_STRING2,
+unsigned char Settings_Type_APRS[] = {SETTINGS_EDIT_TYPE_ULONG,SETTINGS_EDIT_TYPE_STRING100,SETTINGS_EDIT_TYPE_STRING100,SETTINGS_EDIT_TYPE_STRING100,SETTINGS_EDIT_TYPE_STRING7,SETTINGS_EDIT_TYPE_STRING2,SETTINGS_EDIT_TYPE_STRING7,SETTINGS_EDIT_TYPE_STRING2,
                             SETTINGS_EDIT_TYPE_STRING7,SETTINGS_EDIT_TYPE_STRING2,SETTINGS_EDIT_TYPE_STRING7,SETTINGS_EDIT_TYPE_STRING2,SETTINGS_EDIT_TYPE_STRING7,SETTINGS_EDIT_TYPE_STRING2,
                             SETTINGS_EDIT_TYPE_STRING2,SETTINGS_EDIT_TYPE_STRING2,SETTINGS_EDIT_TYPE_BOOLEAN,SETTINGS_EDIT_TYPE_UINT,SETTINGS_EDIT_TYPE_UINT};
-int Settings_Type_GPS[] = {SETTINGS_EDIT_TYPE_ULONG,SETTINGS_EDIT_TYPE_FLOAT,SETTINGS_EDIT_TYPE_FLOAT,SETTINGS_EDIT_TYPE_FLOAT};
-int Settings_Type_Display[] = {SETTINGS_EDIT_TYPE_ULONG, SETTINGS_EDIT_TYPE_UINT, SETTINGS_EDIT_TYPE_BOOLEAN, SETTINGS_EDIT_TYPE_BOOLEAN, SETTINGS_EDIT_TYPE_UINT};
-int Settings_TypeIndex_APRS[] = {0,0,1,2,0,0,1,1,2,2,3,3,4,4,5,6,2,1,2}; // this is the index in the array of the data arrays below
-int Settings_TypeIndex_GPS[] = {1,0,1,2};
-int Settings_TypeIndex_Display[] = {2,0,0,1,3};
+unsigned char Settings_Type_GPS[] = {SETTINGS_EDIT_TYPE_ULONG,SETTINGS_EDIT_TYPE_FLOAT,SETTINGS_EDIT_TYPE_FLOAT,SETTINGS_EDIT_TYPE_FLOAT};
+unsigned char Settings_Type_Display[] = {SETTINGS_EDIT_TYPE_ULONG, SETTINGS_EDIT_TYPE_UINT, SETTINGS_EDIT_TYPE_BOOLEAN, SETTINGS_EDIT_TYPE_BOOLEAN, SETTINGS_EDIT_TYPE_UINT};
+unsigned char Settings_TypeIndex_APRS[] = {0,0,1,2,0,0,1,1,2,2,3,3,4,4,5,6,2,1,2}; // this is the index in the array of the data arrays below
+unsigned char Settings_TypeIndex_GPS[] = {1,0,1,2};
+unsigned char Settings_TypeIndex_Display[] = {2,0,0,1,3};
 // data arrays
 bool Settings_TypeBool[3] = {true,true,true}; // display show position, scroll messages, auto ACK
 int Settings_TypeInt[0] = {};
@@ -974,10 +976,10 @@ void handleDisplay_Global(){
     display.setCursor(0+18,UI_DISPLAY_ROW_BOTTOM);
     display.print(fltCurrentLatDeg);
     
-    display.setCursor(59,UI_DISPLAY_ROW_BOTTOM);
-    display.print(F(" LG:"));
+    display.setCursor(62,UI_DISPLAY_ROW_BOTTOM);
+    display.print(F("LG:"));
     
-    display.setCursor(59+24,UI_DISPLAY_ROW_BOTTOM);
+    display.setCursor(62+18,UI_DISPLAY_ROW_BOTTOM);
     display.print(fltCurrentLngDeg);
   }
 }
@@ -1156,7 +1158,11 @@ void handleDisplay_Messages(){
           i = sizeof(IncomingMessageBuffer[cursorPosition_Y].to); // get out
         }
       }
+      // display the cursor position (represents record number in this case)
       display.setCursor(0,UI_DISPLAY_ROW_01);
+      display.print(cursorPosition_Y+1);
+      // display who the message is to and from
+      display.setCursor(12,UI_DISPLAY_ROW_01);
       display.print(to_from);
 
       //byte indexRow = 0;
@@ -1272,7 +1278,11 @@ void handleDisplay_LiveFeed(){
           i = sizeof(LiveFeedBuffer[cursorPosition_Y].dst); // get out
         }
       }
+      // display the cursor position (represents record number in this case)
       display.setCursor(0,UI_DISPLAY_ROW_01);
+      display.print(cursorPosition_Y+1);
+      // display who the message is to and from
+      display.setCursor(12,UI_DISPLAY_ROW_01);
       display.print(src_dst);
 
       //byte indexRow = 0;
@@ -1808,20 +1818,34 @@ void handleSendMessage(){
   }
   switch (sendMessage_Seq){
     case 0:
+      sendMessage_Retrys=0;
       break;
-    case 1: // set recipient callsign
+    case 1: // init
+      sendMessage_Ack=false;
+      message_retry_timer = millis();
+      sendMessage_Seq++;
+      break;
+    case 2: // set recipient callsign
       blnModemCmdFlag_MsgRecipient=true;
       sendMessage_Seq++;
       break;
-    case 2: // wait for complete and set recipient ssid
+    case 3: // wait for complete and set recipient ssid
       if (!blnModemCmdFlag_MsgRecipient) {
         blnModemCmdFlag_MsgRecipientSSID=true;
         sendMessage_Seq++;
       }
       break;
-    case 3: // wait for complete and set message and end sequence
+    case 4: // wait for complete and set message and end sequence
       if (!blnModemCmdFlag_MsgRecipientSSID) {
         blnModemCmdFlag_Msg=true;
+        sendMessage_Seq++;
+      }
+      break;
+    case 5: // wait for acknowledgment and end sequence
+      if (millis() - message_retry_timer > MESSAGE_RETRY_RATE && !sendMessage_Ack && sendMessage_Retrys < MAX_MESSAGE_RETRIES){
+        sendMessage_Seq=1;
+        sendMessage_Retrys++;
+      } else if (sendMessage_Ack || sendMessage_Retrys >= MAX_MESSAGE_RETRIES) {
         sendMessage_Seq=0;
       }
       break;
@@ -2195,7 +2219,9 @@ void readModem(){
           // switch to message display
           currentDisplay = UI_DISPLAY_MESSAGES;
         } else {
-          // do something here if message is an acknowledge
+          // for now any acknowledge will set this. in the future, 
+          // we will need to see if it is a response to our message.
+          sendMessage_Ack=true;
         }
       }
     }
