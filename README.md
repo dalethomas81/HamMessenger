@@ -78,6 +78,10 @@ TODO (software):
 - add ability to program the radio for 'plug-n-play' experience (is this possible?)
 - add store and recall messages in SD card to save dynamic memory
 
+Arduino:
+https://www.arduino.cc/en/pmwiki.php?n=Main/ArduinoBoardProMini
+https://store.arduino.cc/usa/mega-2560-r3
+
 Keyboard:
 https://github.com/m5stack/M5-ProductExampleCodes/tree/master/Unit/CARDKB
 https://www.ebay.com/itm/124774337790?hash=item1d0d214cfe:g:kEkAAOSwEZlg0302
