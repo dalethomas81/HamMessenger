@@ -39,14 +39,14 @@ char keyboardInputChar;
 #define DISPLAY_REFRESH_RATE                  100
 #define DISPLAY_REFRESH_RATE_SCROLL           80       // min 60
 #define DISPLAY_BLINK_RATE                    500
-#define UI_DISPLAY_HOME                       10000
-#define UI_DISPLAY_MESSAGES                   11000
-#define UI_DISPLAY_LIVEFEED                   12000
-#define UI_DISPLAY_SETTINGS                   13000
-#define UI_DISPLAY_SETTINGS_APRS              13100
-#define UI_DISPLAY_SETTINGS_GPS               13200
-#define UI_DISPLAY_SETTINGS_DISPLAY           13300
-#define UI_DISPLAY_SETTINGS_SAVE              13400
+#define UI_DISPLAY_HOME                       0
+#define UI_DISPLAY_MESSAGES                   1
+#define UI_DISPLAY_LIVEFEED                   2
+#define UI_DISPLAY_SETTINGS                   3
+#define UI_DISPLAY_SETTINGS_APRS              4
+#define UI_DISPLAY_SETTINGS_GPS               5
+#define UI_DISPLAY_SETTINGS_DISPLAY           6
+#define UI_DISPLAY_SETTINGS_SAVE              7
 
 #define UI_DISPLAY_ROW_TOP                    0
 #define UI_DISPLAY_ROW_01                     8
@@ -57,14 +57,8 @@ char keyboardInputChar;
 #define UI_DISPLAY_ROW_06                     48
 #define UI_DISPLAY_ROW_BOTTOM                 56
 
-long currentDisplay = UI_DISPLAY_HOME;
-long previousDisplay_Messages = UI_DISPLAY_HOME;
-long previousDisplay_LiveFeed = UI_DISPLAY_HOME;
-long previousDisplay_Settings = UI_DISPLAY_HOME;
-long previousDisplay_Settings_Save = UI_DISPLAY_SETTINGS;
-long previousDisplay_Settings_APRS = UI_DISPLAY_SETTINGS;
-long previousDisplay_Settings_GPS = UI_DISPLAY_SETTINGS;
-long previousDisplay_Settings_Display = UI_DISPLAY_SETTINGS;
+unsigned char currentDisplay = UI_DISPLAY_HOME;
+unsigned char previousDisplay = UI_DISPLAY_HOME;
 int cursorPosition_X = 0, cursorPosition_X_Last = 0;
 int cursorPosition_Y = 0, cursorPosition_Y_Last = 0;
 int ScrollingIndex_LiveFeed, ScrollingIndex_LiveFeed_minX;
@@ -100,8 +94,7 @@ Adafruit_SH1106 display(OLED_RESET);
 TinyGPSPlus gps;
 #define DESTINATION_REPORT_FREQUENCY 20000    // how often distance to target is sent to serial - will be removed
 unsigned long gps_report_timer, destination_report_timer, modem_command_timer, aprs_beacon_timer, display_refresh_timer, display_refresh_timer_scroll;
-unsigned long leave_display_timer_MessageFeed, leave_display_timer_Livefeed, leave_display_timer_Settings;
-unsigned long leave_display_timer_Settings_APRS, leave_display_timer_Settings_GPS, leave_display_timer_Settings_Display;
+unsigned long leave_display_timer;
 unsigned long voltage_check_timer;
 unsigned long processor_scan_time, scanTime;
 unsigned long display_blink_timer;
@@ -1031,20 +1024,18 @@ void handleDisplay_Home(){
     switch (cursorPosition_Y){
       case 0:
         currentDisplay = UI_DISPLAY_MESSAGES;
-        previousDisplay_Messages = UI_DISPLAY_HOME;
         break;
       case 1:
         currentDisplay = UI_DISPLAY_LIVEFEED;
-        previousDisplay_LiveFeed = UI_DISPLAY_HOME;
         break;
       case 2:
         currentDisplay = UI_DISPLAY_SETTINGS;
-        previousDisplay_Settings = UI_DISPLAY_HOME;
         break;
       default:
         currentDisplay = UI_DISPLAY_HOME;
         break;
     }
+    previousDisplay = UI_DISPLAY_HOME;
   }
   if (keyboardInputChar == KEYBOARD_ESCAPE_KEY){
   }      
@@ -1109,8 +1100,8 @@ void handleDisplay_Messages(){
     }
     cursorPosition_X_Last = cursorPosition_X;
     cursorPosition_Y_Last = -1;
-    oldIncomingMessageBufferIndex = incomingMessageBufferIndex; // set these equal to monitor changes
-    //Serial.print(F("Entered Display Messages:")); Serial.println(currentDisplay);
+    oldIncomingMessageBufferIndex = incomingMessageBufferIndex; 
+    leave_display_timer = millis();
   }
   // change cursor position as new mesasages arrive
   if (incomingMessageBufferIndex != oldIncomingMessageBufferIndex) {
@@ -1135,7 +1126,7 @@ void handleDisplay_Messages(){
   if (keyboardInputChar == KEYBOARD_ENTER_KEY){
   }
   if (keyboardInputChar == KEYBOARD_ESCAPE_KEY){
-    currentDisplay = previousDisplay_Messages;
+    currentDisplay = previousDisplay;
     return;
   }
   // build display
@@ -1199,14 +1190,14 @@ void handleDisplay_Messages(){
       display.print(F("You have no messages"));
       if (!leaveDisplay_MessageFeed) {
         leaveDisplay_MessageFeed = true;
-        leave_display_timer_MessageFeed = millis();
+        leave_display_timer = millis();
       }
     }
     // display all content from buffer
     display.display();
   }
   // timeout and leave
-  if (millis() - leave_display_timer_MessageFeed > SETTINGS_DISPLAY_TIMEOUT && leaveDisplay_MessageFeed){
+  if (millis() - leave_display_timer > SETTINGS_DISPLAY_TIMEOUT && leaveDisplay_MessageFeed){
     leaveDisplay_MessageFeed = false;
     currentDisplay = UI_DISPLAY_HOME;
     return;
@@ -1232,8 +1223,8 @@ void handleDisplay_LiveFeed(){
     }
     cursorPosition_X_Last = cursorPosition_X;
     cursorPosition_Y_Last = -1;
-    oldliveFeedBufferIndex = liveFeedBufferIndex; // set these equal to monitor changes
-    //Serial.print(F("Entered Display Live Feed:")); Serial.println(currentDisplay);
+    oldliveFeedBufferIndex = liveFeedBufferIndex;
+    leave_display_timer = millis();
   }
   // change cursor position as new mesasages arrive
   if (liveFeedBufferIndex != oldliveFeedBufferIndex) {
@@ -1258,7 +1249,7 @@ void handleDisplay_LiveFeed(){
   if (keyboardInputChar == KEYBOARD_ENTER_KEY){
   }
   if (keyboardInputChar == KEYBOARD_ESCAPE_KEY){
-    currentDisplay = previousDisplay_LiveFeed;
+    currentDisplay = previousDisplay;
     return;
   }
   // build display
@@ -1322,14 +1313,14 @@ void handleDisplay_LiveFeed(){
       display.print(F("Live feed is empty"));
       if (!leaveDisplay_LiveFeed) {
         leaveDisplay_LiveFeed = true;
-        leave_display_timer_Livefeed = millis();
+        leave_display_timer = millis();
       }
     }
     // display all content from buffer
     display.display();
   }
   // timeout and leave
-  if (millis() - leave_display_timer_Livefeed > SETTINGS_DISPLAY_TIMEOUT && leaveDisplay_LiveFeed){
+  if (millis() - leave_display_timer > SETTINGS_DISPLAY_TIMEOUT && leaveDisplay_LiveFeed){
     leaveDisplay_LiveFeed = false;
     currentDisplay = UI_DISPLAY_HOME;
     return;
@@ -1376,9 +1367,11 @@ void handleDisplay_Settings_Save(){
       saveModemSettings=true;
     }
     currentDisplay = UI_DISPLAY_SETTINGS;
+    previousDisplay = UI_DISPLAY_HOME;
   }
   if (keyboardInputChar == KEYBOARD_ESCAPE_KEY){
     currentDisplay = UI_DISPLAY_SETTINGS;
+    previousDisplay = UI_DISPLAY_HOME;
     return;
   }
   // build display
@@ -1453,23 +1446,21 @@ void handleDisplay_Settings(){
     switch (cursorPosition_Y) {
       case 0:
         currentDisplay = UI_DISPLAY_SETTINGS_APRS;
-        previousDisplay_Settings_APRS = UI_DISPLAY_SETTINGS;
         break;
       case 1:
         currentDisplay = UI_DISPLAY_SETTINGS_GPS;
-        previousDisplay_Settings_GPS = UI_DISPLAY_SETTINGS;
         break;
       case 2:
         currentDisplay = UI_DISPLAY_SETTINGS_DISPLAY;
-        previousDisplay_Settings_Display = UI_DISPLAY_SETTINGS;
         break;
       default:
         currentDisplay = UI_DISPLAY_SETTINGS;
         break;
     }
+    previousDisplay = UI_DISPLAY_SETTINGS;
   }
   if (keyboardInputChar == KEYBOARD_ESCAPE_KEY){
-    currentDisplay = previousDisplay_Settings;
+    currentDisplay = previousDisplay;
     return;
   }
   // build display
@@ -1571,9 +1562,9 @@ void handleDisplay_Settings_APRS(){
     } else {
       if (settingsChanged) {
         currentDisplay = UI_DISPLAY_SETTINGS_SAVE;
-        previousDisplay_Settings_Save = UI_DISPLAY_SETTINGS_APRS;
+        previousDisplay = UI_DISPLAY_SETTINGS_APRS;
       } else {
-        currentDisplay = previousDisplay_Settings_APRS;
+        currentDisplay = previousDisplay;
         return;
       }
     }
@@ -1686,9 +1677,9 @@ void handleDisplay_Settings_GPS(){
     } else {
       if (settingsChanged) {
         currentDisplay = UI_DISPLAY_SETTINGS_SAVE;
-        previousDisplay_Settings_Save = UI_DISPLAY_SETTINGS_GPS;
+        previousDisplay = UI_DISPLAY_SETTINGS_GPS;
       } else {
-        currentDisplay = previousDisplay_Settings_GPS;
+        currentDisplay = previousDisplay;
         return;
       }
     }
@@ -1801,9 +1792,9 @@ void handleDisplay_Settings_Display(){
     } else {
       if (settingsChanged) {
         currentDisplay = UI_DISPLAY_SETTINGS_SAVE;
-        previousDisplay_Settings_Save = UI_DISPLAY_SETTINGS_DISPLAY;
+        previousDisplay = UI_DISPLAY_SETTINGS_DISPLAY;
       } else {
-        currentDisplay = previousDisplay_Settings_Display;
+        currentDisplay = previousDisplay;
         return;
       }
     }
