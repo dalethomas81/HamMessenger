@@ -202,11 +202,11 @@ long Voltage = 0;
 #define SETTINGS_EDIT_TYPE_STRING100    9
                         
 const char *MenuItems_Settings[] = {"APRS","GPS","Display"};
-const char *MenuItems_Settings_APRS[] = {"Beacon Freq (ms)","Raw Packet","Comment","Message","Recipient Callsign","Recipient SSID", "My Callsign","Callsign SSID", 
+const char *MenuItems_Settings_APRS[] = {"Beacon Frequency","Raw Packet","Comment","Message","Recipient Callsign","Recipient SSID", "My Callsign","Callsign SSID", 
                                         "Dest Callsign", "Dest SSID", "PATH1 Callsign", "PATH1 SSID", "PATH2 Callsign", "PATH2 SSID",
-                                        "Symbol", "Table", "Automatic ACK", "Preamble (ms)", "Tail (ms)", "Retry Count", "Retry Interval (ms)"};
-const char *MenuItems_Settings_GPS[] = {"Update Freq (ms)","Pos Tolerance (%)","Dest Latitude","Dest Longitude"};
-const char *MenuItems_Settings_Display[] = {"Timeout (ms)", "Brightness (%)", "Show Position", "Scroll Messages", "Scroll Speed (px/r)", "Invert"};
+                                        "Symbol", "Table", "Automatic ACK", "Preamble", "Tail", "Retry Count", "Retry Interval"};
+const char *MenuItems_Settings_GPS[] = {"Update Freq","Pos Tolerance", "Dest Latitude", "Dest Longitude"};
+const char *MenuItems_Settings_Display[] = {"Timeout", "Brightness", "Show Position", "Scroll Messages", "Scroll Speed", "Invert"};
 
 unsigned char Settings_Type_APRS[] = {SETTINGS_EDIT_TYPE_ULONG,SETTINGS_EDIT_TYPE_STRING100,SETTINGS_EDIT_TYPE_STRING100,SETTINGS_EDIT_TYPE_STRING100,SETTINGS_EDIT_TYPE_STRING7,SETTINGS_EDIT_TYPE_STRING2,SETTINGS_EDIT_TYPE_STRING7,SETTINGS_EDIT_TYPE_STRING2,
                             SETTINGS_EDIT_TYPE_STRING7,SETTINGS_EDIT_TYPE_STRING2,SETTINGS_EDIT_TYPE_STRING7,SETTINGS_EDIT_TYPE_STRING2,SETTINGS_EDIT_TYPE_STRING7,SETTINGS_EDIT_TYPE_STRING2,
