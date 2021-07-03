@@ -189,8 +189,6 @@ long Voltage = 0;
 #define VOLTAGE_CHECK_RATE      10000
 
 // settings
-#define MAX_MESSAGE_RETRIES             5     // this will later go into editable eeprom settings from the ui
-#define MESSAGE_RETRY_RATE              10000  // this will later go into editable eeprom settings from the ui
 #define EEPROM_SETTINGS_START_ADDR      1000
 #define SETTINGS_EDIT_TYPE_NONE         0
 #define SETTINGS_EDIT_TYPE_BOOLEAN      1
@@ -204,24 +202,24 @@ long Voltage = 0;
 #define SETTINGS_EDIT_TYPE_STRING100    9
                         
 const char *MenuItems_Settings[] = {"APRS","GPS","Display"};
-const char *MenuItems_Settings_APRS[] = {"Beacon Frequency","Raw Packet","Comment","Message","Recipient Callsign","Recipient SSID", "My Callsign","Callsign SSID", 
-                                        "Destination Callsign", "Destination SSID", "PATH1 Callsign", "PATH1 SSID", "PATH2 Callsign", "PATH2 SSID",
-                                        "Symbol", "Table", "Automatic ACK", "Preamble", "Tail"};
-const char *MenuItems_Settings_GPS[] = {"Update Frequency","Position Tolerance","Destination Latitude","Destination Longitude"};
-const char *MenuItems_Settings_Display[] = {"Timeout", "Brightness", "Show Position", "Scroll Messages", "Scroll Speed"};
+const char *MenuItems_Settings_APRS[] = {"Beacon Freq (ms)","Raw Packet","Comment","Message","Recipient Callsign","Recipient SSID", "My Callsign","Callsign SSID", 
+                                        "Dest Callsign", "Dest SSID", "PATH1 Callsign", "PATH1 SSID", "PATH2 Callsign", "PATH2 SSID",
+                                        "Symbol", "Table", "Automatic ACK", "Preamble (ms)", "Tail ms)", "Retry Count", "Retry Interval (ms)"};
+const char *MenuItems_Settings_GPS[] = {"Update Frequency (ms)","Position Tolerance","Destination Latitude","Destination Longitude"};
+const char *MenuItems_Settings_Display[] = {"Timeout (ms)", "Brightness (%)", "Show Position", "Scroll Messages", "Scroll Speed (px/r)"};
 
 unsigned char Settings_Type_APRS[] = {SETTINGS_EDIT_TYPE_ULONG,SETTINGS_EDIT_TYPE_STRING100,SETTINGS_EDIT_TYPE_STRING100,SETTINGS_EDIT_TYPE_STRING100,SETTINGS_EDIT_TYPE_STRING7,SETTINGS_EDIT_TYPE_STRING2,SETTINGS_EDIT_TYPE_STRING7,SETTINGS_EDIT_TYPE_STRING2,
                             SETTINGS_EDIT_TYPE_STRING7,SETTINGS_EDIT_TYPE_STRING2,SETTINGS_EDIT_TYPE_STRING7,SETTINGS_EDIT_TYPE_STRING2,SETTINGS_EDIT_TYPE_STRING7,SETTINGS_EDIT_TYPE_STRING2,
-                            SETTINGS_EDIT_TYPE_STRING2,SETTINGS_EDIT_TYPE_STRING2,SETTINGS_EDIT_TYPE_BOOLEAN,SETTINGS_EDIT_TYPE_UINT,SETTINGS_EDIT_TYPE_UINT};
+                            SETTINGS_EDIT_TYPE_STRING2,SETTINGS_EDIT_TYPE_STRING2,SETTINGS_EDIT_TYPE_BOOLEAN,SETTINGS_EDIT_TYPE_UINT,SETTINGS_EDIT_TYPE_UINT,SETTINGS_EDIT_TYPE_UINT,SETTINGS_EDIT_TYPE_UINT};
 unsigned char Settings_Type_GPS[] = {SETTINGS_EDIT_TYPE_ULONG,SETTINGS_EDIT_TYPE_FLOAT,SETTINGS_EDIT_TYPE_FLOAT,SETTINGS_EDIT_TYPE_FLOAT};
 unsigned char Settings_Type_Display[] = {SETTINGS_EDIT_TYPE_ULONG, SETTINGS_EDIT_TYPE_UINT, SETTINGS_EDIT_TYPE_BOOLEAN, SETTINGS_EDIT_TYPE_BOOLEAN, SETTINGS_EDIT_TYPE_UINT};
-unsigned char Settings_TypeIndex_APRS[] = {0,0,1,2,0,0,1,1,2,2,3,3,4,4,5,6,2,1,2}; // this is the index in the array of the data arrays below
+unsigned char Settings_TypeIndex_APRS[] = {0,0,1,2,0,0,1,1,2,2,3,3,4,4,5,6,2,1,2,4,5}; // this is the index in the array of the data arrays below
 unsigned char Settings_TypeIndex_GPS[] = {1,0,1,2};
 unsigned char Settings_TypeIndex_Display[] = {2,0,0,1,3};
 // data arrays
 bool Settings_TypeBool[3] = {true,true,true}; // display show position, scroll messages, auto ACK
 int Settings_TypeInt[0] = {};
-unsigned int Settings_TypeUInt[4] = {100,400,80,4}; // display brightness, aprs preamble, aprs tail, scroll speed
+unsigned int Settings_TypeUInt[6] = {100,400,80,4,5,10000}; // display brightness, aprs preamble, aprs tail, scroll speed, Retry Count, Retry Interval
 long Settings_TypeLong[0] = {};
 unsigned long Settings_TypeULong[3] = {300000,10000,2000}; // aprs beacon frequency, gps update frequency, display timeout
 float Settings_TypeFloat[3] = {0.00001,34.790040,-82.790672}; // gps position tolerance, gps latitude, gps longitude
@@ -249,6 +247,8 @@ char Settings_TempDispCharArr[100];
 #define SETTINGS_APRS_AUTOMATIC_ACK           Settings_TypeBool[Settings_TypeIndex_APRS[16]]        // Automatic ACK
 #define SETTINGS_APRS_PREAMBLE                Settings_TypeUInt[Settings_TypeIndex_APRS[17]]        // Preamble
 #define SETTINGS_APRS_TAIL                    Settings_TypeUInt[Settings_TypeIndex_APRS[18]]        // Tail
+#define SETTINGS_APRS_RETRY_COUNT             Settings_TypeUInt[Settings_TypeIndex_APRS[19]]        // Retry Count
+#define SETTINGS_APRS_RETRY_INTERVAL          Settings_TypeUInt[Settings_TypeIndex_APRS[20]]        // Retry Interval
 
 #define SETTINGS_GPS_UPDATE_FREQUENCY         Settings_TypeULong[Settings_TypeIndex_GPS[0]]       // update frequency
 #define SETTINGS_GPS_POSITION_TOLERANCE       Settings_TypeFloat[Settings_TypeIndex_GPS[1]]       // position tolerance
@@ -267,7 +267,7 @@ const char InvalidCommand[] = {"Invalid command."};
 const char InvalidData_UnsignedInt[] = {"Invalid data. Expected unsigned integer 0-65535 instead got "};
 const char InvalidData_UnsignedLong[] = {"Invalid data. Expected unsigned long 0-4294967295 instead got "};
 const char InvalidData_TrueFalse[] = {"Invalid data. Expected True/False or 1/0"};
-const char Initialized[] = {"Initialized01"};
+const char Initialized[] = {"Initialized02"};
 
 template <typename T>
 T numberOfDigits(T number){
@@ -341,61 +341,91 @@ void makeInitialized(){
 
 void applyDefaultsToSettings(){
   Serial.println(F("Applying defaults to settings..."));
-  SETTINGS_APRS_BEACON_FREQUENCY = 300000;                // beacon frequency
+
+  SETTINGS_APRS_BEACON_FREQUENCY = 120000;
+
   char strTemp1[] = {"HamMessenger!"};
   for (int i=0; i<sizeof(strTemp1);i++) {
-     SETTINGS_APRS_RAW_PACKET[i] = strTemp1[i]; // raw packet
+     SETTINGS_APRS_RAW_PACKET[i] = strTemp1[i];
   }
+
   char strTemp2[] = {"Testing HamMessenger!"};
   for (int i=0; i<sizeof(strTemp2);i++) {
-     SETTINGS_APRS_COMMENT[i] = strTemp2[i]; // comment
+     SETTINGS_APRS_COMMENT[i] = strTemp2[i];
   }
+
   char strTemp3[] = {"Hi!"};
   for (int i=0; i<sizeof(strTemp3);i++) {
-     SETTINGS_APRS_MESSAGE[i] = strTemp3[i]; // message
+     SETTINGS_APRS_MESSAGE[i] = strTemp3[i];
   }
+
   char strTemp4[] = {"NOCALL"};
   for (int i=0; i<sizeof(strTemp4);i++) {
-     SETTINGS_APRS_RECIPIENT_CALL[i] = strTemp4[i];   // recipient
+     SETTINGS_APRS_RECIPIENT_CALL[i] = strTemp4[i];
   }
-  SETTINGS_APRS_RECIPIENT_SSID[0] = '3';              // recipient ssid
+
+  SETTINGS_APRS_RECIPIENT_SSID[0] = '0';
+
   char strTemp5[] = {"NOCALL"};
   for (int i=0; i<sizeof(strTemp5);i++) {
-     SETTINGS_APRS_CALLSIGN[i] = strTemp5[i];   // callsign
+     SETTINGS_APRS_CALLSIGN[i] = strTemp5[i];
   }
-  SETTINGS_APRS_CALLSIGN_SSID[0] = '3';              // callsign ssid
+
+  SETTINGS_APRS_CALLSIGN_SSID[0] = '0';
+
   char strTemp6[] = {"APRS"};
   for (int i=0; i<sizeof(strTemp6);i++) {
-     SETTINGS_APRS_DESTINATION_CALL[i] = strTemp6[i];   // Destination Callsign
+     SETTINGS_APRS_DESTINATION_CALL[i] = strTemp6[i];
   }
-  SETTINGS_APRS_DESTINATION_SSID[0]  = '0';             // Destination SSID
+
+  SETTINGS_APRS_DESTINATION_SSID[0]  = '0';
+
   char strTemp7[] = {"WIDE1"};
   for (int i=0; i<sizeof(strTemp7);i++) {
-     SETTINGS_APRS_PATH1_CALL[i] = strTemp7[i];  // PATH1 Callsign
+     SETTINGS_APRS_PATH1_CALL[i] = strTemp7[i];
   }
-  SETTINGS_APRS_PATH1_SSID[0] = '1';             // PATH1 SSID
+
+  SETTINGS_APRS_PATH1_SSID[0] = '1';
+
   char strTemp8[] = {"WIDE2"};
   for (int i=0; i<sizeof(strTemp8)-1;i++) {
-     SETTINGS_APRS_PATH2_CALL[i] = strTemp8[i];  // PATH2 Callsign
+     SETTINGS_APRS_PATH2_CALL[i] = strTemp8[i];
   }
-  SETTINGS_APRS_PATH2_SSID[0] = '2';             // PATH2 SSID
-  SETTINGS_APRS_SYMBOL[0] = 'n';             // Symbol
-  SETTINGS_APRS_SYMBOL_TABLE[0] = 's';             // Symbol Table
-  SETTINGS_APRS_AUTOMATIC_ACK = true;                  // Automatic ACK
-  SETTINGS_APRS_PREAMBLE = 350;                   // Preamble
-  SETTINGS_APRS_TAIL = 80;                    // Tail
+
+  SETTINGS_APRS_PATH2_SSID[0] = '2';
+
+  SETTINGS_APRS_SYMBOL[0] = 'n';
+
+  SETTINGS_APRS_SYMBOL_TABLE[0] = 's';
+
+  SETTINGS_APRS_AUTOMATIC_ACK = true;
+
+  SETTINGS_APRS_PREAMBLE = 350;
+
+  SETTINGS_APRS_TAIL = 80;
+
+  SETTINGS_APRS_RETRY_COUNT = 5;
+
+  SETTINGS_APRS_RETRY_INTERVAL = 10000;
   
   // London  LAT:51.508131     LNG:-0.128002
-  SETTINGS_GPS_UPDATE_FREQUENCY = 10000;                  // update frequency
-  SETTINGS_GPS_POSITION_TOLERANCE = 0.00001;                // position tolerance
-  SETTINGS_GPS_DESTINATION_LATITUDE = 51.508131;              // destination latitude
-  SETTINGS_GPS_DESTINATION_LONGITUDE = -0.128002;              // destination longitute
+  SETTINGS_GPS_UPDATE_FREQUENCY = 10000;
+
+  SETTINGS_GPS_POSITION_TOLERANCE = 0.00001;
+
+  SETTINGS_GPS_DESTINATION_LATITUDE = 51.508131;
+
+  SETTINGS_GPS_DESTINATION_LONGITUDE = -0.128002;
   
-  SETTINGS_DISPLAY_TIMEOUT = 2000;                    // timeout
-  SETTINGS_DISPLAY_BRIGHTNESS = 100;                      // brightness
-  SETTINGS_DISPLAY_SHOW_POSITION = true;                     // show position
-  SETTINGS_DISPLAY_SCROLL_MESSAGES = true;                     // scroll messages
-  SETTINGS_DISPLAY_SCROLL_SPEED = 4;                        // scroll speed
+  SETTINGS_DISPLAY_TIMEOUT = 2000;
+
+  SETTINGS_DISPLAY_BRIGHTNESS = 100;
+
+  SETTINGS_DISPLAY_SHOW_POSITION = true;
+
+  SETTINGS_DISPLAY_SCROLL_MESSAGES = true;
+
+  SETTINGS_DISPLAY_SCROLL_SPEED = 4;
 
   writeSettingsToEeprom();
 }
@@ -527,36 +557,38 @@ void printOutSettings(){
   Serial.println();
   Serial.println(F("////////  Current Settings  ////////"));
   Serial.println(F("APRS:"));
-  Serial.print(F("Beacon Frequency=")); Serial.println(SETTINGS_APRS_BEACON_FREQUENCY);
-  Serial.print(F("Raw Packet=")); Serial.println(SETTINGS_APRS_RAW_PACKET);
-  Serial.print(F("Comment=")); Serial.println(SETTINGS_APRS_COMMENT);
-  Serial.print(F("Message=")); Serial.println(SETTINGS_APRS_MESSAGE);
-  Serial.print(F("Message Recipient=")); Serial.println(SETTINGS_APRS_RECIPIENT_CALL);
-  Serial.print(F("Message Recipient SSID=")); Serial.println(SETTINGS_APRS_RECIPIENT_SSID);
-  Serial.print(F("Callsign=")); Serial.println(SETTINGS_APRS_CALLSIGN);
-  Serial.print(F("Callsign SSID=")); Serial.println(SETTINGS_APRS_CALLSIGN_SSID);
-  Serial.print(F("Destination Callsign=")); Serial.println(SETTINGS_APRS_DESTINATION_CALL);
-  Serial.print(F("Destination SSID=")); Serial.println(SETTINGS_APRS_DESTINATION_SSID);
-  Serial.print(F("PATH1 Callsign=")); Serial.println(SETTINGS_APRS_PATH1_CALL);
-  Serial.print(F("PATH1 SSID=")); Serial.println(SETTINGS_APRS_PATH1_SSID);
-  Serial.print(F("PATH2 Callsign=")); Serial.println(SETTINGS_APRS_PATH2_CALL);
-  Serial.print(F("PATH2 SSID=")); Serial.println(SETTINGS_APRS_PATH2_SSID);
-  Serial.print(F("Symbol=")); Serial.println(SETTINGS_APRS_SYMBOL);
-  Serial.print(F("Symbol Table=")); Serial.println(SETTINGS_APRS_SYMBOL_TABLE);
-  Serial.print(F("Automatic ACK=")); Serial.println(SETTINGS_APRS_AUTOMATIC_ACK);
-  Serial.print(F("Preamble=")); Serial.println(SETTINGS_APRS_PREAMBLE);
-  Serial.print(F("Tail=")); Serial.println(SETTINGS_APRS_TAIL);
+  Serial.print(MenuItems_Settings_APRS[0]); Serial.println(SETTINGS_APRS_BEACON_FREQUENCY);
+  Serial.print(MenuItems_Settings_APRS[1]); Serial.println(SETTINGS_APRS_RAW_PACKET);
+  Serial.print(MenuItems_Settings_APRS[2]); Serial.println(SETTINGS_APRS_COMMENT);
+  Serial.print(MenuItems_Settings_APRS[3]); Serial.println(SETTINGS_APRS_MESSAGE);
+  Serial.print(MenuItems_Settings_APRS[4]); Serial.println(SETTINGS_APRS_RECIPIENT_CALL);
+  Serial.print(MenuItems_Settings_APRS[5]); Serial.println(SETTINGS_APRS_RECIPIENT_SSID);
+  Serial.print(MenuItems_Settings_APRS[6]); Serial.println(SETTINGS_APRS_CALLSIGN);
+  Serial.print(MenuItems_Settings_APRS[7]); Serial.println(SETTINGS_APRS_CALLSIGN_SSID);
+  Serial.print(MenuItems_Settings_APRS[8]); Serial.println(SETTINGS_APRS_DESTINATION_CALL);
+  Serial.print(MenuItems_Settings_APRS[9]); Serial.println(SETTINGS_APRS_DESTINATION_SSID);
+  Serial.print(MenuItems_Settings_APRS[10]); Serial.println(SETTINGS_APRS_PATH1_CALL);
+  Serial.print(MenuItems_Settings_APRS[11]); Serial.println(SETTINGS_APRS_PATH1_SSID);
+  Serial.print(MenuItems_Settings_APRS[12]); Serial.println(SETTINGS_APRS_PATH2_CALL);
+  Serial.print(MenuItems_Settings_APRS[13]); Serial.println(SETTINGS_APRS_PATH2_SSID);
+  Serial.print(MenuItems_Settings_APRS[14]); Serial.println(SETTINGS_APRS_SYMBOL);
+  Serial.print(MenuItems_Settings_APRS[15]); Serial.println(SETTINGS_APRS_SYMBOL_TABLE);
+  Serial.print(MenuItems_Settings_APRS[16]); Serial.println(SETTINGS_APRS_AUTOMATIC_ACK);
+  Serial.print(MenuItems_Settings_APRS[17]); Serial.println(SETTINGS_APRS_PREAMBLE);
+  Serial.print(MenuItems_Settings_APRS[18]); Serial.println(SETTINGS_APRS_TAIL);
+  Serial.print(MenuItems_Settings_APRS[19]); Serial.println(SETTINGS_APRS_RETRY_COUNT);
+  Serial.print(MenuItems_Settings_APRS[20]); Serial.println(SETTINGS_APRS_RETRY_INTERVAL);
   Serial.println(F("GPS:"));
-  Serial.print(F("Update Frequency=")); Serial.println(SETTINGS_GPS_UPDATE_FREQUENCY);
-  Serial.print(F("Position Tolerance=")); Serial.println(SETTINGS_GPS_POSITION_TOLERANCE, 6);
-  Serial.print(F("Destination Latitude=")); Serial.println(SETTINGS_GPS_DESTINATION_LATITUDE, 6);
-  Serial.print(F("Destination Longitude=")); Serial.println(SETTINGS_GPS_DESTINATION_LONGITUDE, 6);
+  Serial.print(MenuItems_Settings_GPS[0]); Serial.println(SETTINGS_GPS_UPDATE_FREQUENCY);
+  Serial.print(MenuItems_Settings_GPS[1]); Serial.println(SETTINGS_GPS_POSITION_TOLERANCE, 6);
+  Serial.print(MenuItems_Settings_GPS[2]); Serial.println(SETTINGS_GPS_DESTINATION_LATITUDE, 6);
+  Serial.print(MenuItems_Settings_GPS[3]); Serial.println(SETTINGS_GPS_DESTINATION_LONGITUDE, 6);
   Serial.println(F("Display:"));
-  Serial.print(F("Timeout=")); Serial.println(SETTINGS_DISPLAY_TIMEOUT);
-  Serial.print(F("Brightness=")); Serial.println(SETTINGS_DISPLAY_BRIGHTNESS);
-  Serial.print(F("Show Position=")); Serial.println(SETTINGS_DISPLAY_SHOW_POSITION);
-  Serial.print(F("Scroll Messages=")); Serial.println(SETTINGS_DISPLAY_SCROLL_MESSAGES);
-  Serial.print(F("Scroll Speed=")); Serial.println(SETTINGS_DISPLAY_SCROLL_SPEED);
+  Serial.print(MenuItems_Settings_Display[0]); Serial.println(SETTINGS_DISPLAY_TIMEOUT);
+  Serial.print(MenuItems_Settings_Display[1]); Serial.println(SETTINGS_DISPLAY_BRIGHTNESS);
+  Serial.print(MenuItems_Settings_Display[2]); Serial.println(SETTINGS_DISPLAY_SHOW_POSITION);
+  Serial.print(MenuItems_Settings_Display[3]); Serial.println(SETTINGS_DISPLAY_SCROLL_MESSAGES);
+  Serial.print(MenuItems_Settings_Display[4]); Serial.println(SETTINGS_DISPLAY_SCROLL_SPEED);
   Serial.println();
   Serial.print(F("Version=")); Serial.println(version);
   Serial.println();
@@ -959,6 +991,12 @@ void handleDisplay_Global(){
     display.print(F("Tx"));
   }
   
+  uint8_t contrast;
+  contrast = 0; // Dimmed display
+  display.SH1106_command(SH1106_SETCONTRAST);
+  display.SH1106_command((uint8_t)constrain(map(SETTINGS_DISPLAY_BRIGHTNESS,0,100,0,254),0,254));
+  //display.invertDisplay(true);
+
   display.setCursor(45,UI_DISPLAY_ROW_TOP);
   display.print(String(Voltage) + F("mV"));
 
@@ -1842,10 +1880,10 @@ void handleSendMessage(){
       }
       break;
     case 5: // wait for acknowledgment and end sequence
-      if (millis() - message_retry_timer > MESSAGE_RETRY_RATE && !sendMessage_Ack && sendMessage_Retrys < MAX_MESSAGE_RETRIES){
+      if (millis() - message_retry_timer > SETTINGS_APRS_RETRY_INTERVAL && !sendMessage_Ack && sendMessage_Retrys < SETTINGS_APRS_RETRY_COUNT){
         sendMessage_Seq=1;
         sendMessage_Retrys++;
-      } else if (sendMessage_Ack || sendMessage_Retrys >= MAX_MESSAGE_RETRIES) {
+      } else if (sendMessage_Ack || sendMessage_Retrys >= SETTINGS_APRS_RETRY_COUNT) {
         sendMessage_Seq=0;
       }
       break;
