@@ -205,7 +205,7 @@ const char *MenuItems_Settings[] = {"APRS","GPS","Display"};
 const char *MenuItems_Settings_APRS[] = {"Beacon Freq (ms)","Raw Packet","Comment","Message","Recipient Callsign","Recipient SSID", "My Callsign","Callsign SSID", 
                                         "Dest Callsign", "Dest SSID", "PATH1 Callsign", "PATH1 SSID", "PATH2 Callsign", "PATH2 SSID",
                                         "Symbol", "Table", "Automatic ACK", "Preamble (ms)", "Tail (ms)", "Retry Count", "Retry Interval (ms)"};
-const char *MenuItems_Settings_GPS[] = {"Update Frequency (ms)","Position Tolerance","Destination Latitude","Destination Longitude"};
+const char *MenuItems_Settings_GPS[] = {"Update Freq (ms)","Pos Tolerance (%)","Dest Latitude","Dest Longitude"};
 const char *MenuItems_Settings_Display[] = {"Timeout (ms)", "Brightness (%)", "Show Position", "Scroll Messages", "Scroll Speed (px/r)", "Invert"};
 
 unsigned char Settings_Type_APRS[] = {SETTINGS_EDIT_TYPE_ULONG,SETTINGS_EDIT_TYPE_STRING100,SETTINGS_EDIT_TYPE_STRING100,SETTINGS_EDIT_TYPE_STRING100,SETTINGS_EDIT_TYPE_STRING7,SETTINGS_EDIT_TYPE_STRING2,SETTINGS_EDIT_TYPE_STRING7,SETTINGS_EDIT_TYPE_STRING2,
@@ -412,7 +412,7 @@ void applyDefaultsToSettings(){
   // London  LAT:51.508131     LNG:-0.128002
   SETTINGS_GPS_UPDATE_FREQUENCY = 10000;
 
-  SETTINGS_GPS_POSITION_TOLERANCE = 0.00001;
+  SETTINGS_GPS_POSITION_TOLERANCE = 1.0;
 
   SETTINGS_GPS_DESTINATION_LATITUDE = 51.508131;
 
@@ -2347,7 +2347,7 @@ long *= 60; // convert to seconds
         for (byte i = 0; i < sizeof(currentLat) - 1; i++) {
           if (currentLat[i] == ' ') currentLat[i] = '0';
         }
-        if (currentLatDeg > lastLatDeg + lastLatDeg*SETTINGS_GPS_POSITION_TOLERANCE  || currentLatDeg < lastLatDeg - lastLatDeg*SETTINGS_GPS_POSITION_TOLERANCE) {
+        if (currentLatDeg > lastLatDeg + lastLatDeg*(SETTINGS_GPS_POSITION_TOLERANCE/100)  || currentLatDeg < lastLatDeg - lastLatDeg*(SETTINGS_GPS_POSITION_TOLERANCE/100)) {
           modemCmdFlag_Lat=true;
           lastLatDeg = currentLatDeg;
         }
@@ -2359,7 +2359,7 @@ long *= 60; // convert to seconds
         for (byte i = 0; i < sizeof(currentLng) - 1; i++) {
           if (currentLng[i] == ' ') currentLng[i] = '0';
         }
-        if (currentLngDeg > lastLngDeg + lastLngDeg*SETTINGS_GPS_POSITION_TOLERANCE || currentLngDeg < lastLngDeg - lastLngDeg*SETTINGS_GPS_POSITION_TOLERANCE) {
+        if (currentLngDeg > lastLngDeg + lastLngDeg*(SETTINGS_GPS_POSITION_TOLERANCE/100) || currentLngDeg < lastLngDeg - lastLngDeg*(SETTINGS_GPS_POSITION_TOLERANCE/100)) {
           modemCmdFlag_Lng=true;
           lastLngDeg = currentLngDeg;
         }
