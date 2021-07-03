@@ -3244,7 +3244,9 @@ void handleKeyboard(){
     char c = Wire.read(); // receive a byte as characterif
     if (c != 0)
     {
-      keyboardInputChar = c;
+      if (!displayDim) { // key presses should only register is screen awake
+        keyboardInputChar = c;
+      }
       wakeDisplay = true;
     }
   }
