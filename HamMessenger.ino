@@ -1178,19 +1178,16 @@ void handleDisplay_Messages(){
     return;
   }
   // build display
-  if (displayRefresh_Scroll){
+  if (displayRefresh_Scroll || keyboardInputChar != 0){
     if (cursorPosition_Y != cursorPosition_Y_Last){ // changed to new record (index)
       cursorPosition_Y_Last = cursorPosition_Y; 
-      int dataLen = 0;
-      for(int i=0;i<sizeof(IncomingMessageBuffer[cursorPosition_Y].msg);i++){
-        if (IncomingMessageBuffer[cursorPosition_Y].msg[i] != '\0'){
-          dataLen++;
-        } else {
-          i = sizeof(IncomingMessageBuffer[cursorPosition_Y].msg); // get out
-        }
-      }
+      int dataLen = strlen(IncomingMessageBuffer[cursorPosition_Y].msg);
       ScrollingIndex_MessageFeed_minX = -10 * dataLen; // 10 = 5 pixels/character * text size 2
-      ScrollingIndex_MessageFeed = display.width(); // starting point for text 
+      if (!SETTINGS_DISPLAY_SCROLL_MESSAGES) {
+        ScrollingIndex_MessageFeed = 0;
+      } else {
+        ScrollingIndex_MessageFeed = display.width(); // starting point for text 
+      }
     }
     // clear the buffer
     display.clearDisplay();
@@ -1222,20 +1219,18 @@ void handleDisplay_Messages(){
       // display who the message is to and from
       display.setCursor(12,UI_DISPLAY_ROW_01);
       display.print(to_from);
-
-      //byte indexRow = 0;
-      //if (cursorPosition_Y < 10) indexRow = 6;
-      //display.setCursor(indexRow,UI_DISPLAY_ROW_02);
-      //display.print(cursorPosition_Y);
-      //display.setCursor(11,UI_DISPLAY_ROW_02);
-      //display.print(F(":"));
+      // display message
       display.setCursor(ScrollingIndex_MessageFeed,UI_DISPLAY_ROW_02);
-      display.setTextSize(2);                     // Normal 1:1 pixel scale - default letter size is 5x8 pixels
+      display.setTextSize(2);
       display.print(IncomingMessageBuffer[cursorPosition_Y].msg); 
-      display.setTextSize(1);                     // Normal 1:1 pixel scale - default letter size is 5x8 pixels
-      if (keyboardInputChar == KEYBOARD_ENTER_KEY || SETTINGS_DISPLAY_SCROLL_MESSAGES){ //  scroll only when enter pressed TODO: this wont work because key press not persistent
-        ScrollingIndex_MessageFeed = ScrollingIndex_MessageFeed - SETTINGS_DISPLAY_SCROLL_SPEED; // higher number here is faster scroll but choppy
+      display.setTextSize(1); // Normal 1:1 pixel scale - default letter size is 5x8 pixels
+      unsigned int scrollPixelCount = (SETTINGS_DISPLAY_SCROLL_MESSAGES ? SETTINGS_DISPLAY_SCROLL_SPEED : 32);
+      if (keyboardInputChar == KEYBOARD_LEFT_KEY || SETTINGS_DISPLAY_SCROLL_MESSAGES){ //  scroll only when enter pressed TODO: this wont work because key press not persistent
+        ScrollingIndex_MessageFeed = ScrollingIndex_MessageFeed - scrollPixelCount; // higher number here is faster scroll but choppy
         if(ScrollingIndex_MessageFeed < ScrollingIndex_MessageFeed_minX) ScrollingIndex_MessageFeed = display.width(); // makeshift scroll because startScrollleft truncates the string!
+      } else if (keyboardInputChar == KEYBOARD_RIGHT_KEY){
+        ScrollingIndex_MessageFeed = ScrollingIndex_MessageFeed + scrollPixelCount;
+        if(ScrollingIndex_MessageFeed > display.width()) ScrollingIndex_MessageFeed = ScrollingIndex_MessageFeed_minX;
       }
     } else {
       display.setCursor(0,UI_DISPLAY_ROW_02);
@@ -1298,19 +1293,16 @@ void handleDisplay_LiveFeed(){
     return;
   }
   // build display
-  if (displayRefresh_Scroll){
+  if (displayRefresh_Scroll || keyboardInputChar != 0){
     if (cursorPosition_Y != cursorPosition_Y_Last){ // changed to new record (index)
       cursorPosition_Y_Last = cursorPosition_Y; 
-      int dataLen = 0;
-      for(int i=0;i<sizeof(LiveFeedBuffer[cursorPosition_Y].data);i++){
-        if (LiveFeedBuffer[cursorPosition_Y].data[i] != '\0'){
-          dataLen++;
-        } else {
-          i = sizeof(LiveFeedBuffer[cursorPosition_Y].data); // get out
-        }
-      }
+      int dataLen = strlen(LiveFeedBuffer[cursorPosition_Y].data);
       ScrollingIndex_LiveFeed_minX = -10 * dataLen; // 10 = 5 pixels/character * text size 2
-      ScrollingIndex_LiveFeed = display.width(); // starting point for text 
+      if (!SETTINGS_DISPLAY_SCROLL_MESSAGES) {
+        ScrollingIndex_LiveFeed = 0;
+      } else {
+        ScrollingIndex_LiveFeed = display.width(); // starting point for text 
+      }
     }
     // clear the buffer
     display.clearDisplay();
@@ -1342,20 +1334,18 @@ void handleDisplay_LiveFeed(){
       // display who the message is to and from
       display.setCursor(12,UI_DISPLAY_ROW_01);
       display.print(src_dst);
-
-      //byte indexRow = 0;
-      //if (cursorPosition_Y < 10) indexRow = 6;
-      //display.setCursor(indexRow,UI_DISPLAY_ROW_02);
-      //display.print(cursorPosition_Y);
-      //display.setCursor(11,UI_DISPLAY_ROW_02);
-      //display.print(F(":"));
+      // display message
       display.setCursor(ScrollingIndex_LiveFeed,UI_DISPLAY_ROW_02);
-      display.setTextSize(2);                     // Normal 1:1 pixel scale - default letter size is 5x8 pixels
+      display.setTextSize(2);
       display.print(LiveFeedBuffer[cursorPosition_Y].data); 
-      display.setTextSize(1);                     // Normal 1:1 pixel scale - default letter size is 5x8 pixels
-      if (keyboardInputChar == KEYBOARD_ENTER_KEY || SETTINGS_DISPLAY_SCROLL_MESSAGES){ //  scroll only when enter pressed TODO: this wont work because key press not persistent
-        ScrollingIndex_LiveFeed = ScrollingIndex_LiveFeed - SETTINGS_DISPLAY_SCROLL_SPEED; // higher number here is faster scroll but choppy
+      display.setTextSize(1); // Normal 1:1 pixel scale - default letter size is 5x8 pixels
+      unsigned int scrollPixelCount = (SETTINGS_DISPLAY_SCROLL_MESSAGES ? SETTINGS_DISPLAY_SCROLL_SPEED : 32);
+      if (keyboardInputChar == KEYBOARD_LEFT_KEY || SETTINGS_DISPLAY_SCROLL_MESSAGES){ //  scroll only when enter pressed TODO: this wont work because key press not persistent
+        ScrollingIndex_LiveFeed = ScrollingIndex_LiveFeed - scrollPixelCount; // higher number here is faster scroll but choppy
         if(ScrollingIndex_LiveFeed < ScrollingIndex_LiveFeed_minX) ScrollingIndex_LiveFeed = display.width(); // makeshift scroll because startScrollleft truncates the string!
+      } else if (keyboardInputChar == KEYBOARD_RIGHT_KEY){
+        ScrollingIndex_LiveFeed = ScrollingIndex_LiveFeed + scrollPixelCount;
+        if(ScrollingIndex_LiveFeed > display.width()) ScrollingIndex_LiveFeed = ScrollingIndex_LiveFeed_minX;
       }
     } else {
       display.setCursor(0,UI_DISPLAY_ROW_02);
@@ -2277,7 +2267,7 @@ void readModem(){
           // let other systems know there is data in the live feed
           messageFeedIsEmpty = false;
           // switch to message display
-          currentDisplay = UI_DISPLAY_MESSAGES;
+          if (currentDisplay == UI_DISPLAY_HOME) currentDisplay = UI_DISPLAY_MESSAGES;
         } else {
           // for now any acknowledge will set this. in the future, 
           // we will need to see if it is a response to our message.
