@@ -101,28 +101,26 @@ unsigned long button_hold_timer_down, character_increment_timer;
 unsigned long message_retry_timer;
 
 // http://ember2ash.com/lat.htm
-float fltCurrentLatDeg = 0;
-float fltCurrentLngDeg = 0;
-//float fltPositionTolerance = 0.00001; // (%) represents the change in position that warrants an update to the modem.
-float fltLastLatDeg = 0.0;
-float fltLastLngDeg = 0.0;
-char strCurrentLatHeading[] = "N";
-char strCurrentLngHeading[] = "N";
-char strCurrentLat[9] = {'0','0','0','0','.','0','0','N','\0'};
-char strCurrentLng[10] = {'0','0','0','0','0','.','0','0','N','\0'};
-bool blnModemCmdFlag_Lat=false, blnModemCmdFlag_Lng=false;
-bool blnModemCmdFlag_Raw=false, blnModemCmdFlag_Cmt=false, blnModemCmdFlag_Msg=false;
-bool blnModemCmdFlag_MsgRecipient=false, blnModemCmdFlag_MsgRecipientSSID=false;
-bool blnModemCmdFlag_Setc=false, blnModemCmdFlag_Setsc=false;
-bool blnModemCmdFlag_Setd=false, blnModemCmdFlag_Setsd=false;
-bool blnModemCmdFlag_Set1=false, blnModemCmdFlag_Sets1=false;
-bool blnModemCmdFlag_Set2=false, blnModemCmdFlag_Sets2=false;
-bool blnModemCmdFlag_Setls=false, blnModemCmdFlag_Setlt=false;
-bool blnModemCmdFlag_Setma=false, blnModemCmdFlag_Setw=false;
-bool blnModemCmdFlag_SetW=false, blnModemCmdFlag_Setmr=false;
-bool blnModemCmdFlag_SetS=false, blnModemCmdFlag_SetC=false;
-bool blnModemCmdFlag_SetH=false;
-bool blnAprsAutomaticCommentEnabled = true;
+float currentLatDeg = 0;
+float currentLngDeg = 0;
+//float positionTolerance = 0.00001;
+float lastLatDeg = 0.0;
+float lastLngDeg = 0.0;
+char currentLat[9] = {'0','0','0','0','.','0','0','N','\0'};
+char currentLng[10] = {'0','0','0','0','0','.','0','0','N','\0'};
+bool modemCmdFlag_Lat=false, modemCmdFlag_Lng=false;
+bool modemCmdFlag_Raw=false, modemCmdFlag_Cmt=false, modemCmdFlag_Msg=false;
+bool modemCmdFlag_MsgRecipient=false, modemCmdFlag_MsgRecipientSSID=false;
+bool modemCmdFlag_Setc=false, modemCmdFlag_Setsc=false;
+bool modemCmdFlag_Setd=false, modemCmdFlag_Setsd=false;
+bool modemCmdFlag_Set1=false, modemCmdFlag_Sets1=false;
+bool modemCmdFlag_Set2=false, modemCmdFlag_Sets2=false;
+bool modemCmdFlag_Setls=false, modemCmdFlag_Setlt=false;
+bool modemCmdFlag_Setma=false, modemCmdFlag_Setw=false;
+bool modemCmdFlag_SetW=false, modemCmdFlag_Setmr=false;
+bool modemCmdFlag_SetS=false, modemCmdFlag_SetC=false;
+bool modemCmdFlag_SetH=false;
+bool aprsAutomaticCommentEnabled = true;
 bool applySettings=false, saveModemSettings=false;
 unsigned char applySettings_Seq=0;
 bool sendMessage=false, sendMessage_Ack=false;
@@ -1034,13 +1032,13 @@ void handleDisplay_Global(){
     display.print(F("LT:"));
     
     display.setCursor(0+18,UI_DISPLAY_ROW_BOTTOM);
-    display.print(fltCurrentLatDeg);
+    display.print(currentLatDeg);
     
     display.setCursor(62,UI_DISPLAY_ROW_BOTTOM);
     display.print(F("LG:"));
     
     display.setCursor(62+18,UI_DISPLAY_ROW_BOTTOM);
-    display.print(fltCurrentLngDeg);
+    display.print(currentLngDeg);
   }
 }
 
@@ -1864,8 +1862,8 @@ void handleDisplay_Settings_Display(){
 
 void handleAprsBeacon(){
   if ( millis() - aprs_beacon_timer > SETTINGS_APRS_BEACON_FREQUENCY ){
-    if (blnAprsAutomaticCommentEnabled==true){
-      blnModemCmdFlag_Cmt=true;
+    if (aprsAutomaticCommentEnabled==true){
+      modemCmdFlag_Cmt=true;
     }
     aprs_beacon_timer = millis();
   }
@@ -1886,18 +1884,18 @@ void handleSendMessage(){
       sendMessage_Seq++;
       break;
     case 2: // set recipient callsign
-      blnModemCmdFlag_MsgRecipient=true;
+      modemCmdFlag_MsgRecipient=true;
       sendMessage_Seq++;
       break;
     case 3: // wait for complete and set recipient ssid
-      if (!blnModemCmdFlag_MsgRecipient) {
-        blnModemCmdFlag_MsgRecipientSSID=true;
+      if (!modemCmdFlag_MsgRecipient) {
+        modemCmdFlag_MsgRecipientSSID=true;
         sendMessage_Seq++;
       }
       break;
     case 4: // wait for complete and set message and end sequence
-      if (!blnModemCmdFlag_MsgRecipientSSID) {
-        blnModemCmdFlag_Msg=true;
+      if (!modemCmdFlag_MsgRecipientSSID) {
+        modemCmdFlag_Msg=true;
         sendMessage_Seq++;
       }
       break;
@@ -1914,133 +1912,133 @@ void handleSendMessage(){
 
 void handleModemCommands(){
     // send raw packet
-    if (blnModemCmdFlag_Raw==true){
+    if (modemCmdFlag_Raw==true){
       if (sendModemCommand("!", 1, SETTINGS_APRS_RAW_PACKET, strlen(SETTINGS_APRS_RAW_PACKET)) == -1){
-        blnModemCmdFlag_Raw=false;
+        modemCmdFlag_Raw=false;
       }
       return;
     }
     // send location
-    if (blnModemCmdFlag_Cmt==true){
+    if (modemCmdFlag_Cmt==true){
       if (sendModemCommand("@", 1, SETTINGS_APRS_COMMENT, strlen(SETTINGS_APRS_COMMENT)) == -1){
-        blnModemCmdFlag_Cmt=false;
+        modemCmdFlag_Cmt=false;
       }
       return;
     }
     // send message
-    if (blnModemCmdFlag_Msg==true){
+    if (modemCmdFlag_Msg==true){
       if (sendModemCommand("#", 1, SETTINGS_APRS_MESSAGE, strlen(SETTINGS_APRS_MESSAGE)) == -1){
-        blnModemCmdFlag_Msg=false;
+        modemCmdFlag_Msg=false;
       }
       return;
     }
     // set callsign                           ****************Setting*******************
-    if (blnModemCmdFlag_Setc==true){
+    if (modemCmdFlag_Setc==true){
       if (sendModemCommand("c", 1, SETTINGS_APRS_CALLSIGN, strlen(SETTINGS_APRS_CALLSIGN)) == -1){
-        blnModemCmdFlag_Setc=false;
+        modemCmdFlag_Setc=false;
       }
       return;
     }
     // set destination callsign               ****************Setting*******************
-    if (blnModemCmdFlag_Setd==true){
+    if (modemCmdFlag_Setd==true){
       if (sendModemCommand("d", 1, SETTINGS_APRS_DESTINATION_CALL, strlen(SETTINGS_APRS_DESTINATION_CALL)) == -1){
-        blnModemCmdFlag_Setd=false;
+        modemCmdFlag_Setd=false;
       }
       return;
     }
     // set PATH1 callsign                     ****************Setting*******************
-    if (blnModemCmdFlag_Set1==true){
+    if (modemCmdFlag_Set1==true){
       if (sendModemCommand("1", 1, SETTINGS_APRS_PATH1_CALL, strlen(SETTINGS_APRS_PATH1_CALL)) == -1){
-        blnModemCmdFlag_Set1=false;
+        modemCmdFlag_Set1=false;
       }
       return;
     }
     // set PATH2 callsign                     ****************Setting*******************
-    if (blnModemCmdFlag_Set2==true){
+    if (modemCmdFlag_Set2==true){
       if (sendModemCommand("2", 1, SETTINGS_APRS_PATH2_CALL, strlen(SETTINGS_APRS_PATH2_CALL)) == -1){
-        blnModemCmdFlag_Set2=false;
+        modemCmdFlag_Set2=false;
       }
       return;
     }
     // set your SSID                          ****************Setting*******************
-    if (blnModemCmdFlag_Setsc==true){
+    if (modemCmdFlag_Setsc==true){
       if (sendModemCommand("sc", 2, SETTINGS_APRS_CALLSIGN_SSID, strlen(SETTINGS_APRS_CALLSIGN_SSID)) == -1){
-        blnModemCmdFlag_Setsc=false;
+        modemCmdFlag_Setsc=false;
       }
       return;
     }
     // set destination SSID                   ****************Setting*******************
-    if (blnModemCmdFlag_Setsd==true){
+    if (modemCmdFlag_Setsd==true){
       if (sendModemCommand("sd", 2, SETTINGS_APRS_DESTINATION_SSID, strlen(SETTINGS_APRS_DESTINATION_SSID)) == -1){
-        blnModemCmdFlag_Setsd=false;
+        modemCmdFlag_Setsd=false;
       }
       return;
     }
     // set PATH1 SSID                         ****************Setting*******************
-    if (blnModemCmdFlag_Sets1==true){
+    if (modemCmdFlag_Sets1==true){
       if (sendModemCommand("s1", 2, SETTINGS_APRS_PATH1_SSID, strlen(SETTINGS_APRS_PATH1_SSID)) == -1){
-        blnModemCmdFlag_Sets1=false;
+        modemCmdFlag_Sets1=false;
       }
       return;
     }    
     // set PATH2 SSID                         ****************Setting*******************
-    if (blnModemCmdFlag_Sets2==true){
+    if (modemCmdFlag_Sets2==true){
       if (sendModemCommand("s2", 2, SETTINGS_APRS_PATH2_SSID, strlen(SETTINGS_APRS_PATH2_SSID)) == -1){
-        blnModemCmdFlag_Sets2=false;
+        modemCmdFlag_Sets2=false;
       }
       return;
     }
     // set latitude
-    if (blnModemCmdFlag_Lat==true){
-      if (sendModemCommand("lla", 3, strCurrentLat, strlen(strCurrentLat)) == -1){
-        blnModemCmdFlag_Lat=false;
+    if (modemCmdFlag_Lat==true){
+      if (sendModemCommand("lla", 3, currentLat, strlen(currentLat)) == -1){
+        modemCmdFlag_Lat=false;
       }
       return;
     }
     // set longitude
-    if (blnModemCmdFlag_Lng==true){
-      if (sendModemCommand("llo", 3, strCurrentLng, strlen(strCurrentLng)) == -1){
-        blnModemCmdFlag_Lng=false;
+    if (modemCmdFlag_Lng==true){
+      if (sendModemCommand("llo", 3, currentLng, strlen(currentLng)) == -1){
+        modemCmdFlag_Lng=false;
       }
       return;
     }
     // set symbol                             ****************Setting*******************
-    if (blnModemCmdFlag_Setls==true){
+    if (modemCmdFlag_Setls==true){
       if (sendModemCommand("ls", 2, SETTINGS_APRS_SYMBOL, strlen(SETTINGS_APRS_SYMBOL)) == -1){
-        blnModemCmdFlag_Setls=false;
+        modemCmdFlag_Setls=false;
       }
       return;
     }
     // set symbol table                       ****************Setting*******************
-    if (blnModemCmdFlag_Setlt==true){
+    if (modemCmdFlag_Setlt==true){
       if (sendModemCommand("lt", 2, SETTINGS_APRS_SYMBOL_TABLE, strlen(SETTINGS_APRS_SYMBOL_TABLE)) == -1){
-        blnModemCmdFlag_Setlt=false;
+        modemCmdFlag_Setlt=false;
       }
       return;
     }
     // set message recipient
-    if (blnModemCmdFlag_MsgRecipient==true){
+    if (modemCmdFlag_MsgRecipient==true){
       if (sendModemCommand("mc", 2, SETTINGS_APRS_RECIPIENT_CALL, strlen(SETTINGS_APRS_RECIPIENT_CALL)) == -1){
-        blnModemCmdFlag_MsgRecipient=false;
+        modemCmdFlag_MsgRecipient=false;
       }
       return;
     }
     // set message recipient ssid
-    if (blnModemCmdFlag_MsgRecipientSSID==true){
+    if (modemCmdFlag_MsgRecipientSSID==true){
       if (sendModemCommand("ms", 2, SETTINGS_APRS_RECIPIENT_SSID, strlen(SETTINGS_APRS_RECIPIENT_SSID)) == -1){
-        blnModemCmdFlag_MsgRecipientSSID=false;
+        modemCmdFlag_MsgRecipientSSID=false;
       }
       return;
     }
     // retry last message
-    if (blnModemCmdFlag_Setmr==true){
+    if (modemCmdFlag_Setmr==true){
       if (sendModemCommand("mr", 2, SETTINGS_APRS_RECIPIENT_SSID, strlen(SETTINGS_APRS_RECIPIENT_SSID)) == -1){
-        blnModemCmdFlag_Setmr=false;
+        modemCmdFlag_Setmr=false;
       }
       return;
     }
     // automatic ACK on/off                   ****************Setting*******************
-    if (blnModemCmdFlag_Setma==true){
+    if (modemCmdFlag_Setma==true){
       char OnOff[2] = {'\0'};
       if (SETTINGS_APRS_AUTOMATIC_ACK) {
         OnOff[0] = '1';
@@ -2048,48 +2046,48 @@ void handleModemCommands(){
         OnOff[0] = '0';
       }
       if (sendModemCommand("ma", 2, OnOff, strlen(OnOff)) == -1){
-        blnModemCmdFlag_Setma=false;
+        modemCmdFlag_Setma=false;
       }
       return;
     }
     // set preamble in ms                     ****************Setting*******************
-    if (blnModemCmdFlag_Setw==true){
+    if (modemCmdFlag_Setw==true){
       //char *  itoa ( int value, char * str, int base );
       char timeBuffer[17];
       itoa(SETTINGS_APRS_PREAMBLE,timeBuffer,10);
       if (sendModemCommand("w", 1, timeBuffer, strlen(timeBuffer)) == -1){
-        blnModemCmdFlag_Setw=false;
+        modemCmdFlag_Setw=false;
       }
       return;
     }
     // set tail in ms                         ****************Setting*******************
-    if (blnModemCmdFlag_SetW==true){
+    if (modemCmdFlag_SetW==true){
       //char *  itoa ( int value, char * str, int base );
       char timeBuffer[17];
       itoa(SETTINGS_APRS_TAIL,timeBuffer,10);
       if (sendModemCommand("W", 1, timeBuffer, strlen(timeBuffer)) == -1){
-        blnModemCmdFlag_SetW=false;
+        modemCmdFlag_SetW=false;
       }
       return;
     }
     // save settings                          ****************Setting*******************
-    if (blnModemCmdFlag_SetS==true){
+    if (modemCmdFlag_SetS==true){
       if (sendModemCommand("S", 1, "", 0) == -1){
-        blnModemCmdFlag_SetS=false;
+        modemCmdFlag_SetS=false;
       }
       return;
     } 
     // clear configuration                    ****************Setting*******************
-    if (blnModemCmdFlag_SetC==true){
+    if (modemCmdFlag_SetC==true){
       if (sendModemCommand("C", 1, "", 0) == -1){
-        blnModemCmdFlag_SetC=false;
+        modemCmdFlag_SetC=false;
       }
       return;
     }    
     // print configuration
-    if (blnModemCmdFlag_SetH==true){
+    if (modemCmdFlag_SetH==true){
       if (sendModemCommand("H", 1, "", 0) == -1){
-        blnModemCmdFlag_SetH=false;
+        modemCmdFlag_SetH=false;
       }
       return;
     }
@@ -2343,27 +2341,27 @@ long *= 60; // convert to seconds
         
         // DDMM.MM http://ember2ash.com/lat.htm
         //Serial.print(F(" Lat2="));
-        fltCurrentLatDeg = gps.location.rawLat().deg*100.0 + gps.location.rawLat().billionths*0.000000001*60.0;
-        dtostrf(fltCurrentLatDeg, 8, 3, strCurrentLat);
-        strCurrentLat[7] = gps.location.rawLat().negative ? 'S' : 'N';
-        for (byte i = 0; i < sizeof(strCurrentLat) - 1; i++) {
-          if (strCurrentLat[i] == ' ') strCurrentLat[i] = '0';
+        currentLatDeg = gps.location.rawLat().deg*100.0 + gps.location.rawLat().billionths*0.000000001*60.0;
+        dtostrf(currentLatDeg, 8, 3, currentLat);
+        currentLat[7] = gps.location.rawLat().negative ? 'S' : 'N';
+        for (byte i = 0; i < sizeof(currentLat) - 1; i++) {
+          if (currentLat[i] == ' ') currentLat[i] = '0';
         }
-        if (fltCurrentLatDeg > fltLastLatDeg + fltLastLatDeg*SETTINGS_GPS_POSITION_TOLERANCE  || fltCurrentLatDeg < fltLastLatDeg - fltLastLatDeg*SETTINGS_GPS_POSITION_TOLERANCE) {
-          blnModemCmdFlag_Lat=true;
-          fltLastLatDeg = fltCurrentLatDeg;
+        if (currentLatDeg > lastLatDeg + lastLatDeg*SETTINGS_GPS_POSITION_TOLERANCE  || currentLatDeg < lastLatDeg - lastLatDeg*SETTINGS_GPS_POSITION_TOLERANCE) {
+          modemCmdFlag_Lat=true;
+          lastLatDeg = currentLatDeg;
         }
         
         //Serial.print(F(" Long2="));
-        fltCurrentLngDeg = gps.location.rawLng().deg*100.0 + gps.location.rawLng().billionths*0.000000001*60.0;
-        dtostrf(fltCurrentLngDeg, 9, 3, strCurrentLng);
-        strCurrentLng[8] = gps.location.rawLng().negative ? 'W' : 'E';
-        for (byte i = 0; i < sizeof(strCurrentLng) - 1; i++) {
-          if (strCurrentLng[i] == ' ') strCurrentLng[i] = '0';
+        currentLngDeg = gps.location.rawLng().deg*100.0 + gps.location.rawLng().billionths*0.000000001*60.0;
+        dtostrf(currentLngDeg, 9, 3, currentLng);
+        currentLng[8] = gps.location.rawLng().negative ? 'W' : 'E';
+        for (byte i = 0; i < sizeof(currentLng) - 1; i++) {
+          if (currentLng[i] == ' ') currentLng[i] = '0';
         }
-        if (fltCurrentLngDeg > fltLastLngDeg + fltLastLngDeg*SETTINGS_GPS_POSITION_TOLERANCE || fltCurrentLngDeg < fltLastLngDeg - fltLastLngDeg*SETTINGS_GPS_POSITION_TOLERANCE) {
-          blnModemCmdFlag_Lng=true;
-          fltLastLngDeg = fltCurrentLngDeg;
+        if (currentLngDeg > lastLngDeg + lastLngDeg*SETTINGS_GPS_POSITION_TOLERANCE || currentLngDeg < lastLngDeg - lastLngDeg*SETTINGS_GPS_POSITION_TOLERANCE) {
+          modemCmdFlag_Lng=true;
+          lastLngDeg = currentLngDeg;
         }
         /*
         Serial.println();
@@ -2560,133 +2558,133 @@ void handleSettings(){
       applySettings_Seq++;
       break;
     case 2:
-      blnModemCmdFlag_Setc=true;  // callsign
+      modemCmdFlag_Setc=true;  // callsign
       applySettings_Seq++;
       break;
     case 3:
-      if(!blnModemCmdFlag_Setc){
+      if(!modemCmdFlag_Setc){
         applySettings_Seq++;
       }
       break;
     case 4:
-      blnModemCmdFlag_Setd=true;  // destination
+      modemCmdFlag_Setd=true;  // destination
       applySettings_Seq++;
       break;
     case 5:
-      if(!blnModemCmdFlag_Setd){
+      if(!modemCmdFlag_Setd){
         applySettings_Seq++;
       }
       break;
     case 6:
-      blnModemCmdFlag_Set1=true;  // path1
+      modemCmdFlag_Set1=true;  // path1
       applySettings_Seq++;
       break;
     case 7:
-      if(!blnModemCmdFlag_Set1){
+      if(!modemCmdFlag_Set1){
         applySettings_Seq++;
       }
       break;
     case 8:
-      blnModemCmdFlag_Set2=true;  // path2
+      modemCmdFlag_Set2=true;  // path2
       applySettings_Seq++;
       break;
     case 9:
-      if(!blnModemCmdFlag_Set2){
+      if(!modemCmdFlag_Set2){
         applySettings_Seq++;
       }
       break;
     case 10:
-      blnModemCmdFlag_Setsc=true; // callsign ssid
+      modemCmdFlag_Setsc=true; // callsign ssid
       applySettings_Seq++;
       break;
     case 11:
-      if(!blnModemCmdFlag_Setsc){
+      if(!modemCmdFlag_Setsc){
         applySettings_Seq++;
       }
       break;
     case 12:
-      blnModemCmdFlag_Setsd=true; // destination ssid
+      modemCmdFlag_Setsd=true; // destination ssid
       applySettings_Seq++;
       break;
     case 13:
-      if(!blnModemCmdFlag_Setsd){
+      if(!modemCmdFlag_Setsd){
         applySettings_Seq++;
       }
       break;
     case 14:
-      blnModemCmdFlag_Sets1=true; // path1 ssid
+      modemCmdFlag_Sets1=true; // path1 ssid
       applySettings_Seq++;
       break;
     case 15:
-      if(!blnModemCmdFlag_Sets1){
+      if(!modemCmdFlag_Sets1){
         applySettings_Seq++;
       }
       break;
     case 16:
-      blnModemCmdFlag_Sets2=true; // path2 ssid
+      modemCmdFlag_Sets2=true; // path2 ssid
       applySettings_Seq++;
       break;
     case 17:
-      if(!blnModemCmdFlag_Sets2){
+      if(!modemCmdFlag_Sets2){
         applySettings_Seq++;
       }
       break;
     case 18:
-      blnModemCmdFlag_Setls=true; // symbol
+      modemCmdFlag_Setls=true; // symbol
       applySettings_Seq++;
       break;
     case 19:
-      if(!blnModemCmdFlag_Setls){
+      if(!modemCmdFlag_Setls){
         applySettings_Seq++;
       }
       break;
     case 20:
-      blnModemCmdFlag_Setlt=true; // table
+      modemCmdFlag_Setlt=true; // table
       applySettings_Seq++;
       break;
     case 21:
-      if(!blnModemCmdFlag_Setlt){
+      if(!modemCmdFlag_Setlt){
         applySettings_Seq++;
       }
       break;
     case 22:
-      blnModemCmdFlag_Setma=true; // auto ack on/off
+      modemCmdFlag_Setma=true; // auto ack on/off
       applySettings_Seq++;
       break;
     case 23:
-      if(!blnModemCmdFlag_Setma){
+      if(!modemCmdFlag_Setma){
         applySettings_Seq++;
       }
       break;
     case 24:
-      blnModemCmdFlag_Setw=true;  // preamble
+      modemCmdFlag_Setw=true;  // preamble
       applySettings_Seq++;
       break;
     case 25:
-      if(!blnModemCmdFlag_Setw){
+      if(!modemCmdFlag_Setw){
         applySettings_Seq++;
       }
       break;
     case 26:
-      blnModemCmdFlag_SetW=true;  // tail
+      modemCmdFlag_SetW=true;  // tail
       applySettings_Seq++;
       break;
     case 27:
-      if(!blnModemCmdFlag_SetW){
+      if(!modemCmdFlag_SetW){
         applySettings_Seq++;
       }
       break;
     case 28:
       if (saveModemSettings) {
         saveModemSettings=false;
-        blnModemCmdFlag_SetS==true; // save the configuration
+        modemCmdFlag_SetS==true; // save the configuration
         applySettings_Seq++;
       } else {
         applySettings_Seq=0;
       }
       break;
     case 29:
-      if(!blnModemCmdFlag_SetS){
+      if(!modemCmdFlag_SetS){
         applySettings_Seq=0;
       }
       break;
@@ -3241,10 +3239,10 @@ void handleKeyboard(){
   Wire.requestFrom(CARDKB_ADDR, 1);
   while(Wire.available())
   {
-    char c = Wire.read(); // receive a byte as characterif
+    char c = Wire.read();
     if (c != 0)
     {
-      if (!displayDim) { // key presses should only register is screen awake
+      if (!displayDim) { // key presses should only register if screen awake
         keyboardInputChar = c;
       }
       wakeDisplay = true;
