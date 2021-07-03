@@ -81,6 +81,8 @@ TODO (software):
 - add ability to program the radio for 'plug-n-play' experience (is this possible?)
 - add store and recall messages in SD card to save dynamic memory
 - add feature to be selective about message acknowledgments. currently any acknowlegment (from a second conversation) will reset the messaging sequencer.
+- when scroll message off then the right and left key should manually scroll
+- only automatically display incoming message when in home screen (or screen sleeping)
 
 Arduino:
 https://www.arduino.cc/en/pmwiki.php?n=Main/ArduinoBoardProMini

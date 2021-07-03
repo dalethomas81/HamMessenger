@@ -268,7 +268,7 @@ const char InvalidCommand[] = {"Invalid command."};
 const char InvalidData_UnsignedInt[] = {"Invalid data. Expected unsigned integer 0-65535 instead got "};
 const char InvalidData_UnsignedLong[] = {"Invalid data. Expected unsigned long 0-4294967295 instead got "};
 const char InvalidData_TrueFalse[] = {"Invalid data. Expected True/False or 1/0"};
-const char Initialized[] = {"Initialized01"};
+const char Initialized[] = {"Initialized03"}; // change this to something unique if you want to re-init the EEPROM during flashing. useful when there has been a change to a settings array.
 
 template <typename T>
 T numberOfDigits(T number){
