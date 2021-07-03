@@ -77,6 +77,8 @@ bool displayBlink = false, characterIncrement = false;
 unsigned char Settings_EditType = 0;
 unsigned char Settings_EditValueSize = 0;
 bool settingsChanged = false;
+bool displayDim = false;
+bool wakeDisplay = false;
 
 // Declaration for an SSD1306 display connected to I2C (SDA, SCL pins)
 #define OLED_RESET -1 // Reset pin # (or -1 if sharing Arduino reset pin)
@@ -94,7 +96,7 @@ unsigned long gps_report_timer, destination_report_timer, modem_command_timer, a
 unsigned long leave_display_timer;
 unsigned long voltage_check_timer;
 unsigned long processor_scan_time, scanTime;
-unsigned long display_blink_timer;
+unsigned long display_blink_timer, display_timeout_timer, display_off_timer;
 unsigned long button_hold_timer_down, character_increment_timer;
 unsigned long message_retry_timer;
 
@@ -204,20 +206,20 @@ long Voltage = 0;
 const char *MenuItems_Settings[] = {"APRS","GPS","Display"};
 const char *MenuItems_Settings_APRS[] = {"Beacon Freq (ms)","Raw Packet","Comment","Message","Recipient Callsign","Recipient SSID", "My Callsign","Callsign SSID", 
                                         "Dest Callsign", "Dest SSID", "PATH1 Callsign", "PATH1 SSID", "PATH2 Callsign", "PATH2 SSID",
-                                        "Symbol", "Table", "Automatic ACK", "Preamble (ms)", "Tail ms)", "Retry Count", "Retry Interval (ms)"};
+                                        "Symbol", "Table", "Automatic ACK", "Preamble (ms)", "Tail (ms)", "Retry Count", "Retry Interval (ms)"};
 const char *MenuItems_Settings_GPS[] = {"Update Frequency (ms)","Position Tolerance","Destination Latitude","Destination Longitude"};
-const char *MenuItems_Settings_Display[] = {"Timeout (ms)", "Brightness (%)", "Show Position", "Scroll Messages", "Scroll Speed (px/r)"};
+const char *MenuItems_Settings_Display[] = {"Timeout (ms)", "Brightness (%)", "Show Position", "Scroll Messages", "Scroll Speed (px/r)", "Invert"};
 
 unsigned char Settings_Type_APRS[] = {SETTINGS_EDIT_TYPE_ULONG,SETTINGS_EDIT_TYPE_STRING100,SETTINGS_EDIT_TYPE_STRING100,SETTINGS_EDIT_TYPE_STRING100,SETTINGS_EDIT_TYPE_STRING7,SETTINGS_EDIT_TYPE_STRING2,SETTINGS_EDIT_TYPE_STRING7,SETTINGS_EDIT_TYPE_STRING2,
                             SETTINGS_EDIT_TYPE_STRING7,SETTINGS_EDIT_TYPE_STRING2,SETTINGS_EDIT_TYPE_STRING7,SETTINGS_EDIT_TYPE_STRING2,SETTINGS_EDIT_TYPE_STRING7,SETTINGS_EDIT_TYPE_STRING2,
                             SETTINGS_EDIT_TYPE_STRING2,SETTINGS_EDIT_TYPE_STRING2,SETTINGS_EDIT_TYPE_BOOLEAN,SETTINGS_EDIT_TYPE_UINT,SETTINGS_EDIT_TYPE_UINT,SETTINGS_EDIT_TYPE_UINT,SETTINGS_EDIT_TYPE_UINT};
 unsigned char Settings_Type_GPS[] = {SETTINGS_EDIT_TYPE_ULONG,SETTINGS_EDIT_TYPE_FLOAT,SETTINGS_EDIT_TYPE_FLOAT,SETTINGS_EDIT_TYPE_FLOAT};
-unsigned char Settings_Type_Display[] = {SETTINGS_EDIT_TYPE_ULONG, SETTINGS_EDIT_TYPE_UINT, SETTINGS_EDIT_TYPE_BOOLEAN, SETTINGS_EDIT_TYPE_BOOLEAN, SETTINGS_EDIT_TYPE_UINT};
+unsigned char Settings_Type_Display[] = {SETTINGS_EDIT_TYPE_ULONG, SETTINGS_EDIT_TYPE_UINT, SETTINGS_EDIT_TYPE_BOOLEAN, SETTINGS_EDIT_TYPE_BOOLEAN, SETTINGS_EDIT_TYPE_UINT, SETTINGS_EDIT_TYPE_BOOLEAN};
 unsigned char Settings_TypeIndex_APRS[] = {0,0,1,2,0,0,1,1,2,2,3,3,4,4,5,6,2,1,2,4,5}; // this is the index in the array of the data arrays below
 unsigned char Settings_TypeIndex_GPS[] = {1,0,1,2};
-unsigned char Settings_TypeIndex_Display[] = {2,0,0,1,3};
+unsigned char Settings_TypeIndex_Display[] = {2,0,0,1,3,3};
 // data arrays
-bool Settings_TypeBool[3] = {true,true,true}; // display show position, scroll messages, auto ACK
+bool Settings_TypeBool[4] = {true,true,true,false}; // display show position, scroll messages, auto ACK, invert
 int Settings_TypeInt[0] = {};
 unsigned int Settings_TypeUInt[6] = {100,400,80,4,5,10000}; // display brightness, aprs preamble, aprs tail, scroll speed, Retry Count, Retry Interval
 long Settings_TypeLong[0] = {};
@@ -260,6 +262,7 @@ char Settings_TempDispCharArr[100];
 #define SETTINGS_DISPLAY_SHOW_POSITION        Settings_TypeBool[Settings_TypeIndex_Display[2]]         // show position
 #define SETTINGS_DISPLAY_SCROLL_MESSAGES      Settings_TypeBool[Settings_TypeIndex_Display[3]]         // scroll messages
 #define SETTINGS_DISPLAY_SCROLL_SPEED         Settings_TypeUInt[Settings_TypeIndex_Display[4]]         // scroll speed
+#define SETTINGS_DISPLAY_INVERT               Settings_TypeBool[Settings_TypeIndex_Display[5]]         // scroll speed
 
 // store common strings here
 const char DataEntered[] = {"Data entered="};
@@ -267,7 +270,7 @@ const char InvalidCommand[] = {"Invalid command."};
 const char InvalidData_UnsignedInt[] = {"Invalid data. Expected unsigned integer 0-65535 instead got "};
 const char InvalidData_UnsignedLong[] = {"Invalid data. Expected unsigned long 0-4294967295 instead got "};
 const char InvalidData_TrueFalse[] = {"Invalid data. Expected True/False or 1/0"};
-const char Initialized[] = {"Initialized02"};
+const char Initialized[] = {"Initialized01"};
 
 template <typename T>
 T numberOfDigits(T number){
@@ -427,6 +430,8 @@ void applyDefaultsToSettings(){
 
   SETTINGS_DISPLAY_SCROLL_SPEED = 4;
 
+  SETTINGS_DISPLAY_INVERT= false;
+
   writeSettingsToEeprom();
 }
 
@@ -557,38 +562,39 @@ void printOutSettings(){
   Serial.println();
   Serial.println(F("////////  Current Settings  ////////"));
   Serial.println(F("APRS:"));
-  Serial.print(MenuItems_Settings_APRS[0]); Serial.println(SETTINGS_APRS_BEACON_FREQUENCY);
-  Serial.print(MenuItems_Settings_APRS[1]); Serial.println(SETTINGS_APRS_RAW_PACKET);
-  Serial.print(MenuItems_Settings_APRS[2]); Serial.println(SETTINGS_APRS_COMMENT);
-  Serial.print(MenuItems_Settings_APRS[3]); Serial.println(SETTINGS_APRS_MESSAGE);
-  Serial.print(MenuItems_Settings_APRS[4]); Serial.println(SETTINGS_APRS_RECIPIENT_CALL);
-  Serial.print(MenuItems_Settings_APRS[5]); Serial.println(SETTINGS_APRS_RECIPIENT_SSID);
-  Serial.print(MenuItems_Settings_APRS[6]); Serial.println(SETTINGS_APRS_CALLSIGN);
-  Serial.print(MenuItems_Settings_APRS[7]); Serial.println(SETTINGS_APRS_CALLSIGN_SSID);
-  Serial.print(MenuItems_Settings_APRS[8]); Serial.println(SETTINGS_APRS_DESTINATION_CALL);
-  Serial.print(MenuItems_Settings_APRS[9]); Serial.println(SETTINGS_APRS_DESTINATION_SSID);
-  Serial.print(MenuItems_Settings_APRS[10]); Serial.println(SETTINGS_APRS_PATH1_CALL);
-  Serial.print(MenuItems_Settings_APRS[11]); Serial.println(SETTINGS_APRS_PATH1_SSID);
-  Serial.print(MenuItems_Settings_APRS[12]); Serial.println(SETTINGS_APRS_PATH2_CALL);
-  Serial.print(MenuItems_Settings_APRS[13]); Serial.println(SETTINGS_APRS_PATH2_SSID);
-  Serial.print(MenuItems_Settings_APRS[14]); Serial.println(SETTINGS_APRS_SYMBOL);
-  Serial.print(MenuItems_Settings_APRS[15]); Serial.println(SETTINGS_APRS_SYMBOL_TABLE);
-  Serial.print(MenuItems_Settings_APRS[16]); Serial.println(SETTINGS_APRS_AUTOMATIC_ACK);
-  Serial.print(MenuItems_Settings_APRS[17]); Serial.println(SETTINGS_APRS_PREAMBLE);
-  Serial.print(MenuItems_Settings_APRS[18]); Serial.println(SETTINGS_APRS_TAIL);
-  Serial.print(MenuItems_Settings_APRS[19]); Serial.println(SETTINGS_APRS_RETRY_COUNT);
-  Serial.print(MenuItems_Settings_APRS[20]); Serial.println(SETTINGS_APRS_RETRY_INTERVAL);
+  Serial.print(MenuItems_Settings_APRS[0]); Serial.print("= "); Serial.println(SETTINGS_APRS_BEACON_FREQUENCY);
+  Serial.print(MenuItems_Settings_APRS[1]); Serial.print("= "); Serial.println(SETTINGS_APRS_RAW_PACKET);
+  Serial.print(MenuItems_Settings_APRS[2]); Serial.print("= "); Serial.println(SETTINGS_APRS_COMMENT);
+  Serial.print(MenuItems_Settings_APRS[3]); Serial.print("= "); Serial.println(SETTINGS_APRS_MESSAGE);
+  Serial.print(MenuItems_Settings_APRS[4]); Serial.print("= "); Serial.println(SETTINGS_APRS_RECIPIENT_CALL);
+  Serial.print(MenuItems_Settings_APRS[5]); Serial.print("= "); Serial.println(SETTINGS_APRS_RECIPIENT_SSID);
+  Serial.print(MenuItems_Settings_APRS[6]); Serial.print("= "); Serial.println(SETTINGS_APRS_CALLSIGN);
+  Serial.print(MenuItems_Settings_APRS[7]); Serial.print("= "); Serial.println(SETTINGS_APRS_CALLSIGN_SSID);
+  Serial.print(MenuItems_Settings_APRS[8]); Serial.print("= "); Serial.println(SETTINGS_APRS_DESTINATION_CALL);
+  Serial.print(MenuItems_Settings_APRS[9]); Serial.print("= "); Serial.println(SETTINGS_APRS_DESTINATION_SSID);
+  Serial.print(MenuItems_Settings_APRS[10]); Serial.print("= "); Serial.println(SETTINGS_APRS_PATH1_CALL);
+  Serial.print(MenuItems_Settings_APRS[11]); Serial.print("= "); Serial.println(SETTINGS_APRS_PATH1_SSID);
+  Serial.print(MenuItems_Settings_APRS[12]); Serial.print("= "); Serial.println(SETTINGS_APRS_PATH2_CALL);
+  Serial.print(MenuItems_Settings_APRS[13]); Serial.print("= "); Serial.println(SETTINGS_APRS_PATH2_SSID);
+  Serial.print(MenuItems_Settings_APRS[14]); Serial.print("= "); Serial.println(SETTINGS_APRS_SYMBOL);
+  Serial.print(MenuItems_Settings_APRS[15]); Serial.print("= "); Serial.println(SETTINGS_APRS_SYMBOL_TABLE);
+  Serial.print(MenuItems_Settings_APRS[16]); Serial.print("= "); Serial.println(SETTINGS_APRS_AUTOMATIC_ACK);
+  Serial.print(MenuItems_Settings_APRS[17]); Serial.print("= "); Serial.println(SETTINGS_APRS_PREAMBLE);
+  Serial.print(MenuItems_Settings_APRS[18]); Serial.print("= "); Serial.println(SETTINGS_APRS_TAIL);
+  Serial.print(MenuItems_Settings_APRS[19]); Serial.print("= "); Serial.println(SETTINGS_APRS_RETRY_COUNT);
+  Serial.print(MenuItems_Settings_APRS[20]); Serial.print("= "); Serial.println(SETTINGS_APRS_RETRY_INTERVAL);
   Serial.println(F("GPS:"));
-  Serial.print(MenuItems_Settings_GPS[0]); Serial.println(SETTINGS_GPS_UPDATE_FREQUENCY);
-  Serial.print(MenuItems_Settings_GPS[1]); Serial.println(SETTINGS_GPS_POSITION_TOLERANCE, 6);
-  Serial.print(MenuItems_Settings_GPS[2]); Serial.println(SETTINGS_GPS_DESTINATION_LATITUDE, 6);
-  Serial.print(MenuItems_Settings_GPS[3]); Serial.println(SETTINGS_GPS_DESTINATION_LONGITUDE, 6);
+  Serial.print(MenuItems_Settings_GPS[0]); Serial.print("= "); Serial.println(SETTINGS_GPS_UPDATE_FREQUENCY);
+  Serial.print(MenuItems_Settings_GPS[1]); Serial.print("= "); Serial.println(SETTINGS_GPS_POSITION_TOLERANCE, 6);
+  Serial.print(MenuItems_Settings_GPS[2]); Serial.print("= "); Serial.println(SETTINGS_GPS_DESTINATION_LATITUDE, 6);
+  Serial.print(MenuItems_Settings_GPS[3]); Serial.print("= "); Serial.println(SETTINGS_GPS_DESTINATION_LONGITUDE, 6);
   Serial.println(F("Display:"));
-  Serial.print(MenuItems_Settings_Display[0]); Serial.println(SETTINGS_DISPLAY_TIMEOUT);
-  Serial.print(MenuItems_Settings_Display[1]); Serial.println(SETTINGS_DISPLAY_BRIGHTNESS);
-  Serial.print(MenuItems_Settings_Display[2]); Serial.println(SETTINGS_DISPLAY_SHOW_POSITION);
-  Serial.print(MenuItems_Settings_Display[3]); Serial.println(SETTINGS_DISPLAY_SCROLL_MESSAGES);
-  Serial.print(MenuItems_Settings_Display[4]); Serial.println(SETTINGS_DISPLAY_SCROLL_SPEED);
+  Serial.print(MenuItems_Settings_Display[0]); Serial.print("= "); Serial.println(SETTINGS_DISPLAY_TIMEOUT);
+  Serial.print(MenuItems_Settings_Display[1]); Serial.print("= "); Serial.println(SETTINGS_DISPLAY_BRIGHTNESS);
+  Serial.print(MenuItems_Settings_Display[2]); Serial.print("= "); Serial.println(SETTINGS_DISPLAY_SHOW_POSITION);
+  Serial.print(MenuItems_Settings_Display[3]); Serial.print("= "); Serial.println(SETTINGS_DISPLAY_SCROLL_MESSAGES);
+  Serial.print(MenuItems_Settings_Display[4]); Serial.print("= "); Serial.println(SETTINGS_DISPLAY_SCROLL_SPEED);
+  Serial.print(MenuItems_Settings_Display[5]); Serial.print("= "); Serial.println(SETTINGS_DISPLAY_INVERT);
   Serial.println();
   Serial.print(F("Version=")); Serial.println(version);
   Serial.println();
@@ -904,6 +910,28 @@ void handleDisplays(){
     displayBlink = !displayBlink;
     display_blink_timer = millis();
   }
+  if (millis() - display_timeout_timer > SETTINGS_DISPLAY_TIMEOUT && !displayDim) {
+    displayDim = true;
+    display.SH1106_command(SH1106_SETCONTRAST);
+    display.SH1106_command(0);
+  } else if (wakeDisplay){
+    wakeDisplay = false;
+    displayDim = false;
+    display.SH1106_command(SH1106_SETCONTRAST);
+    display.SH1106_command((uint8_t)constrain(map(SETTINGS_DISPLAY_BRIGHTNESS,0,100,0,254),0,254));
+    display.SH1106_command(SH1106_DISPLAYON);
+    display_timeout_timer = millis();
+  }
+  // turn off the screen after an additional time
+  if (displayDim) {
+    if (millis() - display_off_timer > 3000) {
+      display.SH1106_command(SH1106_DISPLAYOFF);
+    }
+  } else {
+    display_off_timer = millis();
+  }
+  //
+  display.invertDisplay(SETTINGS_DISPLAY_INVERT);
 
   // when display changes call for the new display to initialize
   if (currentDisplay != currentDisplayLast) {
@@ -991,12 +1019,6 @@ void handleDisplay_Global(){
     display.print(F("Tx"));
   }
   
-  uint8_t contrast;
-  contrast = 0; // Dimmed display
-  display.SH1106_command(SH1106_SETCONTRAST);
-  display.SH1106_command((uint8_t)constrain(map(SETTINGS_DISPLAY_BRIGHTNESS,0,100,0,254),0,254));
-  //display.invertDisplay(true);
-
   display.setCursor(45,UI_DISPLAY_ROW_TOP);
   display.print(String(Voltage) + F("mV"));
 
@@ -2239,6 +2261,8 @@ void readModem(){
       if (strstr(Format_Msg_In.to, SETTINGS_APRS_CALLSIGN) != NULL) {
         // if message is an acknowledge don't add.
         if (!Format_Msg_In.ack) {
+          // 
+          wakeDisplay = true;
           // handle the incoming message index circular buffer
           if (incomingMessageBufferIndex < INCOMING_MESSAGE_BUFFER_SIZE - 1){
             incomingMessageBufferIndex++;
@@ -3221,11 +3245,14 @@ void handleKeyboard(){
     if (c != 0)
     {
       keyboardInputChar = c;
+      wakeDisplay = true;
     }
   }
 }
 
 void setup(){
+  // reset dimmer timer
+  display_timeout_timer = millis();
 
   // Open serial communications and wait for port to open:
   Serial.begin(115200);
