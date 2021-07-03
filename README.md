@@ -105,3 +105,9 @@ GPS:
 https://github.com/mikalhart/TinyGPSPlus
 
 https://www.ebay.com/sch/i.html?_id=221791352715&_nkw=Ublox+NEO-6M+GPS+Module+Aircraft+Flight+Controller+For+Arduino+MWC+IMU+APM2
+
+Case:
+https://www.duinocases.com/store/arduino-enclosures/duinocase-mega-arduino-mega-2560/
+
+Radio Cable:
+https://www.ebay.com/itm/264781615392?_trkparms=aid%3D111001%26algo%3DREC.SEED%26ao%3D1%26asc%3D20160908105057%26meid%3Ddb9c445a30c44022910324b22921c6f6%26pid%3D100675%26rk%3D1%26rkt%3D14%26sd%3D264781615392%26itm%3D264781615392%26pmt%3D1%26noa%3D1%26pg%3D2380057%26brand%3DUnbranded&_trksid=p2380057.c100675.m4236&_trkparms=pageci%3A1fb6b55f-dc3f-11eb-b8af-b6e56d447d0e%7Cparentrq%3A6e1b585b17a0a77d17f49028ffdbf844%7Ciid%3A1
