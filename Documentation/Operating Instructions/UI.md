@@ -1,11 +1,16 @@
-# Screen Navigation #
+## Screen Navigation ##
 
--The **Up** and **Down** keys move the cursor through the selections.\
--Pressing the **Enter** key will navigate to the screen selected by the cursor.\
--To exit a screen, press the **Escape** key.\
--To edit a setting, select the setting using the **Up** and **Down** keys and press the **Enter** key. This will put the device in edit mode. Use the **Up** and **Down** keys to modify a boolean value. Use the **Backspace** key to delete alphanumeric values. Press the **Enter** key to accept a new value or press the **Escape** key to revert to the original value.
+-The **[Up]** and **[Down]** keys move the cursor through the selections.\
+-Pressing the **[Enter]** key will navigate to the screen selected by the cursor.\
+-To exit a screen, press the **[Escape]** key.
+#### Editing a Setting ####
+-Select the setting using the **[Up]** and **[Down]** keys.\
+-Press the **[Enter]** key. This will put the device in edit mode.\
+-Use the **[Up]** and **[Down]** keys to modify a boolean value.\
+-Use the **[Backspace]** key to delete alphanumeric values and enter new values.\
+-Press the **[Enter]** key to accept a new value or press the **[Escape]** key to revert to the original value.
 
-```
+```text
   SPLASH
 ┌─────────────────────────┐
 │       HamMessenger      │
