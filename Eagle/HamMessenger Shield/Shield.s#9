@@ -18577,16 +18577,18 @@ Ref : https://www.kingbrightusa.com/images/catalog/SPEC/APTD1608QBC-D.pdf</descr
 <wire x1="91.44" y1="40.64" x2="91.44" y2="48.26" width="0.1524" layer="91"/>
 </segment>
 </net>
-<net name="N$5" class="0">
+<net name="D9" class="0">
 <segment>
 <pinref part="D2" gate="G$1" pin="A"/>
 <wire x1="78.74" y1="55.88" x2="78.74" y2="60.96" width="0.1524" layer="91"/>
+<label x="78.74" y="60.96" size="1.778" layer="95" rot="R90"/>
 </segment>
 </net>
-<net name="N$6" class="0">
+<net name="D10" class="0">
 <segment>
 <pinref part="D1" gate="G$1" pin="A"/>
 <wire x1="91.44" y1="55.88" x2="91.44" y2="60.96" width="0.1524" layer="91"/>
+<label x="91.44" y="60.96" size="1.778" layer="95" rot="R90"/>
 </segment>
 </net>
 </nets>

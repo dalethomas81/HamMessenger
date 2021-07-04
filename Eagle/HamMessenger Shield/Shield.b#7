@@ -158,9 +158,9 @@
 </layers>
 <board>
 <plain>
-<wire x1="0" y1="0" x2="99.9998" y2="0" width="0" layer="20"/>
-<wire x1="99.9998" y1="0" x2="99.9998" y2="79.9846" width="0" layer="20"/>
-<wire x1="99.9998" y1="79.9846" x2="0" y2="79.9846" width="0" layer="20"/>
+<wire x1="0" y1="0" x2="102.5398" y2="0" width="0" layer="20"/>
+<wire x1="102.5398" y1="0" x2="102.5398" y2="79.9846" width="0" layer="20"/>
+<wire x1="102.5398" y1="79.9846" x2="0" y2="79.9846" width="0" layer="20"/>
 <wire x1="0" y1="79.9846" x2="0" y2="0" width="0" layer="20"/>
 </plain>
 <libraries>
@@ -1733,10 +1733,10 @@ design rules under a new name.</description>
 <attribute name="NAME" x="12.065" y="42.545" size="0.889" layer="25" font="vector" ratio="11" rot="R90"/>
 <attribute name="VALUE" x="5.08" y="40.005" size="0.889" layer="27" font="vector" ratio="11" rot="R90"/>
 </element>
-<element name="VR1" library="SparkFun-Resistors" library_urn="urn:adsk.eagle:library:532" package="TRIMPOT-SMD-3MM-CLOSED" package3d_urn="urn:adsk.eagle:package:39665/1" value="100k" x="68.58" y="10.16" smashed="yes" rot="R270" grouprefs="MODEM">
-<attribute name="NAME" x="68.58" y="11.938" size="0.6096" layer="25" font="vector" ratio="20" align="bottom-center"/>
-<attribute name="PROD_ID" value="RES-09285" x="68.58" y="10.16" size="1.778" layer="27" rot="R270" display="off"/>
-<attribute name="VALUE" x="68.58" y="8.382" size="0.6096" layer="27" font="vector" ratio="20" align="top-center"/>
+<element name="VR1" library="SparkFun-Resistors" library_urn="urn:adsk.eagle:library:532" package="TRIMPOT-SMD-3MM-CLOSED" package3d_urn="urn:adsk.eagle:package:39665/1" value="100k" x="74.93" y="44.45" smashed="yes" rot="R270" grouprefs="MODEM">
+<attribute name="NAME" x="74.93" y="46.228" size="0.6096" layer="25" font="vector" ratio="20" align="bottom-center"/>
+<attribute name="PROD_ID" value="RES-09285" x="74.93" y="44.45" size="1.778" layer="27" rot="R270" display="off"/>
+<attribute name="VALUE" x="74.93" y="42.672" size="0.6096" layer="27" font="vector" ratio="20" align="top-center"/>
 </element>
 <element name="R5" library="Resistor" library_urn="urn:adsk.eagle:library:16378527" package="RESC2012X65" package3d_urn="urn:adsk.eagle:package:16378559/2" value="100k" x="78.74" y="33.02" smashed="yes" rot="R270">
 <attribute name="CATEGORY" value="Resistor" x="78.74" y="33.02" size="1.778" layer="27" rot="R270" display="off"/>
@@ -1785,37 +1785,37 @@ design rules under a new name.</description>
 <attribute name="VALUE" x="86.7717" y="35.56" size="1.27" layer="27" rot="R90" align="top-center"/>
 <attribute name="VOLTAGE_RATING" value="" x="85.09" y="35.56" size="1.778" layer="27" rot="R90" display="off"/>
 </element>
-<element name="D1" library="LED" library_urn="urn:adsk.eagle:library:22900745" package="LEDC2012X105N_RND-R" package3d_urn="urn:adsk.eagle:package:24294805/1" value="LED_GREEN" x="68.58" y="16.51" smashed="yes" rot="R270" grouprefs="MODEM">
-<attribute name="CATEGORY" value="LED" x="68.58" y="16.51" size="1.778" layer="27" rot="R270" display="off"/>
-<attribute name="COLOR" value="RED" x="68.58" y="16.51" size="1.778" layer="27" rot="R270" display="off"/>
-<attribute name="DESCRIPTION" value="CHIP LED ROUND" x="68.58" y="16.51" size="1.778" layer="27" rot="R270" display="off"/>
-<attribute name="MANUFACTURER" value="" x="68.58" y="16.51" size="1.778" layer="27" rot="R270" display="off"/>
-<attribute name="MPN" value="" x="68.58" y="16.51" size="1.778" layer="27" rot="R270" display="off"/>
-<attribute name="NAME" x="67.6699" y="19.177" size="1.27" layer="25" rot="R270" align="bottom-center"/>
-<attribute name="OPERATING_TEMP" value="" x="68.58" y="16.51" size="1.778" layer="27" rot="R270" display="off"/>
-<attribute name="PART_STATUS" value="" x="68.58" y="16.51" size="1.778" layer="27" rot="R270" display="off"/>
-<attribute name="ROHS_COMPLIANT" value="" x="68.58" y="16.51" size="1.778" layer="27" rot="R270" display="off"/>
-<attribute name="SERIES" value="" x="68.58" y="16.51" size="1.778" layer="27" rot="R270" display="off"/>
-<attribute name="SUB-CATEGORY" value="CHIP" x="68.58" y="16.51" size="1.778" layer="27" rot="R270" display="off"/>
-<attribute name="THERMALLOSS" value="" x="68.58" y="16.51" size="1.778" layer="27" rot="R270" display="off"/>
-<attribute name="TYPE" value="ROUND_TOP" x="68.58" y="16.51" size="1.778" layer="27" rot="R270" display="off"/>
-<attribute name="VALUE" x="70.7601" y="17.907" size="1.27" layer="27" rot="R270" align="top-center"/>
+<element name="D1" library="LED" library_urn="urn:adsk.eagle:library:22900745" package="LEDC2012X105N_RND-R" package3d_urn="urn:adsk.eagle:package:24294805/1" value="LED_GREEN" x="85.09" y="44.45" smashed="yes" rot="R270" grouprefs="MODEM">
+<attribute name="CATEGORY" value="LED" x="85.09" y="44.45" size="1.778" layer="27" rot="R270" display="off"/>
+<attribute name="COLOR" value="RED" x="85.09" y="44.45" size="1.778" layer="27" rot="R270" display="off"/>
+<attribute name="DESCRIPTION" value="CHIP LED ROUND" x="85.09" y="44.45" size="1.778" layer="27" rot="R270" display="off"/>
+<attribute name="MANUFACTURER" value="" x="85.09" y="44.45" size="1.778" layer="27" rot="R270" display="off"/>
+<attribute name="MPN" value="" x="85.09" y="44.45" size="1.778" layer="27" rot="R270" display="off"/>
+<attribute name="NAME" x="84.1799" y="47.117" size="1.27" layer="25" rot="R270" align="bottom-center"/>
+<attribute name="OPERATING_TEMP" value="" x="85.09" y="44.45" size="1.778" layer="27" rot="R270" display="off"/>
+<attribute name="PART_STATUS" value="" x="85.09" y="44.45" size="1.778" layer="27" rot="R270" display="off"/>
+<attribute name="ROHS_COMPLIANT" value="" x="85.09" y="44.45" size="1.778" layer="27" rot="R270" display="off"/>
+<attribute name="SERIES" value="" x="85.09" y="44.45" size="1.778" layer="27" rot="R270" display="off"/>
+<attribute name="SUB-CATEGORY" value="CHIP" x="85.09" y="44.45" size="1.778" layer="27" rot="R270" display="off"/>
+<attribute name="THERMALLOSS" value="" x="85.09" y="44.45" size="1.778" layer="27" rot="R270" display="off"/>
+<attribute name="TYPE" value="ROUND_TOP" x="85.09" y="44.45" size="1.778" layer="27" rot="R270" display="off"/>
+<attribute name="VALUE" x="87.2701" y="45.847" size="1.27" layer="27" rot="R270" align="top-center"/>
 </element>
-<element name="D2" library="LED" library_urn="urn:adsk.eagle:library:22900745" package="LEDC2012X105N_RND-R" package3d_urn="urn:adsk.eagle:package:24294805/1" value="LED_RED" x="66.04" y="16.51" smashed="yes" rot="R270" grouprefs="MODEM">
-<attribute name="CATEGORY" value="LED" x="66.04" y="16.51" size="1.778" layer="27" rot="R270" display="off"/>
-<attribute name="COLOR" value="RED" x="66.04" y="16.51" size="1.778" layer="27" rot="R270" display="off"/>
-<attribute name="DESCRIPTION" value="CHIP LED ROUND" x="66.04" y="16.51" size="1.778" layer="27" rot="R270" display="off"/>
-<attribute name="MANUFACTURER" value="" x="66.04" y="16.51" size="1.778" layer="27" rot="R270" display="off"/>
-<attribute name="MPN" value="" x="66.04" y="16.51" size="1.778" layer="27" rot="R270" display="off"/>
-<attribute name="NAME" x="65.1299" y="19.177" size="1.27" layer="25" rot="R270" align="bottom-center"/>
-<attribute name="OPERATING_TEMP" value="" x="66.04" y="16.51" size="1.778" layer="27" rot="R270" display="off"/>
-<attribute name="PART_STATUS" value="" x="66.04" y="16.51" size="1.778" layer="27" rot="R270" display="off"/>
-<attribute name="ROHS_COMPLIANT" value="" x="66.04" y="16.51" size="1.778" layer="27" rot="R270" display="off"/>
-<attribute name="SERIES" value="" x="66.04" y="16.51" size="1.778" layer="27" rot="R270" display="off"/>
-<attribute name="SUB-CATEGORY" value="CHIP" x="66.04" y="16.51" size="1.778" layer="27" rot="R270" display="off"/>
-<attribute name="THERMALLOSS" value="" x="66.04" y="16.51" size="1.778" layer="27" rot="R270" display="off"/>
-<attribute name="TYPE" value="ROUND_TOP" x="66.04" y="16.51" size="1.778" layer="27" rot="R270" display="off"/>
-<attribute name="VALUE" x="68.2201" y="16.637" size="1.27" layer="27" rot="R270" align="top-center"/>
+<element name="D2" library="LED" library_urn="urn:adsk.eagle:library:22900745" package="LEDC2012X105N_RND-R" package3d_urn="urn:adsk.eagle:package:24294805/1" value="LED_RED" x="81.28" y="44.45" smashed="yes" rot="R270" grouprefs="MODEM">
+<attribute name="CATEGORY" value="LED" x="81.28" y="44.45" size="1.778" layer="27" rot="R270" display="off"/>
+<attribute name="COLOR" value="RED" x="81.28" y="44.45" size="1.778" layer="27" rot="R270" display="off"/>
+<attribute name="DESCRIPTION" value="CHIP LED ROUND" x="81.28" y="44.45" size="1.778" layer="27" rot="R270" display="off"/>
+<attribute name="MANUFACTURER" value="" x="81.28" y="44.45" size="1.778" layer="27" rot="R270" display="off"/>
+<attribute name="MPN" value="" x="81.28" y="44.45" size="1.778" layer="27" rot="R270" display="off"/>
+<attribute name="NAME" x="80.3699" y="47.117" size="1.27" layer="25" rot="R270" align="bottom-center"/>
+<attribute name="OPERATING_TEMP" value="" x="81.28" y="44.45" size="1.778" layer="27" rot="R270" display="off"/>
+<attribute name="PART_STATUS" value="" x="81.28" y="44.45" size="1.778" layer="27" rot="R270" display="off"/>
+<attribute name="ROHS_COMPLIANT" value="" x="81.28" y="44.45" size="1.778" layer="27" rot="R270" display="off"/>
+<attribute name="SERIES" value="" x="81.28" y="44.45" size="1.778" layer="27" rot="R270" display="off"/>
+<attribute name="SUB-CATEGORY" value="CHIP" x="81.28" y="44.45" size="1.778" layer="27" rot="R270" display="off"/>
+<attribute name="THERMALLOSS" value="" x="81.28" y="44.45" size="1.778" layer="27" rot="R270" display="off"/>
+<attribute name="TYPE" value="ROUND_TOP" x="81.28" y="44.45" size="1.778" layer="27" rot="R270" display="off"/>
+<attribute name="VALUE" x="83.4601" y="44.577" size="1.27" layer="27" rot="R270" align="top-center"/>
 </element>
 <element name="R10" library="Resistor" library_urn="urn:adsk.eagle:library:16378527" package="RESC2012X65" package3d_urn="urn:adsk.eagle:package:16378559/2" value="270k" x="74.93" y="36.83" smashed="yes" rot="R270" grouprefs="MODEM">
 <attribute name="CATEGORY" value="Resistor" x="74.93" y="35.56" size="1.778" layer="27" rot="R270" display="off"/>
@@ -2015,13 +2015,13 @@ design rules under a new name.</description>
 <contactref element="VR1" pad="3"/>
 <contactref element="VR1" pad="2"/>
 <contactref element="C1" pad="+"/>
-<wire x1="66.93" y1="9.31" x2="70.23" y2="10.16" width="0" layer="19" extent="1-1"/>
-<wire x1="82.55" y1="13.74" x2="66.93" y2="9.31" width="0" layer="19" extent="1-1"/>
+<wire x1="73.28" y1="43.6" x2="76.58" y2="44.45" width="0" layer="19" extent="1-1"/>
+<wire x1="82.55" y1="13.74" x2="73.28" y2="43.6" width="0" layer="19" extent="1-1"/>
 </signal>
 <signal name="MIC_LEVEL_OUT">
 <contactref element="VR1" pad="1"/>
 <contactref element="R16" pad="2"/>
-<wire x1="77.1195" y1="25.4" x2="66.93" y2="11.01" width="0" layer="19" extent="1-1"/>
+<wire x1="77.1195" y1="25.4" x2="73.28" y2="45.3" width="0" layer="19" extent="1-1"/>
 </signal>
 <signal name="GND">
 <contactref element="U$2" pad="1"/>
@@ -2129,25 +2129,25 @@ design rules under a new name.</description>
 <signal name="N$3">
 <contactref element="R10" pad="2"/>
 <contactref element="D2" pad="C"/>
-<wire x1="74.93" y1="35.9105" x2="66.04" y2="17.485" width="0" layer="19" extent="1-1"/>
+<wire x1="74.93" y1="35.9105" x2="81.28" y2="45.425" width="0" layer="19" extent="1-1"/>
 </signal>
 <signal name="N$4">
 <contactref element="R11" pad="2"/>
 <contactref element="D1" pad="C"/>
-<wire x1="74.93" y1="32.1005" x2="68.58" y2="17.485" width="0" layer="19" extent="1-1"/>
+<wire x1="74.93" y1="32.1005" x2="85.09" y2="45.425" width="0" layer="19" extent="1-1"/>
 </signal>
 <signal name="D9">
 <contactref element="D2" pad="A"/>
 <contactref element="M1" pad="J7.1"/>
 <contactref element="IC1" pad="13"/>
-<wire x1="72.39" y1="10.16" x2="66.04" y2="15.535" width="0" layer="19" extent="1-1"/>
+<wire x1="72.39" y1="10.16" x2="81.28" y2="43.475" width="0" layer="19" extent="1-1"/>
 <wire x1="66.04" y1="2.54" x2="72.39" y2="10.16" width="0" layer="19" extent="1-1"/>
 </signal>
 <signal name="D10">
 <contactref element="D1" pad="A"/>
 <contactref element="M1" pad="J6.12"/>
 <contactref element="IC1" pad="12"/>
-<wire x1="87.63" y1="10.16" x2="68.58" y2="15.535" width="0" layer="19" extent="1-1"/>
+<wire x1="87.63" y1="10.16" x2="85.09" y2="43.475" width="0" layer="19" extent="1-1"/>
 <wire x1="63.5" y1="2.54" x2="87.63" y2="10.16" width="0" layer="19" extent="1-1"/>
 </signal>
 <signal name="GND.2">
