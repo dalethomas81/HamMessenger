@@ -1874,85 +1874,85 @@ design rules under a new name.</description>
 <attribute name="TYPE" value="" x="78.74" y="26.67" size="1.778" layer="27" rot="R90" display="off"/>
 <attribute name="VALUE" x="80.3991" y="26.67" size="1.27" layer="27" rot="R90" align="top-center"/>
 </element>
-<element name="R9" library="Resistor" library_urn="urn:adsk.eagle:library:16378527" package="RESC2012X65" package3d_urn="urn:adsk.eagle:package:16378559/2" value="1k" x="74.93" y="15.24" smashed="yes" rot="R180" grouprefs="MODEM">
-<attribute name="CATEGORY" value="Resistor" x="72.39" y="15.24" size="1.778" layer="27" rot="R180" display="off"/>
-<attribute name="MANUFACTURER" value="" x="72.39" y="15.24" size="1.778" layer="27" rot="R180" display="off"/>
-<attribute name="MPN" value="" x="72.39" y="15.24" size="1.778" layer="27" rot="R180" display="off"/>
-<attribute name="NAME" x="72.39" y="16.1209" size="1.27" layer="25" rot="R180" align="bottom-center"/>
-<attribute name="OPERATING_TEMP" value="" x="72.39" y="15.24" size="1.778" layer="27" rot="R180" display="off"/>
-<attribute name="PART_STATUS" value="" x="72.39" y="15.24" size="1.778" layer="27" rot="R180" display="off"/>
-<attribute name="RATING" value="" x="72.39" y="15.24" size="1.778" layer="27" rot="R180" display="off"/>
-<attribute name="ROHS_COMPLIANT" value="" x="72.39" y="15.24" size="1.778" layer="27" rot="R180" display="off"/>
-<attribute name="SERIES" value="" x="72.39" y="15.24" size="1.778" layer="27" rot="R180" display="off"/>
-<attribute name="SUB-CATEGORY" value="Fixed" x="72.39" y="15.24" size="1.778" layer="27" rot="R180" display="off"/>
-<attribute name="THERMALLOSS" value="" x="72.39" y="15.24" size="1.778" layer="27" rot="R180" display="off"/>
-<attribute name="TOLERANCE" value="" x="72.39" y="15.24" size="1.778" layer="27" rot="R180" display="off"/>
-<attribute name="TYPE" value="" x="72.39" y="15.24" size="1.778" layer="27" rot="R180" display="off"/>
-<attribute name="VALUE" x="76.2" y="15.6291" size="1.27" layer="27" rot="R180" align="top-center"/>
+<element name="R9" library="Resistor" library_urn="urn:adsk.eagle:library:16378527" package="RESC2012X65" package3d_urn="urn:adsk.eagle:package:16378559/2" value="1k" x="74.93" y="13.97" smashed="yes" rot="R180" grouprefs="MODEM">
+<attribute name="CATEGORY" value="Resistor" x="72.39" y="13.97" size="1.778" layer="27" rot="R180" display="off"/>
+<attribute name="MANUFACTURER" value="" x="72.39" y="13.97" size="1.778" layer="27" rot="R180" display="off"/>
+<attribute name="MPN" value="" x="72.39" y="13.97" size="1.778" layer="27" rot="R180" display="off"/>
+<attribute name="NAME" x="72.39" y="14.8509" size="1.27" layer="25" rot="R180" align="bottom-center"/>
+<attribute name="OPERATING_TEMP" value="" x="72.39" y="13.97" size="1.778" layer="27" rot="R180" display="off"/>
+<attribute name="PART_STATUS" value="" x="72.39" y="13.97" size="1.778" layer="27" rot="R180" display="off"/>
+<attribute name="RATING" value="" x="72.39" y="13.97" size="1.778" layer="27" rot="R180" display="off"/>
+<attribute name="ROHS_COMPLIANT" value="" x="72.39" y="13.97" size="1.778" layer="27" rot="R180" display="off"/>
+<attribute name="SERIES" value="" x="72.39" y="13.97" size="1.778" layer="27" rot="R180" display="off"/>
+<attribute name="SUB-CATEGORY" value="Fixed" x="72.39" y="13.97" size="1.778" layer="27" rot="R180" display="off"/>
+<attribute name="THERMALLOSS" value="" x="72.39" y="13.97" size="1.778" layer="27" rot="R180" display="off"/>
+<attribute name="TOLERANCE" value="" x="72.39" y="13.97" size="1.778" layer="27" rot="R180" display="off"/>
+<attribute name="TYPE" value="" x="72.39" y="13.97" size="1.778" layer="27" rot="R180" display="off"/>
+<attribute name="VALUE" x="76.2" y="14.3591" size="1.27" layer="27" rot="R180" align="top-center"/>
 </element>
-<element name="R13" library="Resistor" library_urn="urn:adsk.eagle:library:16378527" package="RESC2012X65" package3d_urn="urn:adsk.eagle:package:16378559/2" value="2k2" x="74.93" y="17.78" smashed="yes" rot="R180" grouprefs="MODEM">
-<attribute name="CATEGORY" value="Resistor" x="72.39" y="17.78" size="1.778" layer="27" rot="R180" display="off"/>
-<attribute name="MANUFACTURER" value="" x="72.39" y="17.78" size="1.778" layer="27" rot="R180" display="off"/>
-<attribute name="MPN" value="" x="72.39" y="17.78" size="1.778" layer="27" rot="R180" display="off"/>
-<attribute name="NAME" x="72.39" y="18.6609" size="1.27" layer="25" rot="R180" align="bottom-center"/>
-<attribute name="OPERATING_TEMP" value="" x="72.39" y="17.78" size="1.778" layer="27" rot="R180" display="off"/>
-<attribute name="PART_STATUS" value="" x="72.39" y="17.78" size="1.778" layer="27" rot="R180" display="off"/>
-<attribute name="RATING" value="" x="72.39" y="17.78" size="1.778" layer="27" rot="R180" display="off"/>
-<attribute name="ROHS_COMPLIANT" value="" x="72.39" y="17.78" size="1.778" layer="27" rot="R180" display="off"/>
-<attribute name="SERIES" value="" x="72.39" y="17.78" size="1.778" layer="27" rot="R180" display="off"/>
-<attribute name="SUB-CATEGORY" value="Fixed" x="72.39" y="17.78" size="1.778" layer="27" rot="R180" display="off"/>
-<attribute name="THERMALLOSS" value="" x="72.39" y="17.78" size="1.778" layer="27" rot="R180" display="off"/>
-<attribute name="TOLERANCE" value="" x="72.39" y="17.78" size="1.778" layer="27" rot="R180" display="off"/>
-<attribute name="TYPE" value="" x="72.39" y="17.78" size="1.778" layer="27" rot="R180" display="off"/>
-<attribute name="VALUE" x="76.2" y="18.1691" size="1.27" layer="27" rot="R180" align="top-center"/>
+<element name="R13" library="Resistor" library_urn="urn:adsk.eagle:library:16378527" package="RESC2012X65" package3d_urn="urn:adsk.eagle:package:16378559/2" value="2k2" x="74.93" y="16.51" smashed="yes" rot="R180" grouprefs="MODEM">
+<attribute name="CATEGORY" value="Resistor" x="72.39" y="16.51" size="1.778" layer="27" rot="R180" display="off"/>
+<attribute name="MANUFACTURER" value="" x="72.39" y="16.51" size="1.778" layer="27" rot="R180" display="off"/>
+<attribute name="MPN" value="" x="72.39" y="16.51" size="1.778" layer="27" rot="R180" display="off"/>
+<attribute name="NAME" x="72.39" y="17.3909" size="1.27" layer="25" rot="R180" align="bottom-center"/>
+<attribute name="OPERATING_TEMP" value="" x="72.39" y="16.51" size="1.778" layer="27" rot="R180" display="off"/>
+<attribute name="PART_STATUS" value="" x="72.39" y="16.51" size="1.778" layer="27" rot="R180" display="off"/>
+<attribute name="RATING" value="" x="72.39" y="16.51" size="1.778" layer="27" rot="R180" display="off"/>
+<attribute name="ROHS_COMPLIANT" value="" x="72.39" y="16.51" size="1.778" layer="27" rot="R180" display="off"/>
+<attribute name="SERIES" value="" x="72.39" y="16.51" size="1.778" layer="27" rot="R180" display="off"/>
+<attribute name="SUB-CATEGORY" value="Fixed" x="72.39" y="16.51" size="1.778" layer="27" rot="R180" display="off"/>
+<attribute name="THERMALLOSS" value="" x="72.39" y="16.51" size="1.778" layer="27" rot="R180" display="off"/>
+<attribute name="TOLERANCE" value="" x="72.39" y="16.51" size="1.778" layer="27" rot="R180" display="off"/>
+<attribute name="TYPE" value="" x="72.39" y="16.51" size="1.778" layer="27" rot="R180" display="off"/>
+<attribute name="VALUE" x="76.2" y="16.8991" size="1.27" layer="27" rot="R180" align="top-center"/>
 </element>
-<element name="R14" library="Resistor" library_urn="urn:adsk.eagle:library:16378527" package="RESC2012X65" package3d_urn="urn:adsk.eagle:package:16378559/2" value="3k9" x="74.93" y="20.32" smashed="yes" rot="R180" grouprefs="MODEM">
-<attribute name="CATEGORY" value="Resistor" x="72.39" y="20.32" size="1.778" layer="27" rot="R180" display="off"/>
-<attribute name="MANUFACTURER" value="" x="72.39" y="20.32" size="1.778" layer="27" rot="R180" display="off"/>
-<attribute name="MPN" value="" x="72.39" y="20.32" size="1.778" layer="27" rot="R180" display="off"/>
-<attribute name="NAME" x="72.39" y="21.2009" size="1.27" layer="25" rot="R180" align="bottom-center"/>
-<attribute name="OPERATING_TEMP" value="" x="72.39" y="20.32" size="1.778" layer="27" rot="R180" display="off"/>
-<attribute name="PART_STATUS" value="" x="72.39" y="20.32" size="1.778" layer="27" rot="R180" display="off"/>
-<attribute name="RATING" value="" x="72.39" y="20.32" size="1.778" layer="27" rot="R180" display="off"/>
-<attribute name="ROHS_COMPLIANT" value="" x="72.39" y="20.32" size="1.778" layer="27" rot="R180" display="off"/>
-<attribute name="SERIES" value="" x="72.39" y="20.32" size="1.778" layer="27" rot="R180" display="off"/>
-<attribute name="SUB-CATEGORY" value="Fixed" x="72.39" y="20.32" size="1.778" layer="27" rot="R180" display="off"/>
-<attribute name="THERMALLOSS" value="" x="72.39" y="20.32" size="1.778" layer="27" rot="R180" display="off"/>
-<attribute name="TOLERANCE" value="" x="72.39" y="20.32" size="1.778" layer="27" rot="R180" display="off"/>
-<attribute name="TYPE" value="" x="72.39" y="20.32" size="1.778" layer="27" rot="R180" display="off"/>
-<attribute name="VALUE" x="76.2" y="20.7091" size="1.27" layer="27" rot="R180" align="top-center"/>
+<element name="R14" library="Resistor" library_urn="urn:adsk.eagle:library:16378527" package="RESC2012X65" package3d_urn="urn:adsk.eagle:package:16378559/2" value="3k9" x="74.93" y="19.05" smashed="yes" rot="R180" grouprefs="MODEM">
+<attribute name="CATEGORY" value="Resistor" x="72.39" y="19.05" size="1.778" layer="27" rot="R180" display="off"/>
+<attribute name="MANUFACTURER" value="" x="72.39" y="19.05" size="1.778" layer="27" rot="R180" display="off"/>
+<attribute name="MPN" value="" x="72.39" y="19.05" size="1.778" layer="27" rot="R180" display="off"/>
+<attribute name="NAME" x="72.39" y="19.9309" size="1.27" layer="25" rot="R180" align="bottom-center"/>
+<attribute name="OPERATING_TEMP" value="" x="72.39" y="19.05" size="1.778" layer="27" rot="R180" display="off"/>
+<attribute name="PART_STATUS" value="" x="72.39" y="19.05" size="1.778" layer="27" rot="R180" display="off"/>
+<attribute name="RATING" value="" x="72.39" y="19.05" size="1.778" layer="27" rot="R180" display="off"/>
+<attribute name="ROHS_COMPLIANT" value="" x="72.39" y="19.05" size="1.778" layer="27" rot="R180" display="off"/>
+<attribute name="SERIES" value="" x="72.39" y="19.05" size="1.778" layer="27" rot="R180" display="off"/>
+<attribute name="SUB-CATEGORY" value="Fixed" x="72.39" y="19.05" size="1.778" layer="27" rot="R180" display="off"/>
+<attribute name="THERMALLOSS" value="" x="72.39" y="19.05" size="1.778" layer="27" rot="R180" display="off"/>
+<attribute name="TOLERANCE" value="" x="72.39" y="19.05" size="1.778" layer="27" rot="R180" display="off"/>
+<attribute name="TYPE" value="" x="72.39" y="19.05" size="1.778" layer="27" rot="R180" display="off"/>
+<attribute name="VALUE" x="76.2" y="19.4391" size="1.27" layer="27" rot="R180" align="top-center"/>
 </element>
-<element name="R15" library="Resistor" library_urn="urn:adsk.eagle:library:16378527" package="RESC2012X65" package3d_urn="urn:adsk.eagle:package:16378559/2" value="8k2" x="74.93" y="22.86" smashed="yes" rot="R180" grouprefs="MODEM">
-<attribute name="CATEGORY" value="Resistor" x="72.39" y="22.86" size="1.778" layer="27" rot="R180" display="off"/>
-<attribute name="MANUFACTURER" value="" x="72.39" y="22.86" size="1.778" layer="27" rot="R180" display="off"/>
-<attribute name="MPN" value="" x="72.39" y="22.86" size="1.778" layer="27" rot="R180" display="off"/>
-<attribute name="NAME" x="72.39" y="23.7409" size="1.27" layer="25" rot="R180" align="bottom-center"/>
-<attribute name="OPERATING_TEMP" value="" x="72.39" y="22.86" size="1.778" layer="27" rot="R180" display="off"/>
-<attribute name="PART_STATUS" value="" x="72.39" y="22.86" size="1.778" layer="27" rot="R180" display="off"/>
-<attribute name="RATING" value="" x="72.39" y="22.86" size="1.778" layer="27" rot="R180" display="off"/>
-<attribute name="ROHS_COMPLIANT" value="" x="72.39" y="22.86" size="1.778" layer="27" rot="R180" display="off"/>
-<attribute name="SERIES" value="" x="72.39" y="22.86" size="1.778" layer="27" rot="R180" display="off"/>
-<attribute name="SUB-CATEGORY" value="Fixed" x="72.39" y="22.86" size="1.778" layer="27" rot="R180" display="off"/>
-<attribute name="THERMALLOSS" value="" x="72.39" y="22.86" size="1.778" layer="27" rot="R180" display="off"/>
-<attribute name="TOLERANCE" value="" x="72.39" y="22.86" size="1.778" layer="27" rot="R180" display="off"/>
-<attribute name="TYPE" value="" x="72.39" y="22.86" size="1.778" layer="27" rot="R180" display="off"/>
-<attribute name="VALUE" x="76.2" y="23.2491" size="1.27" layer="27" rot="R180" align="top-center"/>
+<element name="R15" library="Resistor" library_urn="urn:adsk.eagle:library:16378527" package="RESC2012X65" package3d_urn="urn:adsk.eagle:package:16378559/2" value="8k2" x="74.93" y="21.59" smashed="yes" rot="R180" grouprefs="MODEM">
+<attribute name="CATEGORY" value="Resistor" x="72.39" y="21.59" size="1.778" layer="27" rot="R180" display="off"/>
+<attribute name="MANUFACTURER" value="" x="72.39" y="21.59" size="1.778" layer="27" rot="R180" display="off"/>
+<attribute name="MPN" value="" x="72.39" y="21.59" size="1.778" layer="27" rot="R180" display="off"/>
+<attribute name="NAME" x="72.39" y="22.4709" size="1.27" layer="25" rot="R180" align="bottom-center"/>
+<attribute name="OPERATING_TEMP" value="" x="72.39" y="21.59" size="1.778" layer="27" rot="R180" display="off"/>
+<attribute name="PART_STATUS" value="" x="72.39" y="21.59" size="1.778" layer="27" rot="R180" display="off"/>
+<attribute name="RATING" value="" x="72.39" y="21.59" size="1.778" layer="27" rot="R180" display="off"/>
+<attribute name="ROHS_COMPLIANT" value="" x="72.39" y="21.59" size="1.778" layer="27" rot="R180" display="off"/>
+<attribute name="SERIES" value="" x="72.39" y="21.59" size="1.778" layer="27" rot="R180" display="off"/>
+<attribute name="SUB-CATEGORY" value="Fixed" x="72.39" y="21.59" size="1.778" layer="27" rot="R180" display="off"/>
+<attribute name="THERMALLOSS" value="" x="72.39" y="21.59" size="1.778" layer="27" rot="R180" display="off"/>
+<attribute name="TOLERANCE" value="" x="72.39" y="21.59" size="1.778" layer="27" rot="R180" display="off"/>
+<attribute name="TYPE" value="" x="72.39" y="21.59" size="1.778" layer="27" rot="R180" display="off"/>
+<attribute name="VALUE" x="76.2" y="21.9791" size="1.27" layer="27" rot="R180" align="top-center"/>
 </element>
-<element name="R16" library="Resistor" library_urn="urn:adsk.eagle:library:16378527" package="RESC2012X65" package3d_urn="urn:adsk.eagle:package:16378559/2" value="1k" x="74.93" y="25.4" smashed="yes" rot="R180" grouprefs="MODEM">
-<attribute name="CATEGORY" value="Resistor" x="72.39" y="25.4" size="1.778" layer="27" rot="R180" display="off"/>
-<attribute name="MANUFACTURER" value="" x="72.39" y="25.4" size="1.778" layer="27" rot="R180" display="off"/>
-<attribute name="MPN" value="" x="72.39" y="25.4" size="1.778" layer="27" rot="R180" display="off"/>
-<attribute name="NAME" x="72.39" y="26.2809" size="1.27" layer="25" rot="R180" align="bottom-center"/>
-<attribute name="OPERATING_TEMP" value="" x="72.39" y="25.4" size="1.778" layer="27" rot="R180" display="off"/>
-<attribute name="PART_STATUS" value="" x="72.39" y="25.4" size="1.778" layer="27" rot="R180" display="off"/>
-<attribute name="RATING" value="" x="72.39" y="25.4" size="1.778" layer="27" rot="R180" display="off"/>
-<attribute name="ROHS_COMPLIANT" value="" x="72.39" y="25.4" size="1.778" layer="27" rot="R180" display="off"/>
-<attribute name="SERIES" value="" x="72.39" y="25.4" size="1.778" layer="27" rot="R180" display="off"/>
-<attribute name="SUB-CATEGORY" value="Fixed" x="72.39" y="25.4" size="1.778" layer="27" rot="R180" display="off"/>
-<attribute name="THERMALLOSS" value="" x="72.39" y="25.4" size="1.778" layer="27" rot="R180" display="off"/>
-<attribute name="TOLERANCE" value="" x="72.39" y="25.4" size="1.778" layer="27" rot="R180" display="off"/>
-<attribute name="TYPE" value="" x="72.39" y="25.4" size="1.778" layer="27" rot="R180" display="off"/>
-<attribute name="VALUE" x="76.2" y="25.7891" size="1.27" layer="27" rot="R180" align="top-center"/>
+<element name="R16" library="Resistor" library_urn="urn:adsk.eagle:library:16378527" package="RESC2012X65" package3d_urn="urn:adsk.eagle:package:16378559/2" value="1k" x="74.93" y="24.13" smashed="yes" rot="R180" grouprefs="MODEM">
+<attribute name="CATEGORY" value="Resistor" x="72.39" y="24.13" size="1.778" layer="27" rot="R180" display="off"/>
+<attribute name="MANUFACTURER" value="" x="72.39" y="24.13" size="1.778" layer="27" rot="R180" display="off"/>
+<attribute name="MPN" value="" x="72.39" y="24.13" size="1.778" layer="27" rot="R180" display="off"/>
+<attribute name="NAME" x="72.39" y="25.0109" size="1.27" layer="25" rot="R180" align="bottom-center"/>
+<attribute name="OPERATING_TEMP" value="" x="72.39" y="24.13" size="1.778" layer="27" rot="R180" display="off"/>
+<attribute name="PART_STATUS" value="" x="72.39" y="24.13" size="1.778" layer="27" rot="R180" display="off"/>
+<attribute name="RATING" value="" x="72.39" y="24.13" size="1.778" layer="27" rot="R180" display="off"/>
+<attribute name="ROHS_COMPLIANT" value="" x="72.39" y="24.13" size="1.778" layer="27" rot="R180" display="off"/>
+<attribute name="SERIES" value="" x="72.39" y="24.13" size="1.778" layer="27" rot="R180" display="off"/>
+<attribute name="SUB-CATEGORY" value="Fixed" x="72.39" y="24.13" size="1.778" layer="27" rot="R180" display="off"/>
+<attribute name="THERMALLOSS" value="" x="72.39" y="24.13" size="1.778" layer="27" rot="R180" display="off"/>
+<attribute name="TOLERANCE" value="" x="72.39" y="24.13" size="1.778" layer="27" rot="R180" display="off"/>
+<attribute name="TYPE" value="" x="72.39" y="24.13" size="1.778" layer="27" rot="R180" display="off"/>
+<attribute name="VALUE" x="76.2" y="24.5191" size="1.27" layer="27" rot="R180" align="top-center"/>
 </element>
 <element name="R17" library="Resistor" library_urn="urn:adsk.eagle:library:16378527" package="RESC2012X65" package3d_urn="urn:adsk.eagle:package:16378559/2" value="270" x="81.28" y="24.13" smashed="yes" rot="R270" grouprefs="MODEM">
 <attribute name="CATEGORY" value="Resistor" x="81.28" y="21.59" size="1.778" layer="27" rot="R270" display="off"/>
@@ -1994,22 +1994,26 @@ design rules under a new name.</description>
 <signal name="D7">
 <contactref element="M1" pad="J7.3"/>
 <contactref element="R9" pad="2"/>
-<wire x1="71.12" y1="15.24" x2="74.0105" y2="15.24" width="0.1524" layer="1"/>
+<wire x1="71.12" y1="15.24" x2="72.39" y2="13.97" width="0.1524" layer="1"/>
+<wire x1="72.39" y1="13.97" x2="74.0105" y2="13.97" width="0.1524" layer="1"/>
 </signal>
 <signal name="D6">
 <contactref element="M1" pad="J7.4"/>
 <contactref element="R13" pad="2"/>
-<wire x1="71.12" y1="17.78" x2="74.0105" y2="17.78" width="0.1524" layer="1"/>
+<wire x1="71.12" y1="17.78" x2="72.39" y2="16.51" width="0.1524" layer="1"/>
+<wire x1="72.39" y1="16.51" x2="74.0105" y2="16.51" width="0.1524" layer="1"/>
 </signal>
 <signal name="D5">
 <contactref element="M1" pad="J7.5"/>
 <contactref element="R14" pad="2"/>
-<wire x1="71.12" y1="20.32" x2="74.0105" y2="20.32" width="0.1524" layer="1"/>
+<wire x1="71.12" y1="20.32" x2="72.39" y2="19.05" width="0.1524" layer="1"/>
+<wire x1="72.39" y1="19.05" x2="74.0105" y2="19.05" width="0.1524" layer="1"/>
 </signal>
 <signal name="D4">
 <contactref element="M1" pad="J7.6"/>
 <contactref element="R15" pad="2"/>
-<wire x1="71.12" y1="22.86" x2="74.0105" y2="22.86" width="0.1524" layer="1"/>
+<wire x1="71.12" y1="22.86" x2="72.39" y2="21.59" width="0.1524" layer="1"/>
+<wire x1="72.39" y1="21.59" x2="74.0105" y2="21.59" width="0.1524" layer="1"/>
 </signal>
 <signal name="LINE_LEVEL_OUT">
 <contactref element="VR1" pad="3"/>
@@ -2039,10 +2043,12 @@ design rules under a new name.</description>
 <wire x1="69.85" y1="39.6875" x2="72.39" y2="42.2275" width="0.1524" layer="1"/>
 <wire x1="69.85" y1="26.67" x2="69.85" y2="39.6875" width="0.1524" layer="1"/>
 <wire x1="72.0725" y1="45.4025" x2="72.01" y2="45.3" width="0.1524" layer="1"/>
-<wire x1="74.0105" y1="25.4" x2="73.5627" y2="25.8478" width="0.1524" layer="1"/>
-<wire x1="73.5627" y1="25.8478" x2="73.30138125" y2="25.8478" width="0.1524" layer="1"/>
-<wire x1="73.30138125" y1="25.8478" x2="72.47918125" y2="26.67" width="0.1524" layer="1"/>
-<wire x1="72.47918125" y1="26.67" x2="69.85" y2="26.67" width="0.1524" layer="1"/>
+<wire x1="74.0105" y1="24.13" x2="73.83525" y2="24.30525" width="0.1524" layer="1"/>
+<wire x1="73.83525" y1="24.30525" x2="73.5627" y2="24.5778" width="0.1524" layer="1"/>
+<wire x1="71.20918125" y1="26.67" x2="71.12" y2="26.67" width="0.1524" layer="1"/>
+<wire x1="69.85" y1="26.67" x2="71.12" y2="26.67" width="0.1524" layer="1"/>
+<wire x1="71.20918125" y1="26.67" x2="71.4705" y2="26.67" width="0.1524" layer="1"/>
+<wire x1="71.4705" y1="26.67" x2="73.5627" y2="24.5778" width="0.1524" layer="1"/>
 </signal>
 <signal name="GND">
 <contactref element="U$2" pad="1"/>
@@ -2092,27 +2098,20 @@ design rules under a new name.</description>
 <wire x1="81.28" y1="19.6723" x2="81.9277" y2="19.6723" width="0.1524" layer="1"/>
 <wire x1="83.66125" y1="17.93875" x2="81.9277" y2="19.6723" width="0.1524" layer="1"/>
 <wire x1="83.4732875" y1="16.51" x2="83.66125" y2="16.51" width="0.1524" layer="1"/>
-<wire x1="83.4732875" y1="16.51" x2="82.4746875" y2="15.5114" width="0.1524" layer="1"/>
 <wire x1="76.2602" y1="27.07338125" x2="76.2602" y2="28.80661875" width="0.1524" layer="1"/>
 <wire x1="76.2602" y1="28.80661875" x2="75.03461875" y2="30.0322" width="0.1524" layer="1"/>
 <wire x1="75.8495" y1="26.66268125" x2="76.2602" y2="27.07338125" width="0.1524" layer="1"/>
 <wire x1="71.5678" y1="30.0322" x2="71.12" y2="30.48" width="0.1524" layer="1"/>
-<wire x1="75.8495" y1="25.4" x2="75.8495" y2="26.66268125" width="0.1524" layer="1"/>
+<wire x1="75.8495" y1="24.13" x2="75.8495" y2="26.66268125" width="0.1524" layer="1"/>
 <wire x1="75.03461875" y1="30.0322" x2="71.5678" y2="30.0322" width="0.1524" layer="1"/>
-<wire x1="75.8495" y1="25.4" x2="76.2" y2="25.7505" width="0.1524" layer="1"/>
-<wire x1="76.2" y1="25.7505" x2="78.74" y2="25.7505" width="0.1524" layer="1"/>
+<wire x1="75.8495" y1="24.13" x2="76.2" y2="24.4805" width="0.1524" layer="1"/>
+<wire x1="77.47" y1="24.4805" x2="78.74" y2="25.7505" width="0.1524" layer="1"/>
+<wire x1="77.47" y1="24.4805" x2="76.2" y2="24.4805" width="0.1524" layer="1"/>
 <wire x1="81.28" y1="19.5571625" x2="81.28" y2="19.4446" width="0.1524" layer="1"/>
 <wire x1="81.28" y1="19.5571625" x2="82.55" y2="20.8271625" width="0.1524" layer="1"/>
 <wire x1="78.74" y1="25.7505" x2="80.612" y2="25.7505" width="0.1524" layer="1"/>
 <wire x1="80.612" y1="25.7505" x2="81.28" y2="25.0825" width="0.1524" layer="1"/>
 <wire x1="78.74" y1="26.0405125" x2="80.66" y2="27.9605125" width="0.1524" layer="1"/>
-<wire x1="77.7414" y1="15.5114" x2="76.2" y2="13.97" width="0.1524" layer="1"/>
-<wire x1="50.68039375" y1="10.795" x2="49.53" y2="10.795" width="0.1524" layer="1"/>
-<wire x1="62.160725" y1="14.2762" x2="54.16159375" y2="14.2762" width="0.1524" layer="1"/>
-<wire x1="54.16159375" y1="14.2762" x2="50.68039375" y2="10.795" width="0.1524" layer="1"/>
-<wire x1="76.2" y1="13.97" x2="62.466925" y2="13.97" width="0.1524" layer="1"/>
-<wire x1="62.466925" y1="13.97" x2="62.160725" y2="14.2762" width="0.1524" layer="1"/>
-<wire x1="82.4746875" y1="15.5114" x2="77.7414" y2="15.5114" width="0.1524" layer="1"/>
 <wire x1="82.55" y1="23.8125" x2="81.28" y2="25.0825" width="0.1524" layer="1"/>
 <wire x1="82.55" y1="20.8271625" x2="82.55" y2="23.8125" width="0.1524" layer="1"/>
 <wire x1="73.66" y1="35.9105" x2="73.66" y2="33.9395" width="0.1524" layer="1"/>
@@ -2121,6 +2120,7 @@ design rules under a new name.</description>
 <wire x1="74.93" y1="36.83" x2="75.8495" y2="37.7495" width="0.1524" layer="1"/>
 <wire x1="75.8495" y1="37.7495" x2="77.47" y2="37.7495" width="0.1524" layer="1"/>
 <wire x1="81.28" y1="19.6723" x2="81.28" y2="19.4446" width="0" layer="19" extent="1-1"/>
+<wire x1="49.53" y1="10.795" x2="71.12" y2="30.48" width="0" layer="19" extent="1-1"/>
 </signal>
 <signal name="D3">
 <contactref element="M1" pad="J7.7"/>
@@ -2349,16 +2349,15 @@ design rules under a new name.</description>
 <contactref element="C1" pad="-"/>
 <wire x1="81.28" y1="23.2105" x2="81.28" y2="21.1954" width="0.1524" layer="1"/>
 <wire x1="81.28" y1="21.0828375" x2="81.28" y2="21.1954" width="0.1524" layer="1"/>
-<wire x1="75.8495" y1="22.86" x2="75.8495" y2="20.32" width="0.1524" layer="1"/>
-<wire x1="81.28" y1="23.2105" x2="80.9295" y2="22.86" width="0.1524" layer="1"/>
-<wire x1="80.9295" y1="22.86" x2="75.8495" y2="22.86" width="0.1524" layer="1"/>
-<wire x1="75.8495" y1="20.32" x2="75.8495" y2="17.78" width="0.1524" layer="1"/>
-<wire x1="75.8495" y1="15.24" x2="75.8495" y2="17.78" width="0.1524" layer="1"/>
+<wire x1="75.8495" y1="21.59" x2="75.8495" y2="19.05" width="0.1524" layer="1"/>
+<wire x1="81.28" y1="23.2105" x2="79.6595" y2="21.59" width="0.1524" layer="1"/>
+<wire x1="79.6595" y1="21.59" x2="75.8495" y2="21.59" width="0.1524" layer="1"/>
+<wire x1="75.8495" y1="19.05" x2="75.8495" y2="16.51" width="0.1524" layer="1"/>
+<wire x1="75.8495" y1="13.97" x2="75.8495" y2="16.51" width="0.1524" layer="1"/>
 <wire x1="81.28" y1="16.74" x2="78.855" y2="19.165" width="0.1524" layer="1"/>
 <wire x1="80.01" y1="21.0828375" x2="81.28" y2="21.0828375" width="0.1524" layer="1"/>
-<wire x1="79.2471625" y1="20.32" x2="80.01" y2="21.0828375" width="0.1524" layer="1"/>
+<wire x1="78.855" y1="19.9278375" x2="80.01" y2="21.0828375" width="0.1524" layer="1"/>
 <wire x1="78.855" y1="19.165" x2="78.855" y2="19.9278375" width="0.1524" layer="1"/>
-<wire x1="78.855" y1="19.9278375" x2="79.2471625" y2="20.32" width="0.1524" layer="1"/>
 </signal>
 </signals>
 <mfgpreviewcolors>
