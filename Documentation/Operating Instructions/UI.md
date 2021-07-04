@@ -1,1 +1,2 @@
-______________________________
+
+![Splash](Media/Screenshots/Splash.jpeg)
