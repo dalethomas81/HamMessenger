@@ -1,25 +1,25 @@
 EAGLE AutoRouter Statistics:
 
-Job           : /Users/dalethomas/Documents/EAGLE/projects/HamMessenger Shield/Shield.brd
+Job           : /Users/dalethomas/OneDrive/05 - Arduino/Sketches/HamMessenger/Eagle/HamMessenger Shield/Shield.brd
 
-Start at      : 22:32:22 (6/29/21)
-End at        : 22:32:25 (6/29/21)
-Elapsed time  : 00:00:00
+Start at      : 15:32:08 (7/4/21)
+End at        : 15:32:20 (7/4/21)
+Elapsed time  : 00:00:07
 
-Signals       :    26   RoutingGrid: 6.25 mil  Layers: 2
-Connections   :    57   predefined:  57 ( 5 Vias )
+Signals       :    36   RoutingGrid: 6.25 mil  Layers: 2
+Connections   :    71   predefined:  58 ( 27 Vias )
 
-Router memory :   924000
+Router memory :   957600
 
 Passname          :     Route Optimize1 Optimize2 Optimize3 Optimize4
 
-Time per pass     :  00:00:00  00:00:00  00:00:00  00:00:00  00:00:00
+Time per pass     :  00:00:01  00:00:01  00:00:02  00:00:01  00:00:02
 Number of Ripups  :         0         0         0         0         0
-max. Level        :         0         0         0         0         0
+max. Level        :         1         0         0         0         0
 max. Total        :         0         0         0         0         0
 
-Routed            :         0         0         0         0         0
-Vias              :         0         0         0         0         0
-Resolution        :   100.0 %   100.0 %   100.0 %   100.0 %   100.0 %
+Routed            :        12        12        12        12        12
+Vias              :        33        14        15        14        14
+Resolution        :    98.6 %    98.6 %    98.6 %    98.6 %    98.6 %
 
-Final             : 100.0% finished
+Final             : 
