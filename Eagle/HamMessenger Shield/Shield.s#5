@@ -19093,18 +19093,52 @@ Ref : https://www.kingbrightusa.com/images/catalog/SPEC/APTD1608QBC-D.pdf</descr
 <wire x1="403.86" y1="109.22" x2="388.62" y2="109.22" width="0.1524" layer="91"/>
 </segment>
 </net>
-<net name="A5" class="0">
+<net name="TX_MODEM" class="0">
 <segment>
-<pinref part="M1" gate="G$1" pin="A5"/>
-<wire x1="388.62" y1="116.84" x2="398.78" y2="116.84" width="0.1524" layer="91"/>
-<label x="398.78" y="116.84" size="1.778" layer="95" rot="R180"/>
+<pinref part="IC1" gate="G$1" pin="(TXD1/INT3)PD3"/>
+<wire x1="289.56" y1="71.12" x2="297.18" y2="71.12" width="0.1524" layer="91"/>
+<label x="297.18" y="71.12" size="1.778" layer="95"/>
+</segment>
+<segment>
+<pinref part="M1" gate="G$1" pin="D0/RX"/>
+<wire x1="353.06" y1="106.68" x2="335.28" y2="106.68" width="0.1524" layer="91"/>
+<label x="335.28" y="106.68" size="1.778" layer="95"/>
 </segment>
 </net>
-<net name="A6" class="0">
+<net name="RX_MODEM" class="0">
 <segment>
-<pinref part="M1" gate="G$1" pin="A6"/>
-<wire x1="388.62" y1="73.66" x2="398.78" y2="73.66" width="0.1524" layer="91"/>
-<label x="398.78" y="73.66" size="1.778" layer="95" rot="R180"/>
+<pinref part="IC1" gate="G$1" pin="(RXD1/INT2)PD2"/>
+<wire x1="289.56" y1="73.66" x2="297.18" y2="73.66" width="0.1524" layer="91"/>
+<label x="297.18" y="73.66" size="1.778" layer="95"/>
+</segment>
+<segment>
+<pinref part="M1" gate="G$1" pin="D1/TX"/>
+<wire x1="353.06" y1="109.22" x2="335.28" y2="109.22" width="0.1524" layer="91"/>
+<label x="335.28" y="109.22" size="1.778" layer="95"/>
+</segment>
+</net>
+<net name="TX_GPS" class="0">
+<segment>
+<pinref part="IC1" gate="G$1" pin="PJ1(TXD3/PCINT10)"/>
+<wire x1="223.52" y1="88.9" x2="208.28" y2="88.9" width="0.1524" layer="91"/>
+<label x="208.28" y="88.9" size="1.778" layer="95"/>
+</segment>
+<segment>
+<pinref part="U$1" gate="G$1" pin="RXD"/>
+<wire x1="25.4" y1="121.92" x2="15.24" y2="121.92" width="0.1524" layer="91"/>
+<label x="15.24" y="121.92" size="1.778" layer="95"/>
+</segment>
+</net>
+<net name="RX_GPS" class="0">
+<segment>
+<pinref part="IC1" gate="G$1" pin="PJ0(RXD3/PCINT9)"/>
+<wire x1="223.52" y1="91.44" x2="208.28" y2="91.44" width="0.1524" layer="91"/>
+<label x="208.28" y="91.44" size="1.778" layer="95"/>
+</segment>
+<segment>
+<pinref part="U$1" gate="G$1" pin="TXD"/>
+<wire x1="25.4" y1="124.46" x2="15.24" y2="124.46" width="0.1524" layer="91"/>
+<label x="15.24" y="124.46" size="1.778" layer="95"/>
 </segment>
 </net>
 </nets>
