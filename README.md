@@ -23,7 +23,7 @@ HamMessenger will beacon your location and comment according to the 'Beacon Freq
 
 To send a direct message to a station, select 'Messages' on the home screen and press the right arrow on the keyboard. A message will be sent according to the settings in APRS Settings.
 
-Screen navigation information can be found [here](/https://github.com/dalethomas81/HamMessenger/blob/master/Documentation/Operating%20Instructions/Screen%20Navigation.md).
+Screen navigation information can be found [here](https://github.com/dalethomas81/HamMessenger/blob/master/Documentation/Operating%20Instructions/Screen%20Navigation.md).
 
 ## Serial commands ##
 Command | Description | Example
@@ -77,6 +77,9 @@ software:
 - add store and recall messages in SD card to save dynamic memory
 - add feature to be selective about message acknowledgments. currently any acknowlegment (from a second conversation) will reset the messaging sequencer.
 
+## Updates ##
+04-JUL-2021: Version 1 of the pcb for HamMessenger has be sent for fabrication. The estimated delivery date is the 22nd of July. In the meantime I will be ordering the components to populate the board. As I do that I will make sure to get the links for the components and add them to the BOM in the Eagle folder.
+
 ## Parts ##
 Arduino:\
 https://www.arduino.cc/en/pmwiki.php?n=Main/ArduinoBoardProMini\
@@ -114,6 +117,3 @@ https://www.ebay.com/itm/264781615392?_trkparms=aid%3D111001%26algo%3DREC.SEED%2
 
 Grove Connector:\
 https://grabcad.com/library/grove-connectors-stand-and-flat-male-plugs-1/details?folder_id=2820551
-
-## Updates ##
-04-JUL-2021: Version 1 of the pcb for HamMessenger has be sent for fabrication. The estimated delivery date is the 22nd of July. In the meantime I will be ordering the components to populate the board. As I do that I will make sure to get the links for the components and add them to the BOM in the Eagle folder.
