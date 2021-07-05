@@ -9,9 +9,11 @@ At the core of the the project is the [MicroAPRS](https://github.com/markqvist/M
 I will add some videos and pictures of the device in action asap. Please feel free to contribute to the project. I am very busy outside of this project so any help is greatly appreciated :)
 
 
-![alt text](https://github.com/dalethomas81/HamMessenger/blob/master/Media/926EDB43-D454-4EA1-B1C2-569C25EFE7AD.jpeg)
+![Illustration](https://github.com/dalethomas81/HamMessenger/blob/master/Media/926EDB43-D454-4EA1-B1C2-569C25EFE7AD.jpeg)
 
-![alt text](https://github.com/dalethomas81/HamMessenger/blob/master/Media/IMG_3982.jpeg)
+![Isometric](/Media/CAD/Isometric.png)
+
+![Prototype](https://github.com/dalethomas81/HamMessenger/blob/master/Media/IMG_3982.jpeg)
 
 ## Operation
 
@@ -93,9 +95,11 @@ Keyboard:\
 https://github.com/m5stack/M5-ProductExampleCodes/tree/master/Unit/CARDKB\
 https://www.ebay.com/itm/124774337790?hash=item1d0d214cfe:g:kEkAAOSwEZlg0302
 
-Display:\
+OLED Display:\
 https://github.com/wonho-maker/Adafruit_SH1106\
-https://www.ebay.com/itm/391731053045
+https://www.ebay.com/itm/391731053045\
+https://grabcad.com/library/0-96-oled-display-4-pin-1\
+https://grabcad.com/library/ecran-oled-1-3-1
 
 Modem:\
 https://github.com/markqvist/MicroAPRS\
@@ -106,7 +110,9 @@ https://unsigned.io/product/micromodem-r23b/
 
 GPS:\
 https://github.com/mikalhart/TinyGPSPlus\
-https://www.ebay.com/sch/i.html?_id=221791352715&_nkw=Ublox+NEO-6M+GPS+Module+Aircraft+Flight+Controller+For+Arduino+MWC+IMU+APM2
+https://www.ebay.com/sch/i.html?_id=221791352715&_nkw=Ublox+NEO-6M+GPS+Module+Aircraft+Flight+Controller+For+Arduino+MWC+IMU+APM2\
+https://grabcad.com/library/gps-module-ublox_neo6mv2-1\
+https://grabcad.com/library/ecran-oled-1-3-1
 
 Case:\
 https://www.duinocases.com/store/arduino-enclosures/duinocase-mega-arduino-mega-2560/
