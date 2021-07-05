@@ -1,4 +1,5 @@
-# HamMessenger
+# HamMessenger # 
+Click [here](https://github.com/dalethomas81/HamMessenger#updates) for updates.
 
 HamMessenger is a portable, battery powered device that runs on a microcontroller and interfaces with an inexpensive ham radio to send and recieve text messages and provide position updates using the [APRS](http://www.aprs.org/doc/APRS101.PDF) protocol. Messages and position updates sent via HamMessenger can be viewed on sites such as [aprs.fi](https://aprs.fi). HamMessenger messages are NOT encrypted!
 
@@ -15,22 +16,22 @@ I will add some videos and pictures of the device in action asap. Please feel fr
 
 ![Prototype](Media/Prototype-Table-Single.jpeg)
 
-## Operation
+## Operation ##
+Full instructions on how to operate HamMessenger will go here. For now, just a couple notes :)
 
-Full instructions on how to operate HamMessenger will go here. For now, just a few notes :)
+HamMessenger will beacon your location and comment according to the 'Beacon Frequency' settings in APRS Settings.
 
--HamMessenger will beacon your location and comment according to the 'Beacon Frequency' settings in APRS Settings.
+To send a direct message to a station, select 'Messages' on the home screen and press the right arrow on the keyboard. A message will be sent according to the settings in APRS Settings.
 
--To send a direct message to a station, select 'Messages' on the home screen and press the right arrow on the keyboard. A message will be sent according to the settings in APRS Settings.
+The screen layout can be found [here](/Documentation/Operation%20Instructions/UI.md).
 
-## Serial commands
-
+## Serial commands ##
 Command | Description | Example
 --- | --- | :---
 __?__ | Displays serial command examples
 __CMD:Settings:Print:__ | Prints the current settings
 __CMD:Settings:Save:__ | Saves settings to EEPROM
-__CMD:Modem:__ | Writes commands directly to the modem. See https://github.com/markqvist/MicroAPRS#serial-commands | CMD:Modem:cNOCALL
+__CMD:Modem:<command>__ | Writes commands directly to the modem. See https://github.com/markqvist/MicroAPRS#serial-commands | CMD:Modem:cNOCALL
 &nbsp;
 __CMD:Settings:APRS:Beacon Frequency:<0 to 4,294,967,295>__ | Frequency at which position data will be transmitted in milliseconds | 60000
 __CMD:Settings:APRS:Raw Packet:<alphanumeric 99 char max>__ | !:ZZ5ABC-1 :Hi there!{01 | See https://aprs.fi/?c=raw&call= (login required)
@@ -66,26 +67,17 @@ __CMD:Settings:Display:Scroll Messages:<True/False>__ | Messages are scrolled on
 __CMD:Settings:Display:Scroll Speed:<0 to 65,535>__ | Speed in milliseconds that each pixel of messages is scrolled | 4
 __CMD:Settings:Display:Invert:<True/False>__ | The colors of the display will be inverted | False
 
-TODO (repo):
-- complete schematics (80%)
-- add parts list
-- add menu layout
-- add instructions
+## TODO ##
+hardware:
+- design enclosure
 
-TODO (hardware):
-- add shielding to components (controller freezes if radio too close during Txing)
-- design pcb
-- design case
-- remove buttons
-
-TODO (software):
+software:
 - add "quick message" functionality. currently to send a message you highlight 'Messages' on the home screen and press the right key.
-- add ability to program the radio for 'plug-n-play' experience (is this possible?)
+- add ability to program the radio once connected for 'plug-n-play' experience (is this possible?)
 - add store and recall messages in SD card to save dynamic memory
 - add feature to be selective about message acknowledgments. currently any acknowlegment (from a second conversation) will reset the messaging sequencer.
-- when scroll message off then the right and left key should manually scroll
-- only automatically display incoming message when in home screen (or screen sleeping)
 
+## Parts ##
 Arduino:\
 https://www.arduino.cc/en/pmwiki.php?n=Main/ArduinoBoardProMini\
 https://store.arduino.cc/usa/mega-2560-r3\
@@ -122,3 +114,6 @@ https://www.ebay.com/itm/264781615392?_trkparms=aid%3D111001%26algo%3DREC.SEED%2
 
 Grove Connector:\
 https://grabcad.com/library/grove-connectors-stand-and-flat-male-plugs-1/details?folder_id=2820551
+
+## Updates ##
+04-JUL-2021: Version 1 of the pcb for HamMessenger has be sent for fabrication. The estimated delivery date is the 22nd of July. In the meantime I will be ordering the components to populate the board. As I do that I will make sure to get the links for the components and add them to the BOM in the Eagle folder.
