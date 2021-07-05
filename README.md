@@ -23,7 +23,7 @@ HamMessenger will beacon your location and comment according to the 'Beacon Freq
 
 To send a direct message to a station, select 'Messages' on the home screen and press the right arrow on the keyboard. A message will be sent according to the settings in APRS Settings.
 
-The screen layout can be found [here](/Documentation/Operation%20Instructions/UI.md).
+Screen navigation information can be found [here](/https://github.com/dalethomas81/HamMessenger/blob/master/Documentation/Operating%20Instructions/Screen%20Navigation.md).
 
 ## Serial commands ##
 Command | Description | Example
