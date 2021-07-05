@@ -13,12 +13,12 @@
 ```text
   SPLASH
 ┌─────────────────────────┐
-│       HamMessenger      │
+│      HamMessenger       │
 │                         │
+│         Build           │
 │ Month Day Year HH:mm:ss │
 │                         │
 │       Call:NOCALL       │
-│                         │
 └───────────┬─────────────┘
             │
             │
