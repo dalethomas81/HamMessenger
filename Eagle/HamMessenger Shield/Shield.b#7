@@ -1544,54 +1544,43 @@ tantalum</description>
 <smd name="1" x="9" y="-10.64" dx="0.7" dy="1.5" layer="1"/>
 <text x="3.7" y="-3.94" size="1.27" layer="25">&gt;NAME</text>
 </package>
-<package name="TSSOP20" urn="urn:adsk.eagle:footprint:6240201/1" library_version="2">
-<wire x1="-3.1646" y1="-2.2828" x2="3.1646" y2="-2.2828" width="0.1524" layer="51"/>
-<wire x1="3.1646" y1="2.2828" x2="3.1646" y2="-2.2828" width="0.1524" layer="21"/>
-<wire x1="3.1646" y1="2.2828" x2="-3.1646" y2="2.2828" width="0.1524" layer="51"/>
-<wire x1="-3.1646" y1="-2.2828" x2="-3.1646" y2="2.2828" width="0.1524" layer="21"/>
-<circle x="-2.2756" y="-1.2192" radius="0.4572" width="0.1524" layer="21"/>
-<smd name="1" x="-2.925" y="-2.9178" dx="0.3048" dy="0.9906" layer="1"/>
-<smd name="2" x="-2.275" y="-2.9178" dx="0.3048" dy="0.9906" layer="1"/>
-<smd name="3" x="-1.625" y="-2.9178" dx="0.3048" dy="0.9906" layer="1"/>
-<smd name="4" x="-0.975" y="-2.9178" dx="0.3048" dy="0.9906" layer="1"/>
-<smd name="5" x="-0.325" y="-2.9178" dx="0.3048" dy="0.9906" layer="1"/>
-<smd name="6" x="0.325" y="-2.9178" dx="0.3048" dy="0.9906" layer="1"/>
-<smd name="7" x="0.975" y="-2.9178" dx="0.3048" dy="0.9906" layer="1"/>
-<smd name="8" x="1.625" y="-2.9178" dx="0.3048" dy="0.9906" layer="1"/>
-<smd name="13" x="1.625" y="2.9178" dx="0.3048" dy="0.9906" layer="1"/>
-<smd name="14" x="0.975" y="2.9178" dx="0.3048" dy="0.9906" layer="1"/>
-<smd name="15" x="0.325" y="2.9178" dx="0.3048" dy="0.9906" layer="1"/>
-<smd name="16" x="-0.325" y="2.9178" dx="0.3048" dy="0.9906" layer="1"/>
-<smd name="17" x="-0.975" y="2.9178" dx="0.3048" dy="0.9906" layer="1"/>
-<smd name="18" x="-1.625" y="2.9178" dx="0.3048" dy="0.9906" layer="1"/>
-<smd name="19" x="-2.275" y="2.9178" dx="0.3048" dy="0.9906" layer="1"/>
-<smd name="20" x="-2.925" y="2.9178" dx="0.3048" dy="0.9906" layer="1"/>
-<smd name="9" x="2.275" y="-2.9178" dx="0.3048" dy="0.9906" layer="1"/>
-<smd name="10" x="2.925" y="-2.9178" dx="0.3048" dy="0.9906" layer="1"/>
-<smd name="12" x="2.275" y="2.9178" dx="0.3048" dy="0.9906" layer="1"/>
-<smd name="11" x="2.925" y="2.9178" dx="0.3048" dy="0.9906" layer="1"/>
-<text x="-3.5456" y="-2.0828" size="1.016" layer="25" ratio="10" rot="R90">&gt;NAME</text>
-<text x="4.5362" y="-2.0828" size="1.016" layer="27" ratio="10" rot="R90">&gt;VALUE</text>
-<rectangle x1="-3.0266" y1="-3.121" x2="-2.8234" y2="-2.2828" layer="51"/>
-<rectangle x1="-2.3766" y1="-3.121" x2="-2.1734" y2="-2.2828" layer="51"/>
-<rectangle x1="-1.7266" y1="-3.121" x2="-1.5234" y2="-2.2828" layer="51"/>
-<rectangle x1="-1.0766" y1="-3.121" x2="-0.8734" y2="-2.2828" layer="51"/>
-<rectangle x1="-0.4266" y1="-3.121" x2="-0.2234" y2="-2.2828" layer="51"/>
-<rectangle x1="0.2234" y1="-3.121" x2="0.4266" y2="-2.2828" layer="51"/>
-<rectangle x1="0.8734" y1="-3.121" x2="1.0766" y2="-2.2828" layer="51"/>
-<rectangle x1="1.5234" y1="-3.121" x2="1.7266" y2="-2.2828" layer="51"/>
-<rectangle x1="1.5234" y1="2.2828" x2="1.7266" y2="3.121" layer="51"/>
-<rectangle x1="0.8734" y1="2.2828" x2="1.0766" y2="3.121" layer="51"/>
-<rectangle x1="0.2234" y1="2.2828" x2="0.4266" y2="3.121" layer="51"/>
-<rectangle x1="-0.4266" y1="2.2828" x2="-0.2234" y2="3.121" layer="51"/>
-<rectangle x1="-1.0766" y1="2.2828" x2="-0.8734" y2="3.121" layer="51"/>
-<rectangle x1="-1.7266" y1="2.2828" x2="-1.5234" y2="3.121" layer="51"/>
-<rectangle x1="-2.3766" y1="2.2828" x2="-2.1734" y2="3.121" layer="51"/>
-<rectangle x1="-3.0266" y1="2.2828" x2="-2.8234" y2="3.121" layer="51"/>
-<rectangle x1="2.1734" y1="-3.121" x2="2.3766" y2="-2.2828" layer="51"/>
-<rectangle x1="2.8234" y1="-3.121" x2="3.0266" y2="-2.2828" layer="51"/>
-<rectangle x1="2.1734" y1="2.2828" x2="2.3766" y2="3.121" layer="51"/>
-<rectangle x1="2.8234" y1="2.2828" x2="3.0266" y2="3.121" layer="51"/>
+<package name="TSSOP14" urn="urn:adsk.eagle:footprint:6240200/1" library_version="2">
+<description>&lt;b&gt;Thin Shrink Small Outline Plastic 14&lt;/b&gt;&lt;p&gt;</description>
+<wire x1="-2.5146" y1="-2.2828" x2="2.5146" y2="-2.2828" width="0.1524" layer="51"/>
+<wire x1="2.5146" y1="2.2828" x2="2.5146" y2="-2.2828" width="0.1524" layer="21"/>
+<wire x1="2.5146" y1="2.2828" x2="-2.5146" y2="2.2828" width="0.1524" layer="51"/>
+<wire x1="-2.5146" y1="-2.2828" x2="-2.5146" y2="2.2828" width="0.1524" layer="21"/>
+<circle x="-1.6256" y="-1.2192" radius="0.4572" width="0.1524" layer="21"/>
+<smd name="1" x="-1.95" y="-2.9178" dx="0.3048" dy="0.9906" layer="1"/>
+<smd name="2" x="-1.3" y="-2.9178" dx="0.3048" dy="0.9906" layer="1"/>
+<smd name="3" x="-0.65" y="-2.9178" dx="0.3048" dy="0.9906" layer="1"/>
+<smd name="4" x="0" y="-2.9178" dx="0.3048" dy="0.9906" layer="1"/>
+<smd name="5" x="0.65" y="-2.9178" dx="0.3048" dy="0.9906" layer="1"/>
+<smd name="6" x="1.3" y="-2.9178" dx="0.3048" dy="0.9906" layer="1"/>
+<smd name="7" x="1.95" y="-2.9178" dx="0.3048" dy="0.9906" layer="1"/>
+<smd name="8" x="1.95" y="2.9178" dx="0.3048" dy="0.9906" layer="1"/>
+<smd name="9" x="1.3" y="2.9178" dx="0.3048" dy="0.9906" layer="1"/>
+<smd name="10" x="0.65" y="2.9178" dx="0.3048" dy="0.9906" layer="1"/>
+<smd name="11" x="0" y="2.9178" dx="0.3048" dy="0.9906" layer="1"/>
+<smd name="12" x="-0.65" y="2.9178" dx="0.3048" dy="0.9906" layer="1"/>
+<smd name="13" x="-1.3" y="2.9178" dx="0.3048" dy="0.9906" layer="1"/>
+<smd name="14" x="-1.95" y="2.9178" dx="0.3048" dy="0.9906" layer="1"/>
+<text x="-2.8956" y="-2.0828" size="1.016" layer="25" ratio="10" rot="R90">&gt;NAME</text>
+<text x="3.8862" y="-2.0828" size="1.016" layer="27" ratio="10" rot="R90">&gt;VALUE</text>
+<rectangle x1="-2.0516" y1="-3.121" x2="-1.8484" y2="-2.2828" layer="51"/>
+<rectangle x1="-1.4016" y1="-3.121" x2="-1.1984" y2="-2.2828" layer="51"/>
+<rectangle x1="-0.7516" y1="-3.121" x2="-0.5484" y2="-2.2828" layer="51"/>
+<rectangle x1="-0.1016" y1="-3.121" x2="0.1016" y2="-2.2828" layer="51"/>
+<rectangle x1="0.5484" y1="-3.121" x2="0.7516" y2="-2.2828" layer="51"/>
+<rectangle x1="1.1984" y1="-3.121" x2="1.4016" y2="-2.2828" layer="51"/>
+<rectangle x1="1.8484" y1="-3.121" x2="2.0516" y2="-2.2828" layer="51"/>
+<rectangle x1="1.8484" y1="2.2828" x2="2.0516" y2="3.121" layer="51"/>
+<rectangle x1="1.1984" y1="2.2828" x2="1.4016" y2="3.121" layer="51"/>
+<rectangle x1="0.5484" y1="2.2828" x2="0.7516" y2="3.121" layer="51"/>
+<rectangle x1="-0.1016" y1="2.2828" x2="0.1016" y2="3.121" layer="51"/>
+<rectangle x1="-0.7516" y1="2.2828" x2="-0.5484" y2="3.121" layer="51"/>
+<rectangle x1="-1.4016" y1="2.2828" x2="-1.1984" y2="3.121" layer="51"/>
+<rectangle x1="-2.0516" y1="2.2828" x2="-1.8484" y2="3.121" layer="51"/>
 </package>
 </packages>
 <packages3d>
@@ -1608,9 +1597,10 @@ tantalum</description>
 <packageinstance name="MICROSD"/>
 </packageinstances>
 </package3d>
-<package3d name="TSSOP20" urn="urn:adsk.eagle:package:6240845/1" type="box" library_version="2">
+<package3d name="TSSOP14" urn="urn:adsk.eagle:package:6240844/1" type="box" library_version="2">
+<description>&lt;b&gt;Thin Shrink Small Outline Plastic 14&lt;/b&gt;&lt;p&gt;</description>
 <packageinstances>
-<packageinstance name="TSSOP20"/>
+<packageinstance name="TSSOP14"/>
 </packageinstances>
 </package3d>
 </packages3d>
@@ -2205,9 +2195,9 @@ design rules under a new name.</description>
 <element name="U$3" library="adafruit" library_urn="urn:adsk.eagle:library:420" package="MICROSD" package3d_urn="urn:adsk.eagle:package:6240723/1" value="MICROSD" x="14.986" y="21.082" smashed="yes" rot="MR90">
 <attribute name="NAME" x="11.046" y="24.782" size="1.27" layer="26" rot="MR90"/>
 </element>
-<element name="U1" library="adafruit" library_urn="urn:adsk.eagle:library:420" package="TSSOP20" package3d_urn="urn:adsk.eagle:package:6240845/1" value="" x="23.114" y="26.924" smashed="yes" rot="MR180">
-<attribute name="NAME" x="19.0604" y="28.7528" size="1.016" layer="26" ratio="10" rot="MR270"/>
-<attribute name="VALUE" x="27.6502" y="29.0068" size="1.016" layer="28" ratio="10" rot="MR270"/>
+<element name="U2" library="adafruit" library_urn="urn:adsk.eagle:library:420" package="TSSOP14" package3d_urn="urn:adsk.eagle:package:6240844/1" value="" x="-1.27" y="-4.826" smashed="yes">
+<attribute name="NAME" x="-4.1656" y="-6.9088" size="1.016" layer="25" ratio="10" rot="R90"/>
+<attribute name="VALUE" x="2.6162" y="-6.9088" size="1.016" layer="27" ratio="10" rot="R90"/>
 </element>
 </elements>
 <signals>
@@ -2369,6 +2359,8 @@ design rules under a new name.</description>
 <via x="66.04" y="8.636" extent="1-16" drill="0.35"/>
 <via x="74.93" y="10.16" extent="1-16" drill="0.35"/>
 <via x="80.518" y="35.814" extent="1-16" drill="0.35"/>
+<contactref element="U2" pad="7"/>
+<wire x1="4.572" y1="13.716" x2="0.68" y2="-7.7438" width="0" layer="19" extent="1-1"/>
 </signal>
 <signal name="D3">
 <contactref element="M1" pad="J7.7"/>
@@ -2414,6 +2406,8 @@ design rules under a new name.</description>
 <wire x1="46.99" y1="33.3375" x2="25.0825" y2="33.3375" width="0.1524" layer="1"/>
 <wire x1="93.98" y1="50.8" x2="89.535" y2="46.355" width="0.1524" layer="1"/>
 <wire x1="89.535" y1="46.355" x2="55.88" y2="46.355" width="0.1524" layer="1"/>
+<contactref element="U2" pad="14"/>
+<wire x1="-3.22" y1="-1.9082" x2="38.1" y2="2.54" width="0" layer="19" extent="1-1"/>
 </signal>
 <signal name="+3V3">
 <contactref element="IC1" pad="2"/>
@@ -2433,6 +2427,8 @@ design rules under a new name.</description>
 <wire x1="69.85" y1="31.75" x2="72.39" y2="31.75" width="0.1524" layer="16"/>
 <wire x1="76.2" y1="30.48" x2="76.2" y2="30.8305" width="0.1524" layer="1"/>
 <wire x1="76.2" y1="30.8305" x2="77.47" y2="32.1005" width="0.1524" layer="1"/>
+<contactref element="U2" pad="1"/>
+<wire x1="-3.22" y1="-7.7438" x2="35.56" y2="2.54" width="0" layer="19" extent="1-1"/>
 </signal>
 <signal name="SDA">
 <contactref element="J2" pad="3"/>
@@ -2648,6 +2644,49 @@ design rules under a new name.</description>
 <wire x1="80.01" y1="21.0828375" x2="81.28" y2="21.0828375" width="0.1524" layer="1"/>
 <wire x1="78.855" y1="19.9278375" x2="80.01" y2="21.0828375" width="0.1524" layer="1"/>
 <wire x1="78.855" y1="19.165" x2="78.855" y2="19.9278375" width="0.1524" layer="1"/>
+</signal>
+<signal name="N$1">
+<contactref element="U2" pad="2"/>
+<contactref element="U$3" pad="3"/>
+<wire x1="-2.57" y1="-7.7438" x2="4.346" y2="27.882" width="0" layer="19" extent="1-16"/>
+</signal>
+<signal name="N$5">
+<contactref element="U2" pad="3"/>
+<contactref element="U$3" pad="5"/>
+<wire x1="-1.92" y1="-7.7438" x2="4.346" y2="25.682" width="0" layer="19" extent="1-16"/>
+</signal>
+<signal name="N$6">
+<contactref element="U2" pad="4"/>
+<contactref element="U$3" pad="2"/>
+<wire x1="-1.27" y1="-7.7438" x2="4.746" y2="28.982" width="0" layer="19" extent="1-16"/>
+</signal>
+<signal name="GND1">
+<contactref element="U$3" pad="MT2"/>
+<contactref element="U$3" pad="MT1"/>
+<wire x1="1.446" y1="21.482" x2="0.546" y2="34.682" width="0" layer="19" extent="16-16"/>
+</signal>
+<signal name="VDD">
+<contactref element="U$3" pad="4"/>
+</signal>
+<signal name="SCK">
+<contactref element="IC1" pad="79"/>
+<contactref element="U2" pad="12"/>
+<wire x1="-1.92" y1="-1.9082" x2="93.98" y2="10.16" width="0" layer="19" extent="1-1"/>
+</signal>
+<signal name="MOSI">
+<contactref element="IC1" pad="78"/>
+<contactref element="U2" pad="13"/>
+<wire x1="-2.57" y1="-1.9082" x2="96.52" y2="12.7" width="0" layer="19" extent="1-1"/>
+</signal>
+<signal name="MISO">
+<contactref element="IC1" pad="77"/>
+<contactref element="U$3" pad="7"/>
+<wire x1="4.346" y1="23.482" x2="93.98" y2="12.7" width="0" layer="19" extent="16-16"/>
+</signal>
+<signal name="SS">
+<contactref element="IC1" pad="80"/>
+<contactref element="U2" pad="11"/>
+<wire x1="-1.27" y1="-1.9082" x2="96.52" y2="10.16" width="0" layer="19" extent="1-1"/>
 </signal>
 </signals>
 <mfgpreviewcolors>

@@ -2349,7 +2349,6 @@ design rules under a new name.</description>
 <contactref element="U$3" pad="MT2"/>
 <contactref element="U$3" pad="MT1"/>
 <contactref element="M1" pad="J6.2"/>
-<wire x1="81.28" y1="33.528" x2="86.36" y2="35.56" width="0" layer="19" extent="1-1"/>
 </signal>
 <signal name="D3">
 <contactref element="M1" pad="J7.7"/>
@@ -2431,7 +2430,9 @@ design rules under a new name.</description>
 <wire x1="20.32" y1="26.19375" x2="20.1962" y2="26.244" width="0.1524" layer="16"/>
 <via x="21.43125" y="26.19375" extent="1-16" drill="0.35"/>
 <contactref element="U$3" pad="4"/>
-<wire x1="4.454" y1="26.782" x2="20.1962" y2="26.244" width="0" layer="19" extent="16-16"/>
+<wire x1="20.1962" y1="26.244" x2="20.1796" y2="26.2606" width="0.1524" layer="16"/>
+<wire x1="20.1796" y1="26.2606" x2="4.9754" y2="26.2606" width="0.1524" layer="16"/>
+<wire x1="4.9754" y1="26.2606" x2="4.454" y2="26.782" width="0.1524" layer="16"/>
 </signal>
 <signal name="SDA">
 <contactref element="J2" pad="3"/>
@@ -2774,6 +2775,7 @@ design rules under a new name.</description>
 </mfgpreviewcolors>
 <errors>
 <approved hash="4,16,73995dae63189100"/>
+<approved hash="21,19,d326d124d124d326"/>
 </errors>
 </board>
 </drawing>
