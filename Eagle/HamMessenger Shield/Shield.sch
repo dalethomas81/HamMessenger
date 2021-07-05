@@ -12827,7 +12827,7 @@ Details see: &lt;a href="https://katalog.we-online.com/en/em/TBL_2_54_2109_HORIZ
 <part name="C3" library="Capacitor" library_urn="urn:adsk.eagle:library:16290819" deviceset="C" device="CHIP-0805(2012-METRIC)" package3d_urn="urn:adsk.eagle:package:16290897/2" technology="_" value="100nf"/>
 <part name="C1" library="adafruit" library_urn="urn:adsk.eagle:library:420" deviceset="CPOL-US" device="CT3528" package3d_urn="urn:adsk.eagle:package:6240405/1" value="4.7uf"/>
 <part name="J3" library="Wurth_Connectors_WR-TBL Rising Cage Clamp" library_urn="urn:adsk.eagle:library:16280519" deviceset="691210910004" device="" package3d_urn="urn:adsk.eagle:package:16248430/2"/>
-<part name="U$3" library="adafruit" library_urn="urn:adsk.eagle:library:420" deviceset="MICROSD" device="" package3d_urn="urn:adsk.eagle:package:6240723/1"/>
+<part name="SD" library="adafruit" library_urn="urn:adsk.eagle:library:420" deviceset="MICROSD" device="" package3d_urn="urn:adsk.eagle:package:6240723/1"/>
 <part name="U2" library="adafruit" library_urn="urn:adsk.eagle:library:420" deviceset="TXB0104PWR" device="" package3d_urn="urn:adsk.eagle:package:6240844/1"/>
 <part name="+3V2" library="supply1" library_urn="urn:adsk.eagle:library:371" deviceset="+3V3" device=""/>
 <part name="+3V3" library="supply1" library_urn="urn:adsk.eagle:library:371" deviceset="+3V3" device=""/>
@@ -12985,7 +12985,7 @@ Details see: &lt;a href="https://katalog.we-online.com/en/em/TBL_2_54_2109_HORIZ
 <attribute name="NAME" x="119.58" y="93.058" size="1.016" layer="95" align="bottom-right"/>
 <attribute name="VALUE" x="119.63" y="91.4" size="1.016" layer="96" align="bottom-right"/>
 </instance>
-<instance part="U$3" gate="G$1" x="401.32" y="137.16" smashed="yes"/>
+<instance part="SD" gate="G$1" x="401.32" y="137.16" smashed="yes"/>
 <instance part="U2" gate="G$1" x="337.82" y="139.7" smashed="yes" rot="MR0">
 <attribute name="NAME" x="350.52" y="157.48" size="1.27" layer="95" rot="MR0"/>
 <attribute name="VALUE" x="350.52" y="124.46" size="1.27" layer="96" rot="MR0"/>
@@ -13171,9 +13171,9 @@ Details see: &lt;a href="https://katalog.we-online.com/en/em/TBL_2_54_2109_HORIZ
 <wire x1="337.82" y1="111.76" x2="337.82" y2="124.46" width="0.1524" layer="91"/>
 </segment>
 <segment>
-<pinref part="U$3" gate="G$1" pin="GND1"/>
+<pinref part="SD" gate="G$1" pin="GND1"/>
 <wire x1="383.54" y1="119.38" x2="378.46" y2="119.38" width="0.1524" layer="91"/>
-<pinref part="U$3" gate="G$1" pin="GND"/>
+<pinref part="SD" gate="G$1" pin="GND"/>
 <wire x1="383.54" y1="116.84" x2="378.46" y2="116.84" width="0.1524" layer="91"/>
 <pinref part="GND10" gate="1" pin="GND"/>
 <wire x1="378.46" y1="116.84" x2="375.92" y2="116.84" width="0.1524" layer="91"/>
@@ -13318,7 +13318,7 @@ Details see: &lt;a href="https://katalog.we-online.com/en/em/TBL_2_54_2109_HORIZ
 <wire x1="261.62" y1="170.18" x2="261.62" y2="157.48" width="0.1524" layer="91"/>
 </segment>
 <segment>
-<pinref part="U$3" gate="G$1" pin="VDD"/>
+<pinref part="SD" gate="G$1" pin="VDD"/>
 <pinref part="+3V4" gate="G$1" pin="+3V3"/>
 <wire x1="383.54" y1="127" x2="370.84" y2="127" width="0.1524" layer="91"/>
 <wire x1="370.84" y1="127" x2="370.84" y2="132.08" width="0.1524" layer="91"/>
@@ -13477,21 +13477,21 @@ Details see: &lt;a href="https://katalog.we-online.com/en/em/TBL_2_54_2109_HORIZ
 <net name="N$1" class="0">
 <segment>
 <pinref part="U2" gate="G$1" pin="A1"/>
-<pinref part="U$3" gate="G$1" pin="DATA_IN"/>
+<pinref part="SD" gate="G$1" pin="DATA_IN"/>
 <wire x1="353.06" y1="142.24" x2="383.54" y2="142.24" width="0.1524" layer="91"/>
 </segment>
 </net>
 <net name="N$5" class="0">
 <segment>
 <pinref part="U2" gate="G$1" pin="A2"/>
-<pinref part="U$3" gate="G$1" pin="SCLK"/>
+<pinref part="SD" gate="G$1" pin="SCLK"/>
 <wire x1="353.06" y1="139.7" x2="383.54" y2="139.7" width="0.1524" layer="91"/>
 </segment>
 </net>
 <net name="N$6" class="0">
 <segment>
 <pinref part="U2" gate="G$1" pin="A3"/>
-<pinref part="U$3" gate="G$1" pin="CS"/>
+<pinref part="SD" gate="G$1" pin="CS"/>
 <wire x1="353.06" y1="137.16" x2="383.54" y2="137.16" width="0.1524" layer="91"/>
 </segment>
 </net>
@@ -13526,7 +13526,7 @@ Details see: &lt;a href="https://katalog.we-online.com/en/em/TBL_2_54_2109_HORIZ
 <label x="307.34" y="116.84" size="1.778" layer="95"/>
 </segment>
 <segment>
-<pinref part="U$3" gate="G$1" pin="DATA_OUT"/>
+<pinref part="SD" gate="G$1" pin="DATA_OUT"/>
 <wire x1="383.54" y1="144.78" x2="370.84" y2="144.78" width="0.1524" layer="91"/>
 <label x="370.84" y="144.78" size="1.778" layer="95"/>
 </segment>
