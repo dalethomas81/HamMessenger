@@ -13099,6 +13099,7 @@ Details see: &lt;a href="https://katalog.we-online.com/en/em/TBL_2_54_2109_HORIZ
 <pinref part="Q3" gate="G$1" pin="S"/>
 <wire x1="66.04" y1="71.12" x2="66.04" y2="66.04" width="0.1524" layer="91"/>
 <pinref part="R8" gate="G$1" pin="1"/>
+<junction x="53.34" y="66.04"/>
 </segment>
 <segment>
 <pinref part="GND6" gate="1" pin="GND"/>
@@ -13544,22 +13545,21 @@ Details see: &lt;a href="https://katalog.we-online.com/en/em/TBL_2_54_2109_HORIZ
 </net>
 </nets>
 </sheet>
-<sheet>
-<plain>
-</plain>
-<instances>
-</instances>
-<busses>
-</busses>
-<nets>
-</nets>
-</sheet>
 </sheets>
 <errors>
+<approved hash="102,1,383.54,127,VDD,+3V3,,,,"/>
+<approved hash="102,1,383.54,119.38,GND1,GND,,,,"/>
 <approved hash="204,1,25.4,119.38,U$1,PPS,,,,"/>
+<approved hash="104,1,25.4,121.92,U$1,RXD,TX_GPS,,,"/>
+<approved hash="104,1,152.4,149.86,U$2,VCC,+5V,,,"/>
+<approved hash="104,1,269.24,157.48,IC1,+VIN,VCC,,,"/>
 <approved hash="104,1,355.6,55.88,M1,GND.1,GND,,,"/>
 <approved hash="104,1,391.16,63.5,M1,RAW,VCC,,,"/>
 <approved hash="104,1,391.16,60.96,M1,GND.2,GND,,,"/>
+<approved hash="117,1,383.54,124.46,VSS,,,,,"/>
+<approved hash="113,1,256.54,91.44,IC1,,,,,"/>
+<approved hash="113,1,124.563,89.5515,J3,,,,,"/>
+<approved hash="113,1,337.82,140.97,U2,,,,,"/>
 </errors>
 </schematic>
 </drawing>
