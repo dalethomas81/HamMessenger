@@ -3,10 +3,10 @@
 <eagle version="9.6.2">
 <drawing>
 <settings>
-<setting alwaysvectorfont="yes"/>
+<setting alwaysvectorfont="no"/>
 <setting verticaltext="up"/>
 </settings>
-<grid distance="10" unitdist="mil" unit="mil" style="lines" multiple="1" display="yes" altdistance="5" altunitdist="mil" altunit="mil"/>
+<grid distance="0.1" unitdist="mm" unit="mm" style="lines" multiple="1" display="yes" altdistance="5" altunitdist="mil" altunit="mil"/>
 <layers>
 <layer number="1" name="Top" color="4" fill="1" visible="yes" active="yes"/>
 <layer number="16" name="Bottom" color="1" fill="1" visible="yes" active="yes"/>
@@ -157,7 +157,7 @@
 <layer number="255" name="routoute" color="7" fill="1" visible="yes" active="yes"/>
 </layers>
 <board>
-<fusionsync huburn="a.YnVzaW5lc3M6bXltZTU0Mjk" projecturn="a.YnVzaW5lc3M6bXltZTU0MjkjRDIwMjAwMzI2Mjc5MjM4MzA2" f3durn="urn:adsk.wipprod:dm.lineage:1H_fwH0USlyM67fBe35jUA" pcbguid="" lastpulledtime="" lastsyncedchangeguid="" latestrevisionid="0cd86342-6a19-44fc-b922-52acff12dc85" lastsyncedrevisionid="0cd86342-6a19-44fc-b922-52acff12dc85" lastboardhashguid="9eb5a249-906c-2ecb-aa67-ccf0b127e272" lastpushedtime="2021-07-04T23:42:17Z" linktopcb3d="false"/>
+<fusionsync huburn="a.YnVzaW5lc3M6bXltZTU0Mjk" projecturn="a.YnVzaW5lc3M6bXltZTU0MjkjRDIwMjAwMzI2Mjc5MjM4MzA2" f3durn="urn:adsk.wipprod:dm.lineage:1H_fwH0USlyM67fBe35jUA" pcbguid="" lastpulledtime="" lastsyncedchangeguid="" latestrevisionid="0cd86342-6a19-44fc-b922-52acff12dc85" lastsyncedrevisionid="0cd86342-6a19-44fc-b922-52acff12dc85" lastboardhashguid="9eb5a249-906c-2ecb-aa67-ccf0b127e272" lastpushedtime="2021-07-04T23:42:17Z" linktopcb3d="true"/>
 <plain>
 <wire x1="0" y1="0" x2="101.6" y2="0" width="0" layer="20"/>
 <wire x1="101.6" y1="0" x2="101.346" y2="53.5686" width="0" layer="20"/>
