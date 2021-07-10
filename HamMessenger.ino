@@ -5,7 +5,7 @@
 const char version[] = __DATE__ " " __TIME__; 
 
 #include <Adafruit_GFX.h>
-//#include <Adafruit_SSD1306.h>
+#include <Adafruit_SSD1306.h>
 #include <Adafruit_SH1106.h>
 #include <TinyGPS++.h>
 #include <EEPROM.h>
@@ -33,8 +33,12 @@ char keyboardInputChar;
 #endif
 
 // oled display
-//#define SCREEN_WIDTH 128 // OLED display width, in pixels
-//#define SCREEN_HEIGHT 64 // OLED display height, in pixels
+//#define USE_SSD1306
+#if defined(USE_SSD1306)
+  #define SCREEN_WIDTH 128 // OLED display width, in pixels
+  #define SCREEN_HEIGHT 64 // OLED display height, in pixels
+#endif
+
 #define DISPLAY_REFRESH_RATE                  100
 #define DISPLAY_REFRESH_RATE_SCROLL           80       // min 60
 #define DISPLAY_BLINK_RATE                    500
@@ -82,12 +86,15 @@ bool wakeDisplay = false;
 
 // Declaration for an SSD1306 display connected to I2C (SDA, SCL pins)
 #define OLED_RESET -1 // Reset pin # (or -1 if sharing Arduino reset pin)
-//Adafruit_SSH1106 display(SCREEN_WIDTH, SCREEN_HEIGHT, &Wire, OLED_RESET);
-Adafruit_SH1106 display(OLED_RESET);
-
-#if (SH1106_LCDHEIGHT != 64)
-#error("Height incorrect, please fix Adafruit_SH1106.h!");
+#if defined(USE_SSD1306)
+  Adafruit_SSD1306 display(SCREEN_WIDTH, SCREEN_HEIGHT, &Wire, OLED_RESET);
+#else
+  Adafruit_SH1106 display(OLED_RESET);
+  #if (SH1106_LCDHEIGHT != 64)
+  #error("Height incorrect, please fix Adafruit_SH1106.h!");
+  #endif
 #endif
+
 
 // neo-6m GPS
 TinyGPSPlus gps;
@@ -910,20 +917,35 @@ void handleDisplays(){
   }
   if (millis() - display_timeout_timer > SETTINGS_DISPLAY_TIMEOUT && !displayDim) {
     displayDim = true;
+#if defined(USE_SSD1306)
+    display.ssd1306_command(SSD1306_SETCONTRAST);
+    display.ssd1306_command(0);
+#else
     display.SH1106_command(SH1106_SETCONTRAST);
     display.SH1106_command(0);
+#endif
   } else if (wakeDisplay){
     wakeDisplay = false;
     displayDim = false;
+#if defined(USE_SSD1306)
+    display.ssd1306_command(SSD1306_SETCONTRAST);
+    display.ssd1306_command((uint8_t)constrain(map(SETTINGS_DISPLAY_BRIGHTNESS,0,100,0,254),0,254));
+    display.ssd1306_command(SSD1306_DISPLAYON);
+#else
     display.SH1106_command(SH1106_SETCONTRAST);
     display.SH1106_command((uint8_t)constrain(map(SETTINGS_DISPLAY_BRIGHTNESS,0,100,0,254),0,254));
     display.SH1106_command(SH1106_DISPLAYON);
+#endif
     display_timeout_timer = millis();
   }
   // turn off the screen after an additional time
   if (displayDim) {
     if (millis() - display_off_timer > 3000) {
+#if defined(USE_SSD1306)
+      display.ssd1306_command(SSD1306_DISPLAYOFF);
+#else
       display.SH1106_command(SH1106_DISPLAYOFF);
+#endif
     }
   } else {
     display_off_timer = millis();
@@ -982,9 +1004,8 @@ void handleDisplay_Startup(){
   // Clear the buffer
   display.clearDisplay();
   
-  display.setTextSize(1);                     // Normal 1:1 pixel scale - default letter size is 5x8 pixels
-  //display.setTextColor(SSD1306_WHITE);        // Draw white text
-  display.setTextColor(WHITE);        // Draw white text
+  display.setTextSize(1);             // Normal 1:1 pixel scale - default letter size is 5x8 pixels
+  display.setTextColor(WHITE);        // Draw white text (wont display without this for some reason even though we can't change colors)
   display.setTextWrap(false);
   
   display.setCursor(30,UI_DISPLAY_ROW_01);                     // Start at top-left corner 0 pixels right, 0 pixels down
@@ -3249,7 +3270,7 @@ void setup(){
   Serial1.begin(9600); // modem
   Serial2.begin(9600); // gps
   //while (!Serial) // wait for serial port to connect. Needed for Native USB only
-  while (!Serial1) // wait for modem
+  //while (!Serial1) // wait for modem
   
   Wire.begin(); // M5Stack Keyboard
   
@@ -3268,13 +3289,15 @@ void setup(){
   pinMode(rxPin, INPUT);
   pinMode(txPin, INPUT);
 
+#if defined(USE_SSD1306)
   // SSD1306_SWITCHCAPVCC = generate display voltage from 3.3V internally
-  //if(!display.begin(SSD1306_SWITCHCAPVCC, 0x3C)) { // Address 0x3C for 128x32
-  //  Serial.println(F("SSD1306 allocation failed"));
-  //  //for(;;); // Don't proceed, loop forever
-  //}
-  
+  if(!display.begin(SSD1306_SWITCHCAPVCC, 0x3C)) { // initialize with the I2C addr 0x3D (for the 128x64), 0x3C (for the 128x32)
+    Serial.println(F("SSD1306 allocation failed"));
+    //for(;;); // Don't proceed, loop forever
+  }
+#else
   display.begin(SH1106_SWITCHCAPVCC, 0x3C);  // initialize with the I2C addr 0x3D (for the 128x64), 0x3C (for the 128x32)
+#endif
 
   handleDisplay_Startup();
   
