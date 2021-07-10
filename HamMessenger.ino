@@ -33,7 +33,7 @@ char keyboardInputChar;
 #endif
 
 // oled display
-//#define USE_SSD1306
+#define USE_SSD1306
 #if defined(USE_SSD1306)
   #define SCREEN_WIDTH 128 // OLED display width, in pixels
   #define SCREEN_HEIGHT 64 // OLED display height, in pixels
@@ -88,6 +88,7 @@ bool wakeDisplay = false;
 #define OLED_RESET -1 // Reset pin # (or -1 if sharing Arduino reset pin)
 #if defined(USE_SSD1306)
   Adafruit_SSD1306 display(SCREEN_WIDTH, SCREEN_HEIGHT, &Wire, OLED_RESET);
+  Adafruit_SSD1306 display2(SCREEN_WIDTH, 32, &Wire, OLED_RESET);
 #else
   Adafruit_SH1106 display(OLED_RESET);
   #if (SH1106_LCDHEIGHT != 64)
@@ -920,6 +921,8 @@ void handleDisplays(){
 #if defined(USE_SSD1306)
     display.ssd1306_command(SSD1306_SETCONTRAST);
     display.ssd1306_command(0);
+    display2.ssd1306_command(SSD1306_SETCONTRAST);
+    display2.ssd1306_command(0);
 #else
     display.SH1106_command(SH1106_SETCONTRAST);
     display.SH1106_command(0);
@@ -931,6 +934,9 @@ void handleDisplays(){
     display.ssd1306_command(SSD1306_SETCONTRAST);
     display.ssd1306_command((uint8_t)constrain(map(SETTINGS_DISPLAY_BRIGHTNESS,0,100,0,254),0,254));
     display.ssd1306_command(SSD1306_DISPLAYON);
+    display2.ssd1306_command(SSD1306_SETCONTRAST);
+    display2.ssd1306_command((uint8_t)constrain(map(SETTINGS_DISPLAY_BRIGHTNESS,0,100,0,254),0,254));
+    display2.ssd1306_command(SSD1306_DISPLAYON);
 #else
     display.SH1106_command(SH1106_SETCONTRAST);
     display.SH1106_command((uint8_t)constrain(map(SETTINGS_DISPLAY_BRIGHTNESS,0,100,0,254),0,254));
@@ -943,6 +949,7 @@ void handleDisplays(){
     if (millis() - display_off_timer > 3000) {
 #if defined(USE_SSD1306)
       display.ssd1306_command(SSD1306_DISPLAYOFF);
+      display2.ssd1306_command(SSD1306_DISPLAYOFF);
 #else
       display.SH1106_command(SH1106_DISPLAYOFF);
 #endif
@@ -952,6 +959,7 @@ void handleDisplays(){
   }
   //
   display.invertDisplay(SETTINGS_DISPLAY_INVERT);
+  display2.invertDisplay(SETTINGS_DISPLAY_INVERT);
 
   // when display changes call for the new display to initialize
   if (currentDisplay != currentDisplayLast) {
@@ -1003,13 +1011,19 @@ void handleDisplay_Startup(){
 
   // Clear the buffer
   display.clearDisplay();
+  display2.clearDisplay();
   
   display.setTextSize(1);             // Normal 1:1 pixel scale - default letter size is 5x8 pixels
+  display2.setTextSize(1);             // Normal 1:1 pixel scale - default letter size is 5x8 pixels
   display.setTextColor(WHITE);        // Draw white text (wont display without this for some reason even though we can't change colors)
+  display2.setTextColor(WHITE);        // Draw white text (wont display without this for some reason even though we can't change colors)
   display.setTextWrap(false);
+  display2.setTextWrap(false);
   
   display.setCursor(30,UI_DISPLAY_ROW_01);                     // Start at top-left corner 0 pixels right, 0 pixels down
   display.println(F("HamMessenger"));
+  display2.setCursor(30,0);                     // Start at top-left corner 0 pixels right, 0 pixels down
+  display2.println(F("HamMessenger"));
   
   //display.setCursor(0,UI_DISPLAY_ROW_02);                     // Start at top-left corner 0 pixels right, 0 pixels down
   //display.println(F("Build Date"));
@@ -1024,6 +1038,7 @@ void handleDisplay_Startup(){
   display.println(SETTINGS_APRS_CALLSIGN);
   
   display.display();
+  display2.display();
   delay(5000); // Pause for 2 seconds
 }
 
@@ -1031,15 +1046,21 @@ void handleDisplay_Global(){
   if (digitalRead(rxPin) == HIGH){
     display.setCursor(0,UI_DISPLAY_ROW_TOP);
     display.print(F("Rx"));
-    }
+    display2.setCursor(0,UI_DISPLAY_ROW_TOP);
+    display2.print(F("Rx"));
+  }
   
   if (digitalRead(txPin) == HIGH){
     display.setCursor(15,UI_DISPLAY_ROW_TOP);
     display.print(F("Tx"));
+    display2.setCursor(15,UI_DISPLAY_ROW_TOP);
+    display2.print(F("Tx"));
   }
   
   display.setCursor(45,UI_DISPLAY_ROW_TOP);
   display.print(String(Voltage) + F("mV"));
+  display2.setCursor(45,UI_DISPLAY_ROW_TOP);
+  display2.print(String(Voltage) + F("mV"));
 
   // show keyboard input on top. remove later and uncomment voltage above
   //display.setCursor(45,UI_DISPLAY_ROW_TOP);
@@ -1047,6 +1068,8 @@ void handleDisplay_Global(){
   
   display.setCursor(100,UI_DISPLAY_ROW_TOP);
   display.print(String(scanTime) + F("ms"));
+  display2.setCursor(100,UI_DISPLAY_ROW_TOP);
+  display2.print(String(scanTime) + F("ms"));
 
   if (SETTINGS_DISPLAY_SHOW_POSITION) {
     display.setCursor(0,UI_DISPLAY_ROW_BOTTOM);
@@ -3291,7 +3314,11 @@ void setup(){
 
 #if defined(USE_SSD1306)
   // SSD1306_SWITCHCAPVCC = generate display voltage from 3.3V internally
-  if(!display.begin(SSD1306_SWITCHCAPVCC, 0x3C)) { // initialize with the I2C addr 0x3D (for the 128x64), 0x3C (for the 128x32)
+  if(!display.begin(SSD1306_SWITCHCAPVCC, 0x3D)) { // initialize with the I2C addr 0x3D (for the 128x64), 0x3C (for the 128x32)
+    Serial.println(F("SSD1306 allocation failed"));
+    //for(;;); // Don't proceed, loop forever
+  }
+  if(!display2.begin(SSD1306_SWITCHCAPVCC, 0x3C)) { // initialize with the I2C addr 0x3D (for the 128x64), 0x3C (for the 128x32)
     Serial.println(F("SSD1306 allocation failed"));
     //for(;;); // Don't proceed, loop forever
   }
