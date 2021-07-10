@@ -5,7 +5,6 @@
 const char version[] = __DATE__ " " __TIME__; 
 
 #include <Adafruit_GFX.h>
-//#include <Adafruit_SSD1306.h>
 #include <Adafruit_SH1106.h>
 #include <TinyGPS++.h>
 #include <EEPROM.h>
@@ -33,8 +32,6 @@ char keyboardInputChar;
 #endif
 
 // oled display
-//#define SCREEN_WIDTH 128 // OLED display width, in pixels
-//#define SCREEN_HEIGHT 64 // OLED display height, in pixels
 #define DISPLAY_REFRESH_RATE                  100
 #define DISPLAY_REFRESH_RATE_SCROLL           80       // min 60
 #define DISPLAY_BLINK_RATE                    500
@@ -82,7 +79,6 @@ bool wakeDisplay = false;
 
 // Declaration for an SSD1306 display connected to I2C (SDA, SCL pins)
 #define OLED_RESET -1 // Reset pin # (or -1 if sharing Arduino reset pin)
-//Adafruit_SSH1106 display(SCREEN_WIDTH, SCREEN_HEIGHT, &Wire, OLED_RESET);
 Adafruit_SH1106 display(OLED_RESET);
 
 #if (SH1106_LCDHEIGHT != 64)
@@ -983,7 +979,6 @@ void handleDisplay_Startup(){
   display.clearDisplay();
   
   display.setTextSize(1);                     // Normal 1:1 pixel scale - default letter size is 5x8 pixels
-  //display.setTextColor(SSD1306_WHITE);        // Draw white text
   display.setTextColor(WHITE);        // Draw white text
   display.setTextWrap(false);
   
@@ -3267,12 +3262,6 @@ void setup(){
   // inputs
   pinMode(rxPin, INPUT);
   pinMode(txPin, INPUT);
-
-  // SSD1306_SWITCHCAPVCC = generate display voltage from 3.3V internally
-  //if(!display.begin(SSD1306_SWITCHCAPVCC, 0x3C)) { // Address 0x3C for 128x32
-  //  Serial.println(F("SSD1306 allocation failed"));
-  //  //for(;;); // Don't proceed, loop forever
-  //}
   
   display.begin(SH1106_SWITCHCAPVCC, 0x3C);  // initialize with the I2C addr 0x3D (for the 128x64), 0x3C (for the 128x32)
 
