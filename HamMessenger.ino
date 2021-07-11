@@ -30,6 +30,8 @@ const char version[] = __DATE__ " " __TIME__;
 #include <Adafruit_SH1106.h>
 #include <TinyGPS++.h>
 #include <EEPROM.h>
+#include <SPI.h>
+#include <SD.h>
 
 // M5Stack Keyboard https://docs.m5stack.com/en/unit/cardkb
 #include <Wire.h> 
@@ -152,6 +154,8 @@ struct APRSFormat_Raw {
   char dst[15];
   char path[10];
   char data[125];
+  uint32_t DateInt;
+  uint32_t TimeInt;
 };
 
 struct APRSFormat_Msg {
@@ -160,13 +164,16 @@ struct APRSFormat_Msg {
   char msg[100] = {'\0'};
   int line = 0;
   bool ack = false;
+  uint32_t DateInt;
+  uint32_t TimeInt;
 };
 
 struct GPS_Date {
   byte Day = 1;
   byte Month = 1;
   int Year = 1970;
-  //char DateString[] = "01-01-1970";
+  uint32_t DateInt;
+  //char DateString[9];
 };
 
 struct GPS_Time {
@@ -174,7 +181,8 @@ struct GPS_Time {
   byte Minute = 0;
   byte Second = 0;
   byte CentiSecond = 0;
-  //char TimeString[] = "00:00:00.00";
+  uint32_t TimeInt;
+  //char TimeString[9];
 };
 
 struct GPS {
@@ -185,12 +193,13 @@ struct GPS {
 
 #define MAXIMUM_MODEM_COMMAND_RATE 100        // maximum rate that commands can be sent to modem
 
-#define LIVEFEED_BUFFER_SIZE  5
+#define LIVEFEED_BUFFER_SIZE  4
 long liveFeedBufferIndex = -1, oldliveFeedBufferIndex = -1, liveFeedBufferIndex_RecordCount = 0;
 bool liveFeedIsEmpty = true;
 APRSFormat_Raw LiveFeedBuffer[LIVEFEED_BUFFER_SIZE] = {'\0'};
+//byte *buff = (byte *) &LiveFeedBuffer; // to access LiveFeedBuffer as bytes
 
-#define INCOMING_MESSAGE_BUFFER_SIZE 5
+#define INCOMING_MESSAGE_BUFFER_SIZE 4
 long incomingMessageBufferIndex = -1, oldIncomingMessageBufferIndex = -1, incomingMessageBufferIndex_RecordCount = 0;
 bool messageFeedIsEmpty = true;
 APRSFormat_Msg IncomingMessageBuffer[INCOMING_MESSAGE_BUFFER_SIZE];
@@ -436,7 +445,7 @@ void applyDefaultsToSettings(){
 
   SETTINGS_GPS_DESTINATION_LONGITUDE = -0.128002;
   
-  SETTINGS_DISPLAY_TIMEOUT = 2000;
+  SETTINGS_DISPLAY_TIMEOUT = 15000;
 
   SETTINGS_DISPLAY_BRIGHTNESS = 100;
 
@@ -2196,13 +2205,15 @@ void readModem(){
         } else {
           liveFeedBufferIndex=0;
         }
+        // set date and time
+        Format_Raw_In.DateInt = GPSData.Date.DateInt;
+        Format_Raw_In.TimeInt = GPSData.Time.TimeInt;
         // write data to live feed
         LiveFeedBuffer[liveFeedBufferIndex] = Format_Raw_In;
         // let other systems know there is data in the live feed
         liveFeedIsEmpty = false;
-        
-        // write live feed to SD card here
-        
+        // write live feed data to SD card
+        writeRawDataToSd(Format_Raw_In);
         //Serial.print(F("Total APRS Message Length="));Serial.println(i-1);
         i = sizeof(modemData); // setting i to size of modem data will make loop exit sooner
       }
@@ -2213,6 +2224,9 @@ void readModem(){
     // Radio 1: SRC: [NOCALL-3] DST: [APRS-0] PATH: [WIDE1-1] [WIDE2-2] DATA: :NOCALL-3 :ack006
     if (Format_Raw_In.data[0] == ':') {
       APRSFormat_Msg Format_Msg_In;
+      // set the date and time
+      Format_Msg_In.DateInt = Format_Raw_In.DateInt;
+      Format_Msg_In.TimeInt = Format_Raw_In.TimeInt;
       // get the 'from' 
       int j=0;
       for (int i=0;i<sizeof(Format_Raw_In.src);i++) {
@@ -2283,6 +2297,8 @@ void readModem(){
           IncomingMessageBuffer[incomingMessageBufferIndex] = Format_Msg_In;
           // let other systems know there is data in the live feed
           messageFeedIsEmpty = false;
+          // write msg to sd card
+          writeMsgDataToSd(Format_Msg_In);
           // switch to message display
           if (currentDisplay == UI_DISPLAY_HOME) currentDisplay = UI_DISPLAY_MESSAGES;
         } else {
@@ -2405,6 +2421,7 @@ long *= 60; // convert to seconds
         GPSData.Date.Day = gps.date.day();
         GPSData.Date.Month = gps.date.month();
         GPSData.Date.Year = gps.date.year();
+        GPSData.Date.DateInt = gps.date.value();
       }
       if (gps.time.isUpdated())
       {
@@ -2426,6 +2443,7 @@ long *= 60; // convert to seconds
         GPSData.Time.Minute = gps.time.minute();
         GPSData.Time.Second = gps.time.second();
         GPSData.Time.CentiSecond = gps.time.centisecond();
+        GPSData.Time.TimeInt = gps.time.value();
       }
       if (gps.speed.isUpdated())
       {
@@ -2757,35 +2775,37 @@ void printOutSerialCommands(){
   // CMD:Settings:APRS:Comment:Testing HamMessenger!
   // CMD:Settings:APRS:Message:Hi!
 
-/*
-# define SETTINGS_EDIT_TYPE_NONE        0
-# define SETTINGS_EDIT_TYPE_BOOLEAN     1
-# define SETTINGS_EDIT_TYPE_INT         2
-# define SETTINGS_EDIT_TYPE_UINT        3
-# define SETTINGS_EDIT_TYPE_LONG        4
-# define SETTINGS_EDIT_TYPE_ULONG       5
-# define SETTINGS_EDIT_TYPE_FLOAT       6
-# define SETTINGS_EDIT_TYPE_STRING2     7
-# define SETTINGS_EDIT_TYPE_STRING7     8
-# define SETTINGS_EDIT_TYPE_STRING100   9
-                        
-const char *MenuItems_Settings[] = {"APRS","GPS","Display"};
-const char *MenuItems_Settings_APRS[] = {"Beacon Frequency","Raw Packet","Comment","Message","Recipient Callsign","Recipient SSID", "My Callsign","Callsign SSID", 
-                                        "Destination Callsign", "Destination SSID", "PATH1 Callsign", "PATH1 SSID", "PATH2 Callsign", "PATH2 SSID",
-                                        "Symbol", "Table", "Automatic ACK", "Preamble", "Tail"};
-const char *MenuItems_Settings_GPS[] = {"Update Frequency","Position Tolerance","Destination Latitude","Destination Longitude"};
-const char *MenuItems_Settings_Display[] = {"Timeout", "Brightness", "Show Position", "Scroll Messages", "Scroll Speed"};
+  /*
+  # define SETTINGS_EDIT_TYPE_NONE        0
+  # define SETTINGS_EDIT_TYPE_BOOLEAN     1
+  # define SETTINGS_EDIT_TYPE_INT         2
+  # define SETTINGS_EDIT_TYPE_UINT        3
+  # define SETTINGS_EDIT_TYPE_LONG        4
+  # define SETTINGS_EDIT_TYPE_ULONG       5
+  # define SETTINGS_EDIT_TYPE_FLOAT       6
+  # define SETTINGS_EDIT_TYPE_STRING2     7
+  # define SETTINGS_EDIT_TYPE_STRING7     8
+  # define SETTINGS_EDIT_TYPE_STRING100   9
+                          
+  const char *MenuItems_Settings[] = {"APRS","GPS","Display"};
+  const char *MenuItems_Settings_APRS[] = {"Beacon Frequency","Raw Packet","Comment","Message","Recipient Callsign","Recipient SSID", "My Callsign","Callsign SSID", 
+                                          "Destination Callsign", "Destination SSID", "PATH1 Callsign", "PATH1 SSID", "PATH2 Callsign", "PATH2 SSID",
+                                          "Symbol", "Table", "Automatic ACK", "Preamble", "Tail"};
+  const char *MenuItems_Settings_GPS[] = {"Update Frequency","Position Tolerance","Destination Latitude","Destination Longitude"};
+  const char *MenuItems_Settings_Display[] = {"Timeout", "Brightness", "Show Position", "Scroll Messages", "Scroll Speed"};
 
-int Settings_Type_APRS[] = {SETTINGS_EDIT_TYPE_ULONG,SETTINGS_EDIT_TYPE_STRING100,SETTINGS_EDIT_TYPE_STRING100,SETTINGS_EDIT_TYPE_STRING100,SETTINGS_EDIT_TYPE_STRING7,SETTINGS_EDIT_TYPE_STRING2,SETTINGS_EDIT_TYPE_STRING7,SETTINGS_EDIT_TYPE_STRING2,
-                            SETTINGS_EDIT_TYPE_STRING7,SETTINGS_EDIT_TYPE_STRING2,SETTINGS_EDIT_TYPE_STRING7,SETTINGS_EDIT_TYPE_STRING2,SETTINGS_EDIT_TYPE_STRING7,SETTINGS_EDIT_TYPE_STRING2,
-                            SETTINGS_EDIT_TYPE_STRING2,SETTINGS_EDIT_TYPE_STRING2,SETTINGS_EDIT_TYPE_BOOLEAN,SETTINGS_EDIT_TYPE_UINT,SETTINGS_EDIT_TYPE_UINT};
-int Settings_Type_GPS[] = {SETTINGS_EDIT_TYPE_ULONG,SETTINGS_EDIT_TYPE_FLOAT,SETTINGS_EDIT_TYPE_FLOAT,SETTINGS_EDIT_TYPE_FLOAT};
-int Settings_Type_Display[] = {SETTINGS_EDIT_TYPE_ULONG, SETTINGS_EDIT_TYPE_UINT, SETTINGS_EDIT_TYPE_BOOLEAN, SETTINGS_EDIT_TYPE_BOOLEAN, SETTINGS_EDIT_TYPE_UINT};
-*/
+  int Settings_Type_APRS[] = {SETTINGS_EDIT_TYPE_ULONG,SETTINGS_EDIT_TYPE_STRING100,SETTINGS_EDIT_TYPE_STRING100,SETTINGS_EDIT_TYPE_STRING100,SETTINGS_EDIT_TYPE_STRING7,SETTINGS_EDIT_TYPE_STRING2,SETTINGS_EDIT_TYPE_STRING7,SETTINGS_EDIT_TYPE_STRING2,
+                              SETTINGS_EDIT_TYPE_STRING7,SETTINGS_EDIT_TYPE_STRING2,SETTINGS_EDIT_TYPE_STRING7,SETTINGS_EDIT_TYPE_STRING2,SETTINGS_EDIT_TYPE_STRING7,SETTINGS_EDIT_TYPE_STRING2,
+                              SETTINGS_EDIT_TYPE_STRING2,SETTINGS_EDIT_TYPE_STRING2,SETTINGS_EDIT_TYPE_BOOLEAN,SETTINGS_EDIT_TYPE_UINT,SETTINGS_EDIT_TYPE_UINT};
+  int Settings_Type_GPS[] = {SETTINGS_EDIT_TYPE_ULONG,SETTINGS_EDIT_TYPE_FLOAT,SETTINGS_EDIT_TYPE_FLOAT,SETTINGS_EDIT_TYPE_FLOAT};
+  int Settings_Type_Display[] = {SETTINGS_EDIT_TYPE_ULONG, SETTINGS_EDIT_TYPE_UINT, SETTINGS_EDIT_TYPE_BOOLEAN, SETTINGS_EDIT_TYPE_BOOLEAN, SETTINGS_EDIT_TYPE_UINT};
+  */
 
   Serial.println();
   Serial.println("CMD:Settings:Print:");
   Serial.println("CMD:Settings:Save:");
+  Serial.println("CMD:SD Raw:");
+  Serial.println("CMD:SD Msg:");
   Serial.println("CMD:Modem:<command>");
   Serial.println();
   for (int i=0;i<ARRAY_SIZE(MenuItems_Settings);i++) {
@@ -2854,6 +2874,10 @@ void handleSerial(){
         Serial1.print(inData[i]);
         i++;
       }
+    } else if (strstr(CMD, "SD Raw") != NULL) {
+      readRawDataFromSd();
+    } else if (strstr(CMD, "SD Msg") != NULL) {
+      readMsgDataFromSd();
     } else if (strstr(CMD, "Settings") != NULL) {
       // get the setting group
       char SettingGroup[30]={'\0'};
@@ -3257,6 +3281,135 @@ void handleKeyboard(){
   }
 }
 
+void writeRawDataToSd(APRSFormat_Raw RawData){
+  File myFile;
+  byte *buff = (byte *) &RawData; // to access RawData as bytes
+
+  // open the file. note that only one file can be open at a time,
+  // so you have to close this one before opening another.
+  Serial.println("Opening raw.txt...");
+  myFile = SD.open("raw.txt", FILE_WRITE);
+
+  // if the file opened okay, write to it:
+  if (myFile) {
+    Serial.println("Writing to raw.txt...");
+    myFile.write(buff, sizeof(APRSFormat_Raw)); myFile.write('\n');
+    // close the file:
+    myFile.close();
+    Serial.println("done.");
+  } else {
+    // if the file didn't open, print an error:
+    Serial.println("error opening raw.txt");
+  }
+  // prob need to error check this and restart or something
+  myFile.close();
+}
+
+void readRawDataFromSd(){
+  APRSFormat_Raw RawData;
+  File myFile;
+  byte *buff = (byte *) &RawData; // to access RawData as bytes
+
+  // open the file. note that only one file can be open at a time,
+  // so you have to close this one before opening another.
+  Serial.println("Opening raw.txt...");
+  myFile = SD.open("raw.txt", FILE_READ);
+
+  // if the file opened okay, write to it:
+  if (myFile) {
+    Serial.println("Reading from raw.txt...");
+    while (myFile.available()) {
+      for (int count=0;count<sizeof(APRSFormat_Raw); count++) { 
+        if (myFile.available()) {
+          *(buff+count) = myFile.read();
+        }
+      }
+      Serial.print("src:"); Serial.print(RawData.src);
+      Serial.print("\tdst:"); Serial.print(RawData.dst);
+      Serial.print("\tpath:"); Serial.print(RawData.path);
+      Serial.print("\tdata:"); Serial.print(RawData.data);
+      Serial.print("\tdate:"); Serial.print(RawData.DateInt);
+      Serial.print("\ttime:"); Serial.print(RawData.TimeInt);
+      Serial.println(myFile.read()); // take care of the '\n' (maybe not write this in future)
+    }
+  } else {
+    // if the file didn't open, print an error:
+    Serial.println("error opening raw.txt");
+  }
+
+  // prob need to error check this and restart or something
+  myFile.close();
+}
+
+void writeMsgDataToSd(APRSFormat_Msg MsgData){
+  File myFile;
+  byte *buff = (byte *) &MsgData; // to access RawData as bytes
+
+  // open the file. note that only one file can be open at a time,
+  // so you have to close this one before opening another.
+  Serial.println("Opening msg.txt...");
+  myFile = SD.open("msg.txt", FILE_WRITE);
+
+  // if the file opened okay, write to it:
+  if (myFile) {
+    Serial.println("Writing to msg.txt...");
+    myFile.write(buff, sizeof(APRSFormat_Msg)); myFile.write('\n');
+    // close the file:
+    myFile.close();
+    Serial.println("done.");
+  } else {
+    // if the file didn't open, print an error:
+    Serial.println("error opening msg.txt");
+  }
+  
+  // prob need to error check this and restart or something
+  myFile.close();
+}
+
+void readMsgDataFromSd(){
+  APRSFormat_Msg MsgData;
+  File myFile;
+  byte *buff = (byte *) &MsgData; // to access RawData as bytes
+
+  // open the file. note that only one file can be open at a time,
+  // so you have to close this one before opening another.
+  Serial.println("Opening msg.txt...");
+  myFile = SD.open("msg.txt", FILE_READ);
+
+  // if the file opened okay, write to it:
+  if (myFile) {
+    Serial.println("Reading from msg.txt...");
+    while (myFile.available()) {
+      for (int count=0;count<sizeof(APRSFormat_Msg); count++) { 
+        if (myFile.available()) {
+          *(buff+count) = myFile.read();
+        }
+      }
+      Serial.print("to:"); Serial.print(MsgData.to);
+      Serial.print("\tfrom:"); Serial.print(MsgData.from);
+      Serial.print("\tmsg:"); Serial.print(MsgData.msg);
+      Serial.print("\tline:"); Serial.print(MsgData.line);
+      Serial.print("\tack:"); Serial.print(MsgData.ack);
+      Serial.print("\tdate:"); Serial.print(MsgData.DateInt);
+      Serial.print("\ttime:"); Serial.print(MsgData.TimeInt);
+      Serial.println(myFile.read()); // take care of the '\n' (maybe not write this in future)
+    }
+  } else {
+    // if the file didn't open, print an error:
+    Serial.println("error opening msg.txt");
+  }
+  
+  // prob need to error check this and restart or something
+  myFile.close();
+}
+
+void printDateTime(){
+  Serial.println();
+  Serial.print("Todays Date: "); Serial.println(GPSData.Date.DateInt);
+  Serial.print("The Time Now Is: "); Serial.println(GPSData.Time.TimeInt);
+  Serial.println();
+}
+
 void setup(){
   // reset dimmer timer
   display_timeout_timer = millis();
@@ -3268,8 +3421,6 @@ void setup(){
   //while (!Serial) // wait for serial port to connect. Needed for Native USB only
   while (!Serial1) // wait for modem
   
-  Wire.begin(); // M5Stack Keyboard
-  
   delay(2000);
 
   Serial.println();
@@ -3278,6 +3429,15 @@ void setup(){
   Serial.println("This is free software, and you are welcome to redistribute it");
   Serial.println("under certain conditions.");
   Serial.println();
+
+  Serial.print("Initializing SD card...");
+  if (!SD.begin(53)) {
+    Serial.println("initialization failed!");
+    while (1);
+  }
+  Serial.println("initialization done.");
+  
+  Wire.begin(); // M5Stack Keyboard
   
   // check if this is a new device
   checkInit();
