@@ -88,9 +88,9 @@ https://github.com/mikalhart/TinyGPSPlus/releases/tag/v1.02b
 https://github.com/adafruit/Adafruit-GFX-Library/releases/tag/1.10.10  
 
 ## Parts ##
-Find BOM information on parts [here](/Documentation/Parts/BOMs)
-Find Drawing information on parts [here](/Documentation/Parts/Drawings)
-Find Vedndor information on parts [here](/Documentation/Parts/Vendors)
+Find BOM information on parts [here](/Documentation/Parts/BOMs)  
+Find Drawing information on parts [here](/Documentation/Parts/Drawings)  
+Find Vedndor information on parts [here](/Documentation/Parts/Vendors)  
 
 Arduino:  
 https://www.arduino.cc/en/pmwiki.php?n=Main/ArduinoBoardProMini  
