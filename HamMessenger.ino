@@ -1,3 +1,25 @@
+/*
+
+  https://github.com/dalethomas81/HamMessenger
+  Copyright (C) 2021  Dale Thomas
+
+  This program is free software: you can redistribute it and/or modify
+  it under the terms of the GNU General Public License as published by
+  the Free Software Foundation, either version 3 of the License, or
+  (at your option) any later version.
+
+  This program is distributed in the hope that it will be useful,
+  but WITHOUT ANY WARRANTY; without even the implied warranty of
+  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+  GNU General Public License for more details.
+
+  You should have received a copy of the GNU General Public License
+  along with this program.  If not, see <https://www.gnu.org/licenses/>.
+
+  DaleThomas@me.com
+
+*/
+
 // http://www.aprs.net/vm/DOS/PROTOCOL.HTM
 
 // sketch will write default settings if new build
@@ -3249,6 +3271,13 @@ void setup(){
   Wire.begin(); // M5Stack Keyboard
   
   delay(2000);
+
+  Serial.println();
+  Serial.println("HamMessenger Copyright (C) 2021  Dale Thomas");
+  Serial.println("This program comes with ABSOLUTELY NO WARRANTY.");
+  Serial.println("This is free software, and you are welcome to redistribute it");
+  Serial.println("under certain conditions.");
+  Serial.println();
   
   // check if this is a new device
   checkInit();
