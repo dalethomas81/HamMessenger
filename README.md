@@ -83,45 +83,45 @@ software:
 04-JUL-2021: Version 1 of the pcb for HamMessenger has be sent for fabrication. The estimated delivery date is the 22nd of July. In the meantime I will be ordering the components to populate the board. As I do that I will make sure to get the links for the components and add them to the BOM in the Eagle folder.
 
 ## Parts ##
-Arduino:\
-https://www.arduino.cc/en/pmwiki.php?n=Main/ArduinoBoardProMini\
-https://store.arduino.cc/usa/mega-2560-r3\
-https://gallery.autodesk.com/fusion360/projects/arduino-mega-2560-r3
+Arduino:  
+https://www.arduino.cc/en/pmwiki.php?n=Main/ArduinoBoardProMini  
+https://store.arduino.cc/usa/mega-2560-r3  
+https://gallery.autodesk.com/fusion360/projects/arduino-mega-2560-r3  
 
-Keyboard:\
-https://github.com/m5stack/M5-ProductExampleCodes/tree/master/Unit/CARDKB\
-https://www.ebay.com/itm/124774337790?hash=item1d0d214cfe:g:kEkAAOSwEZlg0302
+Keyboard:  
+https://github.com/m5stack/M5-ProductExampleCodes/tree/master/Unit/CARDKB  
+https://www.ebay.com/itm/124774337790?hash=item1d0d214cfe:g:kEkAAOSwEZlg0302  
 
-OLED Display:\
-https://github.com/wonho-maker/Adafruit_SH1106\
-https://www.ebay.com/itm/391731053045\
-https://grabcad.com/library/0-96-oled-display-4-pin-1\
+OLED Display:  
+https://github.com/wonho-maker/Adafruit_SH1106  
+https://www.ebay.com/itm/391731053045  
+https://grabcad.com/library/0-96-oled-display-4-pin-1  
 https://grabcad.com/library/ecran-oled-1-3-1
 
-Modem:\
-https://github.com/markqvist/MicroAPRS\
-https://github.com/markqvist/MicroAPRS/blob/master/precompiled/microaprs-5v-ss-latest.hex\
-https://github.com/markqvist/MicroAPRS/blob/master/documentation/Hardware%20Schematic.pdf\
-https://unsigned.io/shop/\
-https://unsigned.io/product/micromodem-r23b/
+Modem:  
+https://github.com/markqvist/MicroAPRS  
+https://github.com/markqvist/MicroAPRS/blob/master/precompiled/microaprs-5v-ss-latest.hex  
+https://github.com/markqvist/MicroAPRS/blob/master/documentation/Hardware%20Schematic.pdf  
+https://unsigned.io/shop/  
+https://unsigned.io/product/micromodem-r23b  
 
-GPS:\
-https://github.com/mikalhart/TinyGPSPlus\
-https://www.ebay.com/sch/i.html?_id=221791352715&_nkw=Ublox+NEO-6M+GPS+Module+Aircraft+Flight+Controller+For+Arduino+MWC+IMU+APM2\
-https://grabcad.com/library/gps-module-ublox_neo6mv2-1\
+GPS:  
+https://github.com/mikalhart/TinyGPSPlus  
+https://www.ebay.com/sch/i.html?_id=221791352715&_nkw=Ublox+NEO-6M+GPS+Module+Aircraft+Flight+Controller+For+Arduino+MWC+IMU+APM2  
+https://grabcad.com/library/gps-module-ublox_neo6mv2-1  
 https://grabcad.com/library/ecran-oled-1-3-1
 
-Case:\
-https://www.duinocases.com/store/arduino-enclosures/duinocase-mega-arduino-mega-2560/
+Case:  
+https://www.duinocases.com/store/arduino-enclosures/duinocase-mega-arduino-mega-2560  
 
-Radio Cable:\
-https://www.amazon.com/dp/B08HT277B4?psc=1&smid=AZRLOQSTLHOAO&ref_=chk_typ_imgToDp
+Radio Cable:  
+https://www.amazon.com/dp/B08HT277B4?psc=1&smid=AZRLOQSTLHOAO&ref_=chk_typ_imgToDp  
 
-Grove Connector:\
-https://grabcad.com/library/grove-connectors-stand-and-flat-male-plugs-1/details?folder_id=2820551
+Grove Connector:  
+https://grabcad.com/library/grove-connectors-stand-and-flat-male-plugs-1/details?folder_id=2820551  
 
-Battery Assembly:\
-https://www.amazon.com/gp/product/B07SZKNST4/ref=ox_sc_act_title_1?smid=A3F3CVCOVVNP2J&psc=1
+Battery Assembly:  
+https://www.amazon.com/gp/product/B07SZKNST4/ref=ox_sc_act_title_1?smid=A3F3CVCOVVNP2J&psc=1  
 
-Battery:\
-Panasonic 18650 - don't have a link but you can get them on eBay or Amazon
+Battery:  
+Panasonic 18650 - don't have a link but you can get them on eBay or Amazon  
