@@ -2210,13 +2210,10 @@ void readModem(){
         Format_Raw_In.TimeInt = GPSData.Time.TimeInt;
         // write data to live feed
         LiveFeedBuffer[liveFeedBufferIndex] = Format_Raw_In;
-        // write live feed data to SD card
-        WriteRawDataToSd(Format_Raw_In);
         // let other systems know there is data in the live feed
         liveFeedIsEmpty = false;
-        
-        // write live feed to SD card here
-        
+        // write live feed data to SD card
+        writeRawDataToSd(Format_Raw_In);
         //Serial.print(F("Total APRS Message Length="));Serial.println(i-1);
         i = sizeof(modemData); // setting i to size of modem data will make loop exit sooner
       }
@@ -2300,6 +2297,8 @@ void readModem(){
           IncomingMessageBuffer[incomingMessageBufferIndex] = Format_Msg_In;
           // let other systems know there is data in the live feed
           messageFeedIsEmpty = false;
+          // write msg to sd card
+          writeMsgDataToSd(Format_Msg_In);
           // switch to message display
           if (currentDisplay == UI_DISPLAY_HOME) currentDisplay = UI_DISPLAY_MESSAGES;
         } else {
@@ -2805,6 +2804,8 @@ void printOutSerialCommands(){
   Serial.println();
   Serial.println("CMD:Settings:Print:");
   Serial.println("CMD:Settings:Save:");
+  Serial.println("CMD:SD Raw:");
+  Serial.println("CMD:SD Msg:");
   Serial.println("CMD:Modem:<command>");
   Serial.println();
   for (int i=0;i<ARRAY_SIZE(MenuItems_Settings);i++) {
@@ -2873,6 +2874,10 @@ void handleSerial(){
         Serial1.print(inData[i]);
         i++;
       }
+    } else if (strstr(CMD, "SD Raw") != NULL) {
+      readRawDataFromSd();
+    } else if (strstr(CMD, "SD Msg") != NULL) {
+      readMsgDataFromSd();
     } else if (strstr(CMD, "Settings") != NULL) {
       // get the setting group
       char SettingGroup[30]={'\0'};
@@ -3276,24 +3281,19 @@ void handleKeyboard(){
   }
 }
 
-void WriteRawDataToSd(APRSFormat_Raw RawData){
+void writeRawDataToSd(APRSFormat_Raw RawData){
   File myFile;
   byte *buff = (byte *) &RawData; // to access RawData as bytes
+
   // open the file. note that only one file can be open at a time,
   // so you have to close this one before opening another.
+  Serial.println("Opening raw.txt...");
   myFile = SD.open("raw.txt", FILE_WRITE);
 
   // if the file opened okay, write to it:
   if (myFile) {
-    Serial.print("Writing to raw.txt...");
-    myFile.write(buff, sizeof(APRSFormat_Raw)); myFile.println();
-    //myFile.print(RawData.src);
-    //myFile.print('\t'); myFile.print(RawData.dst); 
-    //myFile.print('\t'); myFile.print(RawData.path); 
-    //myFile.print('\t'); myFile.print(RawData.data); 
-    //myFile.print('\t'); myFile.print(GPSData.Date.DateInt); 
-    //myFile.print(" "); myFile.print(GPSData.Time.TimeInt);
-    //myFile.println();
+    Serial.println("Writing to raw.txt...");
+    myFile.write(buff, sizeof(APRSFormat_Raw)); myFile.write('\n');
     // close the file:
     myFile.close();
     Serial.println("done.");
@@ -3301,6 +3301,106 @@ void WriteRawDataToSd(APRSFormat_Raw RawData){
     // if the file didn't open, print an error:
     Serial.println("error opening raw.txt");
   }
+  // prob need to error check this and restart or something
+  myFile.close();
+}
+
+void readRawDataFromSd(){
+  APRSFormat_Raw RawData;
+  File myFile;
+  byte *buff = (byte *) &RawData; // to access RawData as bytes
+
+  // open the file. note that only one file can be open at a time,
+  // so you have to close this one before opening another.
+  Serial.println("Opening raw.txt...");
+  myFile = SD.open("raw.txt", FILE_READ);
+
+  // if the file opened okay, write to it:
+  if (myFile) {
+    Serial.println("Reading from raw.txt...");
+    while (myFile.available()) {
+      for (int count=0;count<sizeof(APRSFormat_Raw); count++) { 
+        if (myFile.available()) {
+          *(buff+count) = myFile.read();
+        }
+      }
+      Serial.print("src:"); Serial.print(RawData.src);
+      Serial.print("\tdst:"); Serial.print(RawData.dst);
+      Serial.print("\tpath:"); Serial.print(RawData.path);
+      Serial.print("\tdata:"); Serial.print(RawData.data);
+      Serial.print("\tdate:"); Serial.print(RawData.DateInt);
+      Serial.print("\ttime:"); Serial.print(RawData.TimeInt);
+      Serial.println(myFile.read()); // take care of the '\n' (maybe not write this in future)
+    }
+  } else {
+    // if the file didn't open, print an error:
+    Serial.println("error opening raw.txt");
+  }
+
+  // prob need to error check this and restart or something
+  myFile.close();
+}
+
+void writeMsgDataToSd(APRSFormat_Msg MsgData){
+  File myFile;
+  byte *buff = (byte *) &MsgData; // to access RawData as bytes
+
+  // open the file. note that only one file can be open at a time,
+  // so you have to close this one before opening another.
+  Serial.println("Opening msg.txt...");
+  myFile = SD.open("msg.txt", FILE_WRITE);
+
+  // if the file opened okay, write to it:
+  if (myFile) {
+    Serial.println("Writing to msg.txt...");
+    myFile.write(buff, sizeof(APRSFormat_Msg)); myFile.write('\n');
+    // close the file:
+    myFile.close();
+    Serial.println("done.");
+  } else {
+    // if the file didn't open, print an error:
+    Serial.println("error opening msg.txt");
+  }
+  
+  // prob need to error check this and restart or something
+  myFile.close();
+}
+
+void readMsgDataFromSd(){
+  APRSFormat_Msg MsgData;
+  File myFile;
+  byte *buff = (byte *) &MsgData; // to access RawData as bytes
+
+  // open the file. note that only one file can be open at a time,
+  // so you have to close this one before opening another.
+  Serial.println("Opening msg.txt...");
+  myFile = SD.open("msg.txt", FILE_READ);
+
+  // if the file opened okay, write to it:
+  if (myFile) {
+    Serial.println("Reading from msg.txt...");
+    while (myFile.available()) {
+      for (int count=0;count<sizeof(APRSFormat_Msg); count++) { 
+        if (myFile.available()) {
+          *(buff+count) = myFile.read();
+        }
+      }
+      Serial.print("to:"); Serial.print(MsgData.to);
+      Serial.print("\tfrom:"); Serial.print(MsgData.from);
+      Serial.print("\tmsg:"); Serial.print(MsgData.msg);
+      Serial.print("\tline:"); Serial.print(MsgData.line);
+      Serial.print("\tack:"); Serial.print(MsgData.ack);
+      Serial.print("\tdate:"); Serial.print(MsgData.DateInt);
+      Serial.print("\ttime:"); Serial.print(MsgData.TimeInt);
+      Serial.println(myFile.read()); // take care of the '\n' (maybe not write this in future)
+    }
+  } else {
+    // if the file didn't open, print an error:
+    Serial.println("error opening msg.txt");
+  }
+  
+  // prob need to error check this and restart or something
+  myFile.close();
 }
 
 void printDateTime(){
