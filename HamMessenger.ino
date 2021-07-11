@@ -2770,9 +2770,9 @@ void printOutSerialCommands(){
   Serial.println();
   Serial.println("CMD:Settings:Print:");  // prints all settings to terminal
   Serial.println("CMD:Settings:Save:");   // saves all settings to eeprom
-  Serial.println("CMD:SD:Raw:Read:");     // prints all raw data to terminal
+  Serial.println("CMD:SD:Raw:Print:");    // prints all raw data to terminal
   Serial.println("CMD:SD:Raw:Delete:");   // deletes all raw data from sd
-  Serial.println("CMD:SD:Msg:Read:");     // prints all messages to terminal
+  Serial.println("CMD:SD:Msg:Print:");    // prints all messages to terminal
   Serial.println("CMD:SD:Msg:Delete:");   // deletes all messages from sd
   Serial.println("CMD:Modem:<command>");  // writes a command directly to the modem (see MicroAPRS github for examples)
   Serial.println();
@@ -2818,7 +2818,7 @@ void handleSerial(){
   readModem();
   // usb serial commands are handled here
   bool gotCMD = false;
-  char inData[500];
+  char inData[250];
   if (Serial.available()) {
     memset(inData,'\0',sizeof(inData));
     Serial.readBytesUntil('\n', inData, sizeof(inData));
@@ -2862,8 +2862,8 @@ void handleSerial(){
         }
         if (strstr(SD_cmd, "Delete") != NULL) {
           deleteAllRawData();
-        } else if (strstr(SD_cmd, "Read") != NULL) {
-          readRawDataFromSd();
+        } else if (strstr(SD_cmd, "Print") != NULL) {
+          printRawDataFromSd();
         } else {
           Serial.println(InvalidCommand);
         }
@@ -2879,8 +2879,8 @@ void handleSerial(){
         }
         if (strstr(SD_cmd, "Delete") != NULL) {
           deleteAllMessages();
-        } else if (strstr(SD_cmd, "Read") != NULL) {
-          readMsgDataFromSd();
+        } else if (strstr(SD_cmd, "Print") != NULL) {
+          printMsgDataFromSd();
         } else {
           Serial.println(InvalidCommand);
         }
@@ -3314,7 +3314,7 @@ void writeRawDataToSd(APRSFormat_Raw RawData){
   myFile.close();
 }
 
-void readRawDataFromSd(){
+void printRawDataFromSd(){
   APRSFormat_Raw RawData;
   File myFile;
   byte *buff = (byte *) &RawData; // to access RawData as bytes
@@ -3375,7 +3375,7 @@ void writeMsgDataToSd(APRSFormat_Msg MsgData){
   myFile.close();
 }
 
-void readMsgDataFromSd(){
+void printMsgDataFromSd(){
   APRSFormat_Msg MsgData;
   File myFile;
   byte *buff = (byte *) &MsgData; // to access RawData as bytes
