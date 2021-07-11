@@ -2767,46 +2767,14 @@ void getDataTypeExample(int dataType, char* outExample){
 
 void printOutSerialCommands(){
 
-  // CMD:Modem:cNOCALL
-  // CMD:Settings:Save:
-  // CMD:Settings:Print:
-  // CMD:Settings:APRS:Beacon Frequency:300000
-  // CMD:Settings:APRS:Raw Packet:<raw data here>
-  // CMD:Settings:APRS:Comment:Testing HamMessenger!
-  // CMD:Settings:APRS:Message:Hi!
-
-  /*
-  # define SETTINGS_EDIT_TYPE_NONE        0
-  # define SETTINGS_EDIT_TYPE_BOOLEAN     1
-  # define SETTINGS_EDIT_TYPE_INT         2
-  # define SETTINGS_EDIT_TYPE_UINT        3
-  # define SETTINGS_EDIT_TYPE_LONG        4
-  # define SETTINGS_EDIT_TYPE_ULONG       5
-  # define SETTINGS_EDIT_TYPE_FLOAT       6
-  # define SETTINGS_EDIT_TYPE_STRING2     7
-  # define SETTINGS_EDIT_TYPE_STRING7     8
-  # define SETTINGS_EDIT_TYPE_STRING100   9
-                          
-  const char *MenuItems_Settings[] = {"APRS","GPS","Display"};
-  const char *MenuItems_Settings_APRS[] = {"Beacon Frequency","Raw Packet","Comment","Message","Recipient Callsign","Recipient SSID", "My Callsign","Callsign SSID", 
-                                          "Destination Callsign", "Destination SSID", "PATH1 Callsign", "PATH1 SSID", "PATH2 Callsign", "PATH2 SSID",
-                                          "Symbol", "Table", "Automatic ACK", "Preamble", "Tail"};
-  const char *MenuItems_Settings_GPS[] = {"Update Frequency","Position Tolerance","Destination Latitude","Destination Longitude"};
-  const char *MenuItems_Settings_Display[] = {"Timeout", "Brightness", "Show Position", "Scroll Messages", "Scroll Speed"};
-
-  int Settings_Type_APRS[] = {SETTINGS_EDIT_TYPE_ULONG,SETTINGS_EDIT_TYPE_STRING100,SETTINGS_EDIT_TYPE_STRING100,SETTINGS_EDIT_TYPE_STRING100,SETTINGS_EDIT_TYPE_STRING7,SETTINGS_EDIT_TYPE_STRING2,SETTINGS_EDIT_TYPE_STRING7,SETTINGS_EDIT_TYPE_STRING2,
-                              SETTINGS_EDIT_TYPE_STRING7,SETTINGS_EDIT_TYPE_STRING2,SETTINGS_EDIT_TYPE_STRING7,SETTINGS_EDIT_TYPE_STRING2,SETTINGS_EDIT_TYPE_STRING7,SETTINGS_EDIT_TYPE_STRING2,
-                              SETTINGS_EDIT_TYPE_STRING2,SETTINGS_EDIT_TYPE_STRING2,SETTINGS_EDIT_TYPE_BOOLEAN,SETTINGS_EDIT_TYPE_UINT,SETTINGS_EDIT_TYPE_UINT};
-  int Settings_Type_GPS[] = {SETTINGS_EDIT_TYPE_ULONG,SETTINGS_EDIT_TYPE_FLOAT,SETTINGS_EDIT_TYPE_FLOAT,SETTINGS_EDIT_TYPE_FLOAT};
-  int Settings_Type_Display[] = {SETTINGS_EDIT_TYPE_ULONG, SETTINGS_EDIT_TYPE_UINT, SETTINGS_EDIT_TYPE_BOOLEAN, SETTINGS_EDIT_TYPE_BOOLEAN, SETTINGS_EDIT_TYPE_UINT};
-  */
-
   Serial.println();
-  Serial.println("CMD:Settings:Print:");
-  Serial.println("CMD:Settings:Save:");
-  Serial.println("CMD:SD Raw:");
-  Serial.println("CMD:SD Msg:");
-  Serial.println("CMD:Modem:<command>");
+  Serial.println("CMD:Settings:Print:");  // prints all settings to terminal
+  Serial.println("CMD:Settings:Save:");   // saves all settings to eeprom
+  Serial.println("CMD:SD:Raw:Read:");     // prints all raw data to terminal
+  Serial.println("CMD:SD:Raw:Delete:");   // deletes all raw data from sd
+  Serial.println("CMD:SD:Msg:Read:");     // prints all messages to terminal
+  Serial.println("CMD:SD:Msg:Delete:");   // deletes all messages from sd
+  Serial.println("CMD:Modem:<command>");  // writes a command directly to the modem (see MicroAPRS github for examples)
   Serial.println();
   for (int i=0;i<ARRAY_SIZE(MenuItems_Settings);i++) {
     switch (i) {
@@ -2859,7 +2827,6 @@ void handleSerial(){
     if (inData[0]=='?') printOutSerialCommands();
   }
   if (gotCMD){
-    //Serial.println("Got cmd");
     // get the command
     char CMD[30]={'\0'};
     int i=4; // start at 5 to skip "CMD:"
@@ -2874,10 +2841,52 @@ void handleSerial(){
         Serial1.print(inData[i]);
         i++;
       }
-    } else if (strstr(CMD, "SD Raw") != NULL) {
-      readRawDataFromSd();
-    } else if (strstr(CMD, "SD Msg") != NULL) {
-      readMsgDataFromSd();
+    } else if (strstr(CMD, "SD") != NULL) {
+      // get the SD group
+      char SDGroup[5]={'\0'};
+      int j_sdg = 0;
+      while (inData[i] != ':') {
+        if (inData[i] == '\0' || inData[i] == '\n') return;
+        SDGroup[j_sdg] = inData[i];
+        i++; j_sdg++;
+      }
+      i++; // i should be sitting at the ':'. go ahead and skip that.
+      if (strstr(SDGroup, "Raw") != NULL) {
+        // get the SD Command
+        char SD_cmd[10]={'\0'};
+        int j_sdc = 0;
+        while (inData[i] != ':') {
+          if (inData[i] == '\0' || inData[i] == '\n') return;
+          SD_cmd[j_sdc] = inData[i];
+          i++; j_sdc++;
+        }
+        if (strstr(SD_cmd, "Delete") != NULL) {
+          deleteAllRawData();
+        } else if (strstr(SD_cmd, "Read") != NULL) {
+          readRawDataFromSd();
+        } else {
+          Serial.println(InvalidCommand);
+        }
+      
+      } else if (strstr(SDGroup, "Msg") != NULL) {
+        // get the SD Command
+        char SD_cmd[10]={'\0'};
+        int j_sdc = 0;
+        while (inData[i] != ':') {
+          if (inData[i] == '\0' || inData[i] == '\n') return;
+          SD_cmd[j_sdc] = inData[i];
+          i++; j_sdc++;
+        }
+        if (strstr(SD_cmd, "Delete") != NULL) {
+          deleteAllMessages();
+        } else if (strstr(SD_cmd, "Read") != NULL) {
+          readMsgDataFromSd();
+        } else {
+          Serial.println(InvalidCommand);
+        }
+      } else {
+        Serial.println(InvalidCommand);
+      }
     } else if (strstr(CMD, "Settings") != NULL) {
       // get the setting group
       char SettingGroup[30]={'\0'};
@@ -3401,6 +3410,28 @@ void readMsgDataFromSd(){
   
   // prob need to error check this and restart or something
   myFile.close();
+}
+
+void deleteAllMessages(){
+  Serial.println();
+  Serial.println("deleting msg.txt");
+  if (SD.exists("msg.txt")) {
+    SD.remove("msg.txt");
+    Serial.println("msg.txt has been deleted.");
+  } else {
+    Serial.println("msg.txt does not exist.");
+  }
+}
+
+void deleteAllRawData(){
+  Serial.println();
+  Serial.println("deleting raw.txt");
+  if (SD.exists("raw.txt")) {
+    SD.remove("raw.txt");
+    Serial.println("raw.txt has been deleted.");
+  } else {
+    Serial.println("raw.txt does not exist.");
+  }
 }
 
 void printDateTime(){
