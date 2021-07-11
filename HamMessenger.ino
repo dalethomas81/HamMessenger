@@ -30,6 +30,8 @@ const char version[] = __DATE__ " " __TIME__;
 #include <Adafruit_SH1106.h>
 #include <TinyGPS++.h>
 #include <EEPROM.h>
+#include <SPI.h>
+#include <SD.h>
 
 // M5Stack Keyboard https://docs.m5stack.com/en/unit/cardkb
 #include <Wire.h> 

@@ -20,6 +20,7 @@
                 "/Applications/Arduino.app/Contents/Java/hardware/arduino/avr/variants/mega",
                 "/Users/dalethomas/OneDrive/05 - Arduino/libraries/Adafruit_GFX_Library",
                 "/Users/dalethomas/OneDrive/05 - Arduino/libraries/Adafruit_SH1106-master",
+                "/Users/dalethomas/OneDrive/05 - Arduino/libraries/SD",
                 "/Applications/Arduino.app/Contents/Java/hardware/arduino/avr/libraries/SPI/src",
                 "/Users/dalethomas/OneDrive/05 - Arduino/libraries/TinyGPSPlus/src",
                 "/Applications/Arduino.app/Contents/Java/hardware/arduino/avr/libraries/EEPROM/src",
