@@ -81,13 +81,18 @@ software:
 - add store and recall messages in SD card to save dynamic memory
 - add feature to be selective about message acknowledgments. currently any acknowlegment (from a second conversation) will reset the messaging sequencer.
 
-## Updates ##
-04-JUL-2021: Version 1 of the pcb for HamMessenger has be sent for fabrication. The estimated delivery date is the 22nd of July. In the meantime I will be ordering the components to populate the board. As I do that I will make sure to get the links for the components and add them to the BOM in the Eagle folder.
-
 ## Libraries ##
+Here are links to the non-standard libraries that I am using for this project. All other libraries are standard and can be installed using the library manager built into the Arduino IDE.   
 https://github.com/wonho-maker/Adafruit_SH1106  
 https://github.com/mikalhart/TinyGPSPlus/releases/tag/v1.02b  
 https://github.com/adafruit/Adafruit-GFX-Library/releases/tag/1.10.10  
+
+## Compilation ##
+The easiest way to compile HamMessenger is to use the Ardunio IDE. After all libraries are installed you can use the Verify button to compile or the Upload button to compile and write the binary to the main controller M1.  
+
+The modem controller does not need to be compiled as the binary are already made available [here](https://github.com/markqvist/MicroAPRS/tree/master/precompiled).  
+
+You can use AVRDude to write the binary to the modem controller. Instructions on how to do that will be coming soon. In the meantime, if you already know how to install and use AVRDude then feel free to make use of the batch file I created to do use AVRDude and an FTDI serial cable to write to the modem [here](/MicroAPRS Firmware Installer);  
 
 ## Parts ##
 Find BOM information on parts [here](/Documentation/Parts/BOMs)  
@@ -134,3 +139,6 @@ https://www.amazon.com/gp/product/B07SZKNST4/ref=ox_sc_act_title_1?smid=A3F3CVCO
 
 Battery:  
 Panasonic 18650 - don't have a link but you can get them on eBay or Amazon  
+
+## Updates ##
+04-JUL-2021: Version 1 of the pcb for HamMessenger has be sent for fabrication. The estimated delivery date is the 22nd of July. In the meantime I will be ordering the components to populate the board. As I do that I will make sure to get the links for the components and add them to the BOM in the Eagle folder.
