@@ -31,6 +31,8 @@ Command | Description | Example
 __?__ | Displays serial command examples
 __CMD:Settings:Print:__ | Prints the current settings
 __CMD:Settings:Save:__ | Saves settings to EEPROM
+__CMD:SD Raw:__ | Prints all raw data saved in raw.txt on the SD card
+__CMD:SD Msg:__ | Prints all messages saved in msg.txt on the SD card
 __CMD:Modem:<command>__ | Writes commands directly to the modem. See https://github.com/markqvist/MicroAPRS#serial-commands | CMD:Modem:cNOCALL
 &nbsp;
 __CMD:Settings:APRS:Beacon Frequency:<0 to 4,294,967,295>__ | Frequency at which position data will be transmitted in milliseconds | 60000
