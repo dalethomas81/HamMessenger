@@ -1375,7 +1375,7 @@ void handleDisplay_LiveFeed(){
       display.setTextSize(1); // Normal 1:1 pixel scale - default letter size is 5x8 pixels
       // display the cursor position (represents record number in this case)
       display.setCursor(0,UI_DISPLAY_ROW_04); display.print("Record: ");
-      display.setCursor(40,UI_DISPLAY_ROW_04); display.print(cursorPosition_Y+1);
+      display.setCursor(45,UI_DISPLAY_ROW_04); display.print(cursorPosition_Y+1);
       // display the date and time
       display.setCursor(0,UI_DISPLAY_ROW_05); display.print("D:");
       display.setCursor(15,UI_DISPLAY_ROW_05); display.print(RawData.DateInt);
