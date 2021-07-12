@@ -33,6 +33,11 @@ const char version[] = __DATE__ " " __TIME__;
 #include <SPI.h>
 #include <SD.h>
 
+File RawDataFile;
+File MsgDataFile;
+const char RawDataFileName[] = {"raw.txt"};
+const char MsgDataFileName[] = {"msg.txt"};
+
 // M5Stack Keyboard https://docs.m5stack.com/en/unit/cardkb
 #include <Wire.h> 
 #define CARDKB_ADDR 0x5F  
@@ -193,13 +198,13 @@ struct GPS {
 
 #define MAXIMUM_MODEM_COMMAND_RATE 100        // maximum rate that commands can be sent to modem
 
-#define LIVEFEED_BUFFER_SIZE  4
+#define LIVEFEED_BUFFER_SIZE  2
 long liveFeedBufferIndex = -1, oldliveFeedBufferIndex = -1, liveFeedBufferIndex_RecordCount = 0;
 bool liveFeedIsEmpty = true;
 APRSFormat_Raw LiveFeedBuffer[LIVEFEED_BUFFER_SIZE] = {'\0'};
 //byte *buff = (byte *) &LiveFeedBuffer; // to access LiveFeedBuffer as bytes
 
-#define INCOMING_MESSAGE_BUFFER_SIZE 4
+#define INCOMING_MESSAGE_BUFFER_SIZE 2
 long incomingMessageBufferIndex = -1, oldIncomingMessageBufferIndex = -1, incomingMessageBufferIndex_RecordCount = 0;
 bool messageFeedIsEmpty = true;
 APRSFormat_Msg IncomingMessageBuffer[INCOMING_MESSAGE_BUFFER_SIZE];
@@ -3293,46 +3298,35 @@ void handleKeyboard(){
 }
 
 void writeRawDataToSd(APRSFormat_Raw RawData){
-  File myFile;
   byte *buff = (byte *) &RawData; // to access RawData as bytes
-
-  // open the file. note that only one file can be open at a time,
-  // so you have to close this one before opening another.
-  Serial.println("Opening raw.txt...");
-  myFile = SD.open("raw.txt", FILE_WRITE);
+  RawDataFile = SD.open(RawDataFileName, FILE_WRITE);
 
   // if the file opened okay, write to it:
-  if (myFile) {
+  if (RawDataFile) {
     Serial.println("Writing to raw.txt...");
-    myFile.write(buff, sizeof(APRSFormat_Raw)); myFile.write('\n');
-    // close the file:
-    myFile.close();
+    RawDataFile.seek(RawDataFile.size()); // go to end of file first
+    RawDataFile.write(buff, sizeof(APRSFormat_Raw)); RawDataFile.write('\n');
     Serial.println("done.");
   } else {
     // if the file didn't open, print an error:
     Serial.println("error opening raw.txt");
   }
-  // prob need to error check this and restart or something
-  myFile.close();
+  
+  RawDataFile.flush(); // will save data
 }
 
 void printRawDataFromSd(){
   APRSFormat_Raw RawData;
-  File myFile;
   byte *buff = (byte *) &RawData; // to access RawData as bytes
-
-  // open the file. note that only one file can be open at a time,
-  // so you have to close this one before opening another.
-  Serial.println("Opening raw.txt...");
-  myFile = SD.open("raw.txt", FILE_READ);
+  RawDataFile = SD.open(RawDataFileName, FILE_READ);
 
   // if the file opened okay, write to it:
-  if (myFile) {
+  if (RawDataFile) {
     Serial.println("Reading from raw.txt...");
-    while (myFile.available()) {
+    while (RawDataFile.available()) {
       for (int count=0;count<sizeof(APRSFormat_Raw); count++) { 
-        if (myFile.available()) {
-          *(buff+count) = myFile.read();
+        if (RawDataFile.available()) {
+          *(buff+count) = RawDataFile.read();
         }
       }
       Serial.print("src:"); Serial.print(RawData.src);
@@ -3341,59 +3335,46 @@ void printRawDataFromSd(){
       Serial.print("\tdata:"); Serial.print(RawData.data);
       Serial.print("\tdate:"); Serial.print(RawData.DateInt);
       Serial.print("\ttime:"); Serial.print(RawData.TimeInt);
-      Serial.println(myFile.read()); // take care of the '\n' (maybe not write this in future)
+      Serial.println(RawDataFile.read()); // take care of the '\n' (maybe not write this in future)
     }
   } else {
     // if the file didn't open, print an error:
     Serial.println("error opening raw.txt");
   }
 
-  // prob need to error check this and restart or something
-  myFile.close();
+  RawDataFile.flush(); // will save data
 }
 
 void writeMsgDataToSd(APRSFormat_Msg MsgData){
-  File myFile;
   byte *buff = (byte *) &MsgData; // to access RawData as bytes
-
-  // open the file. note that only one file can be open at a time,
-  // so you have to close this one before opening another.
-  Serial.println("Opening msg.txt...");
-  myFile = SD.open("msg.txt", FILE_WRITE);
+  MsgDataFile = SD.open(MsgDataFileName, FILE_WRITE);
 
   // if the file opened okay, write to it:
-  if (myFile) {
+  if (MsgDataFile) {
     Serial.println("Writing to msg.txt...");
-    myFile.write(buff, sizeof(APRSFormat_Msg)); myFile.write('\n');
-    // close the file:
-    myFile.close();
+    MsgDataFile.seek(MsgDataFile.size()); // go to end of file first
+    MsgDataFile.write(buff, sizeof(APRSFormat_Msg)); MsgDataFile.write('\n');
     Serial.println("done.");
   } else {
     // if the file didn't open, print an error:
     Serial.println("error opening msg.txt");
   }
   
-  // prob need to error check this and restart or something
-  myFile.close();
+  MsgDataFile.flush(); // will save data
 }
 
 void printMsgDataFromSd(){
   APRSFormat_Msg MsgData;
-  File myFile;
   byte *buff = (byte *) &MsgData; // to access RawData as bytes
-
-  // open the file. note that only one file can be open at a time,
-  // so you have to close this one before opening another.
-  Serial.println("Opening msg.txt...");
-  myFile = SD.open("msg.txt", FILE_READ);
+  MsgDataFile = SD.open(MsgDataFileName, FILE_READ);
 
   // if the file opened okay, write to it:
-  if (myFile) {
+  if (MsgDataFile) {
     Serial.println("Reading from msg.txt...");
-    while (myFile.available()) {
+    while (MsgDataFile.available()) {
       for (int count=0;count<sizeof(APRSFormat_Msg); count++) { 
-        if (myFile.available()) {
-          *(buff+count) = myFile.read();
+        if (MsgDataFile.available()) {
+          *(buff+count) = MsgDataFile.read();
         }
       }
       Serial.print("to:"); Serial.print(MsgData.to);
@@ -3403,40 +3384,40 @@ void printMsgDataFromSd(){
       Serial.print("\tack:"); Serial.print(MsgData.ack);
       Serial.print("\tdate:"); Serial.print(MsgData.DateInt);
       Serial.print("\ttime:"); Serial.print(MsgData.TimeInt);
-      Serial.println(myFile.read()); // take care of the '\n' (maybe not write this in future)
+      Serial.println(MsgDataFile.read()); // take care of the '\n' (maybe not write this in future)
     }
   } else {
     // if the file didn't open, print an error:
     Serial.println("error opening msg.txt");
   }
   
-  // prob need to error check this and restart or something
-  myFile.close();
+  MsgDataFile.flush(); // will save data
 }
 
 void deleteAllMessages(){
-  Serial.println();
+/*   Serial.println();
   Serial.println("deleting msg.txt");
-  if (SD.exists("msg.txt")) {
-    SD.remove("msg.txt");
+  if (SD.exists(MsgDataFileName)) {
+    SD.remove(MsgDataFileName);
     Serial.println("msg.txt has been deleted.");
   } else {
     Serial.println("msg.txt does not exist.");
-  }
+  } */
 }
 
 void deleteAllRawData(){
-  Serial.println();
+/*   Serial.println();
   Serial.println("deleting raw.txt");
-  if (SD.exists("raw.txt")) {
-    SD.remove("raw.txt");
+  if (SD.exists(RawDataFileName)) {
+    SD.remove(RawDataFileName);
     Serial.println("raw.txt has been deleted.");
   } else {
     Serial.println("raw.txt does not exist.");
-  }
+  } */
 }
 
 uint32_t recordCount(char *fileName, uint32_t recordSize){
+/*   Serial.print("Getting record count."); 
   uint32_t myFileSize;
   File myFile;
   myFile = SD.open(fileName, FILE_READ);
@@ -3447,10 +3428,11 @@ uint32_t recordCount(char *fileName, uint32_t recordSize){
   Serial.println();
   Serial.print("File Size:"); Serial.println(myFileSize);
   Serial.print("Record Size:"); Serial.println(recordSize);
-  return myFileSize / recordSize;
+  return myFileSize / recordSize; */
 }
 
 void SD_TEST(){
+/*   Serial.print("Running SD Test."); 
   APRSFormat_Raw RawData;
   File myFile;
   byte *buff = (byte *) &RawData; // to access RawData as bytes
@@ -3490,7 +3472,7 @@ void SD_TEST(){
   }
 
   // prob need to error check this and restart or something
-  myFile.close();
+  myFile.close(); */
 
 }
 
@@ -3527,6 +3509,13 @@ void setup(){
     while (1);
   }
   Serial.println("initialization done.");
+
+  delay(100);
+
+  // go ahead and open the files but I don't think I need to do this here.
+  Serial.println("Opening files...");
+  RawDataFile = SD.open(RawDataFileName, FILE_READ);
+  MsgDataFile = SD.open(MsgDataFileName, FILE_READ);
   
   Wire.begin(); // M5Stack Keyboard
   
