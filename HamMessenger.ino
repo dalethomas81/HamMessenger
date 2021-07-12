@@ -2864,6 +2864,8 @@ void handleSerial(){
           deleteAllRawData();
         } else if (strstr(SD_cmd, "Print") != NULL) {
           printRawDataFromSd();
+        } else if (strstr(SD_cmd, "Test") != NULL) {
+          SD_TEST();
         } else {
           Serial.println(InvalidCommand);
         }
@@ -3432,6 +3434,64 @@ void deleteAllRawData(){
   } else {
     Serial.println("raw.txt does not exist.");
   }
+}
+
+uint32_t recordCount(char *fileName, uint32_t recordSize){
+  uint32_t myFileSize;
+  File myFile;
+  myFile = SD.open(fileName, FILE_READ);
+  if (myFile) {
+    myFileSize = myFile.size();
+  }
+  myFile.close();
+  Serial.println();
+  Serial.print("File Size:"); Serial.println(myFileSize);
+  Serial.print("Record Size:"); Serial.println(recordSize);
+  return myFileSize / recordSize;
+}
+
+void SD_TEST(){
+  APRSFormat_Raw RawData;
+  File myFile;
+  byte *buff = (byte *) &RawData; // to access RawData as bytes
+  const char fileName[] = {"raw.txt"};
+
+  // get size of APRSFormat_Raw so we know how long each record is
+  uint32_t RecordSize;
+  RecordSize = sizeof(APRSFormat_Raw) + 1; // add one for line feed
+  Serial.print("Record Size:"); Serial.println(RecordSize);
+
+  // open the file. note that only one file can be open at a time,
+  // so you have to close this one before opening another.
+  Serial.print("Opening file "); Serial.println(fileName);
+  myFile = SD.open(fileName, FILE_READ);
+
+  // if the file opened okay, write to it:
+  if (myFile) {
+    // print out how many records there are
+    Serial.print("Record Count:"); Serial.println(recordCount(fileName,RecordSize));
+    // seek to end of file minus one record size to get the last record
+    myFile.seek(myFile.size()-RecordSize);
+    for (int count=0;count<sizeof(APRSFormat_Raw); count++) { 
+      if (myFile.available()) {
+        *(buff+count) = myFile.read();
+      }
+    }
+    Serial.print("src:"); Serial.print(RawData.src);
+    Serial.print("\tdst:"); Serial.print(RawData.dst);
+    Serial.print("\tpath:"); Serial.print(RawData.path);
+    Serial.print("\tdata:"); Serial.print(RawData.data);
+    Serial.print("\tdate:"); Serial.print(RawData.DateInt);
+    Serial.print("\ttime:"); Serial.print(RawData.TimeInt);
+    Serial.println(myFile.read()); // take care of the '\n' (maybe not write this in future)
+  } else {
+    // if the file didn't open, print an error:
+    Serial.println("error opening file");
+  }
+
+  // prob need to error check this and restart or something
+  myFile.close();
+
 }
 
 void printDateTime(){
