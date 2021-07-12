@@ -85,8 +85,8 @@ char keyboardInputChar;
 unsigned char currentDisplay = UI_DISPLAY_HOME;
 unsigned char currentDisplayLast = currentDisplay;
 unsigned char previousDisplay = UI_DISPLAY_HOME;
-unsigned char cursorPosition_X = 0, cursorPosition_X_Last = 0;
-unsigned char cursorPosition_Y = 0, cursorPosition_Y_Last = 0;
+uint32_t cursorPosition_X = 0, cursorPosition_X_Last = 0;
+uint32_t cursorPosition_Y = 0, cursorPosition_Y_Last = 0;
 short int ScrollingIndex_LiveFeed, ScrollingIndex_LiveFeed_minX;
 short int ScrollingIndex_MessageFeed, ScrollingIndex_MessageFeed_minX;
 
@@ -1288,7 +1288,6 @@ void handleDisplay_LiveFeed(){
   // on first show
   if (!displayInitialized){
     displayInitialized = true;
-    RawDataRecordCount = getRawDataRecord(cursorPosition_Y + 1, RawData);
     cursorPosition_X = 0;
     /*if (liveFeedBufferIndex >= 0) {
       cursorPosition_Y = liveFeedBufferIndex;
@@ -1298,6 +1297,7 @@ void handleDisplay_LiveFeed(){
     cursorPosition_Y = 0;
     cursorPosition_X_Last = cursorPosition_X;
     cursorPosition_Y_Last = -1;
+    RawDataRecordCount = getRawDataRecord(cursorPosition_Y + 1, RawData);
     //oldliveFeedBufferIndex = liveFeedBufferIndex;
     leave_display_timer = millis();
   }
@@ -1308,17 +1308,17 @@ void handleDisplay_LiveFeed(){
   }*/
   // handle button context for current display
   if (keyboardInputChar == KEYBOARD_UP_KEY){
-    if (cursorPosition_Y > 0){
-      cursorPosition_Y--;
-    } else {
-      cursorPosition_Y=RawDataRecordCount - 1;
-    }
-  }
-  if (keyboardInputChar == KEYBOARD_DOWN_KEY){
-    if (cursorPosition_Y < RawDataRecordCount - 1){ // dont scroll past the number of records in the array
+    if (cursorPosition_Y < RawDataRecordCount - 1){
       cursorPosition_Y++;
     } else {
       cursorPosition_Y=0;
+    }
+  }
+  if (keyboardInputChar == KEYBOARD_DOWN_KEY){
+    if (cursorPosition_Y > 0){ // dont scroll past the number of records in the array
+      cursorPosition_Y--;
+    } else {
+      cursorPosition_Y=(RawDataRecordCount > 0 ? RawDataRecordCount - 1 : 0); // wanna roll to the end. check if record count is not 0 first
     }
   }
   if (keyboardInputChar == KEYBOARD_ENTER_KEY){
@@ -1331,7 +1331,7 @@ void handleDisplay_LiveFeed(){
   if (displayRefresh_Scroll || keyboardInputChar != 0){
     if (cursorPosition_Y != cursorPosition_Y_Last){ // changed to new record (index)
       cursorPosition_Y_Last = cursorPosition_Y; 
-      RawDataRecordCount = getRawDataRecord(cursorPosition_Y + 1, RawData);
+      RawDataRecordCount = getRawDataRecord(cursorPosition_Y + 1, RawData); // adding 1 here becasue cursorPosition_Y is zero indexed but getRawDataRecord is not
       int dataLen = strlen(RawData.data);
       ScrollingIndex_LiveFeed_minX = -10 * dataLen; // 10 = 5 pixels/character * text size 2
       if (!SETTINGS_DISPLAY_SCROLL_MESSAGES) {
@@ -1364,17 +1364,23 @@ void handleDisplay_LiveFeed(){
           i = sizeof(RawData.dst); // get out
         }
       }
-      // display the cursor position (represents record number in this case)
-      display.setCursor(0,UI_DISPLAY_ROW_01);
-      display.print(cursorPosition_Y+1);
       // display who the message is to and from
-      display.setCursor(12,UI_DISPLAY_ROW_01);
+      display.setCursor(0,UI_DISPLAY_ROW_01);
       display.print(src_dst);
       // display message
       display.setCursor(ScrollingIndex_LiveFeed,UI_DISPLAY_ROW_02);
       display.setTextSize(2);
       display.print(RawData.data); 
+      // go back to original text size
       display.setTextSize(1); // Normal 1:1 pixel scale - default letter size is 5x8 pixels
+      // display the cursor position (represents record number in this case)
+      display.setCursor(0,UI_DISPLAY_ROW_04); display.print("Record: ");
+      display.setCursor(40,UI_DISPLAY_ROW_04); display.print(cursorPosition_Y+1);
+      // display the date and time
+      display.setCursor(0,UI_DISPLAY_ROW_05); display.print("D:");
+      display.setCursor(15,UI_DISPLAY_ROW_05); display.print(RawData.DateInt);
+      display.setCursor(60,UI_DISPLAY_ROW_05); display.print("T:");
+      display.setCursor(75,UI_DISPLAY_ROW_05); display.print(RawData.TimeInt);
       unsigned int scrollPixelCount = (SETTINGS_DISPLAY_SCROLL_MESSAGES ? SETTINGS_DISPLAY_SCROLL_SPEED : 32);
       if (keyboardInputChar == KEYBOARD_LEFT_KEY || SETTINGS_DISPLAY_SCROLL_MESSAGES){ //  scroll only when enter pressed TODO: this wont work because key press not persistent
         ScrollingIndex_LiveFeed = ScrollingIndex_LiveFeed - scrollPixelCount; // higher number here is faster scroll but choppy
@@ -2221,7 +2227,7 @@ void readModem(){
         // write data to live feed
         //LiveFeedBuffer[liveFeedBufferIndex] = Format_Raw_In;
         // let other systems know there is data in the live feed
-        liveFeedIsEmpty = false;
+        //liveFeedIsEmpty = false;
         // write live feed data to SD card
         writeRawDataToSd(Format_Raw_In);
         //Serial.print(F("Total APRS Message Length="));Serial.println(i-1);
