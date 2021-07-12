@@ -1288,33 +1288,34 @@ void handleDisplay_LiveFeed(){
   // on first show
   if (!displayInitialized){
     displayInitialized = true;
+    RawDataRecordCount = getRawDataRecord(cursorPosition_Y + 1, RawData);
     cursorPosition_X = 0;
-    RawDataRecordCount = getRawDataRecord(1, RawData);
-    if (liveFeedBufferIndex >= 0) {
+    /*if (liveFeedBufferIndex >= 0) {
       cursorPosition_Y = liveFeedBufferIndex;
     } else {
       cursorPosition_Y = 0;
-    }
+    }*/
+    cursorPosition_Y = 0;
     cursorPosition_X_Last = cursorPosition_X;
     cursorPosition_Y_Last = -1;
-    oldliveFeedBufferIndex = liveFeedBufferIndex;
+    //oldliveFeedBufferIndex = liveFeedBufferIndex;
     leave_display_timer = millis();
   }
   // change cursor position as new mesasages arrive
-  if (liveFeedBufferIndex != oldliveFeedBufferIndex) {
+  /*if (liveFeedBufferIndex != oldliveFeedBufferIndex) {
     oldliveFeedBufferIndex = liveFeedBufferIndex;
     cursorPosition_Y = liveFeedBufferIndex;
-  }
+  }*/
   // handle button context for current display
   if (keyboardInputChar == KEYBOARD_UP_KEY){
     if (cursorPosition_Y > 0){
       cursorPosition_Y--;
     } else {
-      cursorPosition_Y=liveFeedBufferIndex_RecordCount - 1;
+      cursorPosition_Y=RawDataRecordCount - 1;
     }
   }
   if (keyboardInputChar == KEYBOARD_DOWN_KEY){
-    if (cursorPosition_Y < liveFeedBufferIndex_RecordCount - 1){ // dont scroll past the number of records in the array
+    if (cursorPosition_Y < RawDataRecordCount - 1){ // dont scroll past the number of records in the array
       cursorPosition_Y++;
     } else {
       cursorPosition_Y=0;
@@ -1330,7 +1331,8 @@ void handleDisplay_LiveFeed(){
   if (displayRefresh_Scroll || keyboardInputChar != 0){
     if (cursorPosition_Y != cursorPosition_Y_Last){ // changed to new record (index)
       cursorPosition_Y_Last = cursorPosition_Y; 
-      int dataLen = strlen(LiveFeedBuffer[cursorPosition_Y].data);
+      RawDataRecordCount = getRawDataRecord(cursorPosition_Y + 1, RawData);
+      int dataLen = strlen(RawData.data);
       ScrollingIndex_LiveFeed_minX = -10 * dataLen; // 10 = 5 pixels/character * text size 2
       if (!SETTINGS_DISPLAY_SCROLL_MESSAGES) {
         ScrollingIndex_LiveFeed = 0;
@@ -1342,24 +1344,24 @@ void handleDisplay_LiveFeed(){
     display.clearDisplay();
     // add global objects to buffer
     handleDisplay_Global();
-    if (!liveFeedIsEmpty){
+    if (RawDataRecordCount > 0){
       char src_dst[24] = {'\0'};
       byte index = 0;
-      for (byte i=0;i<sizeof(LiveFeedBuffer[cursorPosition_Y].src)-1;i++){
-        if (LiveFeedBuffer[cursorPosition_Y].src[i] != '\0'){
-          src_dst[index] = LiveFeedBuffer[cursorPosition_Y].src[i];
+      for (byte i=0;i<sizeof(RawData.src)-1;i++){
+        if (RawData.src[i] != '\0'){
+          src_dst[index] = RawData.src[i];
           index++;
         } else {
-          i = sizeof(LiveFeedBuffer[cursorPosition_Y].src); // get out
+          i = sizeof(RawData.src); // get out
         }
       }
       src_dst[index] = '>'; index++;
-      for (byte i=0;i<sizeof(LiveFeedBuffer[cursorPosition_Y].dst)-1;i++){
-        if (LiveFeedBuffer[cursorPosition_Y].dst[i] != '\0'){
-          src_dst[index] = LiveFeedBuffer[cursorPosition_Y].dst[i];
+      for (byte i=0;i<sizeof(RawData.dst)-1;i++){
+        if (RawData.dst[i] != '\0'){
+          src_dst[index] = RawData.dst[i];
           index++;
         } else {
-          i = sizeof(LiveFeedBuffer[cursorPosition_Y].dst); // get out
+          i = sizeof(RawData.dst); // get out
         }
       }
       // display the cursor position (represents record number in this case)
@@ -1371,7 +1373,7 @@ void handleDisplay_LiveFeed(){
       // display message
       display.setCursor(ScrollingIndex_LiveFeed,UI_DISPLAY_ROW_02);
       display.setTextSize(2);
-      display.print(LiveFeedBuffer[cursorPosition_Y].data); 
+      display.print(RawData.data); 
       display.setTextSize(1); // Normal 1:1 pixel scale - default letter size is 5x8 pixels
       unsigned int scrollPixelCount = (SETTINGS_DISPLAY_SCROLL_MESSAGES ? SETTINGS_DISPLAY_SCROLL_SPEED : 32);
       if (keyboardInputChar == KEYBOARD_LEFT_KEY || SETTINGS_DISPLAY_SCROLL_MESSAGES){ //  scroll only when enter pressed TODO: this wont work because key press not persistent
@@ -2203,7 +2205,7 @@ void readModem(){
       }
       if (foundSrc && foundDst && foundPath && foundData) {
         // handle the live feed index circular buffer
-        if (liveFeedBufferIndex < LIVEFEED_BUFFER_SIZE - 1){
+        /*if (liveFeedBufferIndex < LIVEFEED_BUFFER_SIZE - 1){
           liveFeedBufferIndex++;
           if (liveFeedBufferIndex_RecordCount == 0) {
             liveFeedBufferIndex_RecordCount = 1;
@@ -2212,12 +2214,12 @@ void readModem(){
           }
         } else {
           liveFeedBufferIndex=0;
-        }
+        }*/
         // set date and time
         Format_Raw_In.DateInt = GPSData.Date.DateInt;
         Format_Raw_In.TimeInt = GPSData.Time.TimeInt;
         // write data to live feed
-        LiveFeedBuffer[liveFeedBufferIndex] = Format_Raw_In;
+        //LiveFeedBuffer[liveFeedBufferIndex] = Format_Raw_In;
         // let other systems know there is data in the live feed
         liveFeedIsEmpty = false;
         // write live feed data to SD card
