@@ -33,6 +33,11 @@ const char version[] = __DATE__ " " __TIME__;
 #include <SPI.h>
 #include <SD.h>
 
+File RawDataFile;
+File MsgDataFile;
+const char RawDataFileName[] = {"raw.txt"};
+const char MsgDataFileName[] = {"msg.txt"};
+
 // M5Stack Keyboard https://docs.m5stack.com/en/unit/cardkb
 #include <Wire.h> 
 #define CARDKB_ADDR 0x5F  
@@ -80,8 +85,8 @@ char keyboardInputChar;
 unsigned char currentDisplay = UI_DISPLAY_HOME;
 unsigned char currentDisplayLast = currentDisplay;
 unsigned char previousDisplay = UI_DISPLAY_HOME;
-unsigned char cursorPosition_X = 0, cursorPosition_X_Last = 0;
-unsigned char cursorPosition_Y = 0, cursorPosition_Y_Last = 0;
+uint32_t cursorPosition_X = 0, cursorPosition_X_Last = 0;
+uint32_t cursorPosition_Y = 0, cursorPosition_Y_Last = 0;
 short int ScrollingIndex_LiveFeed, ScrollingIndex_LiveFeed_minX;
 short int ScrollingIndex_MessageFeed, ScrollingIndex_MessageFeed_minX;
 
@@ -193,13 +198,13 @@ struct GPS {
 
 #define MAXIMUM_MODEM_COMMAND_RATE 100        // maximum rate that commands can be sent to modem
 
-#define LIVEFEED_BUFFER_SIZE  4
+#define LIVEFEED_BUFFER_SIZE  2
 long liveFeedBufferIndex = -1, oldliveFeedBufferIndex = -1, liveFeedBufferIndex_RecordCount = 0;
 bool liveFeedIsEmpty = true;
 APRSFormat_Raw LiveFeedBuffer[LIVEFEED_BUFFER_SIZE] = {'\0'};
 //byte *buff = (byte *) &LiveFeedBuffer; // to access LiveFeedBuffer as bytes
 
-#define INCOMING_MESSAGE_BUFFER_SIZE 4
+#define INCOMING_MESSAGE_BUFFER_SIZE 2
 long incomingMessageBufferIndex = -1, oldIncomingMessageBufferIndex = -1, incomingMessageBufferIndex_RecordCount = 0;
 bool messageFeedIsEmpty = true;
 APRSFormat_Msg IncomingMessageBuffer[INCOMING_MESSAGE_BUFFER_SIZE];
@@ -1278,38 +1283,42 @@ void handleDisplay_Messages(){
 }
 
 void handleDisplay_LiveFeed(){
+  APRSFormat_Raw RawData;
+  uint32_t RawDataRecordCount;
   // on first show
   if (!displayInitialized){
     displayInitialized = true;
     cursorPosition_X = 0;
-    if (liveFeedBufferIndex >= 0) {
+    /*if (liveFeedBufferIndex >= 0) {
       cursorPosition_Y = liveFeedBufferIndex;
     } else {
       cursorPosition_Y = 0;
-    }
+    }*/
+    cursorPosition_Y = 0;
     cursorPosition_X_Last = cursorPosition_X;
     cursorPosition_Y_Last = -1;
-    oldliveFeedBufferIndex = liveFeedBufferIndex;
+    RawDataRecordCount = getRawDataRecord(cursorPosition_Y + 1, RawData);
+    //oldliveFeedBufferIndex = liveFeedBufferIndex;
     leave_display_timer = millis();
   }
   // change cursor position as new mesasages arrive
-  if (liveFeedBufferIndex != oldliveFeedBufferIndex) {
+  /*if (liveFeedBufferIndex != oldliveFeedBufferIndex) {
     oldliveFeedBufferIndex = liveFeedBufferIndex;
     cursorPosition_Y = liveFeedBufferIndex;
-  }
+  }*/
   // handle button context for current display
   if (keyboardInputChar == KEYBOARD_UP_KEY){
-    if (cursorPosition_Y > 0){
-      cursorPosition_Y--;
-    } else {
-      cursorPosition_Y=liveFeedBufferIndex_RecordCount - 1;
-    }
-  }
-  if (keyboardInputChar == KEYBOARD_DOWN_KEY){
-    if (cursorPosition_Y < liveFeedBufferIndex_RecordCount - 1){ // dont scroll past the number of records in the array
+    if (cursorPosition_Y < RawDataRecordCount - 1){
       cursorPosition_Y++;
     } else {
       cursorPosition_Y=0;
+    }
+  }
+  if (keyboardInputChar == KEYBOARD_DOWN_KEY){
+    if (cursorPosition_Y > 0){ // dont scroll past the number of records in the array
+      cursorPosition_Y--;
+    } else {
+      cursorPosition_Y=(RawDataRecordCount > 0 ? RawDataRecordCount - 1 : 0); // wanna roll to the end. check if record count is not 0 first
     }
   }
   if (keyboardInputChar == KEYBOARD_ENTER_KEY){
@@ -1322,7 +1331,8 @@ void handleDisplay_LiveFeed(){
   if (displayRefresh_Scroll || keyboardInputChar != 0){
     if (cursorPosition_Y != cursorPosition_Y_Last){ // changed to new record (index)
       cursorPosition_Y_Last = cursorPosition_Y; 
-      int dataLen = strlen(LiveFeedBuffer[cursorPosition_Y].data);
+      RawDataRecordCount = getRawDataRecord(cursorPosition_Y + 1, RawData); // adding 1 here becasue cursorPosition_Y is zero indexed but getRawDataRecord is not
+      int dataLen = strlen(RawData.data);
       ScrollingIndex_LiveFeed_minX = -10 * dataLen; // 10 = 5 pixels/character * text size 2
       if (!SETTINGS_DISPLAY_SCROLL_MESSAGES) {
         ScrollingIndex_LiveFeed = 0;
@@ -1334,37 +1344,43 @@ void handleDisplay_LiveFeed(){
     display.clearDisplay();
     // add global objects to buffer
     handleDisplay_Global();
-    if (!liveFeedIsEmpty){
+    if (RawDataRecordCount > 0){
       char src_dst[24] = {'\0'};
       byte index = 0;
-      for (byte i=0;i<sizeof(LiveFeedBuffer[cursorPosition_Y].src)-1;i++){
-        if (LiveFeedBuffer[cursorPosition_Y].src[i] != '\0'){
-          src_dst[index] = LiveFeedBuffer[cursorPosition_Y].src[i];
+      for (byte i=0;i<sizeof(RawData.src)-1;i++){
+        if (RawData.src[i] != '\0'){
+          src_dst[index] = RawData.src[i];
           index++;
         } else {
-          i = sizeof(LiveFeedBuffer[cursorPosition_Y].src); // get out
+          i = sizeof(RawData.src); // get out
         }
       }
       src_dst[index] = '>'; index++;
-      for (byte i=0;i<sizeof(LiveFeedBuffer[cursorPosition_Y].dst)-1;i++){
-        if (LiveFeedBuffer[cursorPosition_Y].dst[i] != '\0'){
-          src_dst[index] = LiveFeedBuffer[cursorPosition_Y].dst[i];
+      for (byte i=0;i<sizeof(RawData.dst)-1;i++){
+        if (RawData.dst[i] != '\0'){
+          src_dst[index] = RawData.dst[i];
           index++;
         } else {
-          i = sizeof(LiveFeedBuffer[cursorPosition_Y].dst); // get out
+          i = sizeof(RawData.dst); // get out
         }
       }
-      // display the cursor position (represents record number in this case)
-      display.setCursor(0,UI_DISPLAY_ROW_01);
-      display.print(cursorPosition_Y+1);
       // display who the message is to and from
-      display.setCursor(12,UI_DISPLAY_ROW_01);
+      display.setCursor(0,UI_DISPLAY_ROW_01);
       display.print(src_dst);
       // display message
       display.setCursor(ScrollingIndex_LiveFeed,UI_DISPLAY_ROW_02);
       display.setTextSize(2);
-      display.print(LiveFeedBuffer[cursorPosition_Y].data); 
+      display.print(RawData.data); 
+      // go back to original text size
       display.setTextSize(1); // Normal 1:1 pixel scale - default letter size is 5x8 pixels
+      // display the cursor position (represents record number in this case)
+      display.setCursor(0,UI_DISPLAY_ROW_04); display.print("Record: ");
+      display.setCursor(45,UI_DISPLAY_ROW_04); display.print(cursorPosition_Y+1);
+      // display the date and time
+      display.setCursor(0,UI_DISPLAY_ROW_05); display.print("D:");
+      display.setCursor(15,UI_DISPLAY_ROW_05); display.print(RawData.DateInt);
+      display.setCursor(60,UI_DISPLAY_ROW_05); display.print("T:");
+      display.setCursor(75,UI_DISPLAY_ROW_05); display.print(RawData.TimeInt);
       unsigned int scrollPixelCount = (SETTINGS_DISPLAY_SCROLL_MESSAGES ? SETTINGS_DISPLAY_SCROLL_SPEED : 32);
       if (keyboardInputChar == KEYBOARD_LEFT_KEY || SETTINGS_DISPLAY_SCROLL_MESSAGES){ //  scroll only when enter pressed TODO: this wont work because key press not persistent
         ScrollingIndex_LiveFeed = ScrollingIndex_LiveFeed - scrollPixelCount; // higher number here is faster scroll but choppy
@@ -2195,7 +2211,7 @@ void readModem(){
       }
       if (foundSrc && foundDst && foundPath && foundData) {
         // handle the live feed index circular buffer
-        if (liveFeedBufferIndex < LIVEFEED_BUFFER_SIZE - 1){
+        /*if (liveFeedBufferIndex < LIVEFEED_BUFFER_SIZE - 1){
           liveFeedBufferIndex++;
           if (liveFeedBufferIndex_RecordCount == 0) {
             liveFeedBufferIndex_RecordCount = 1;
@@ -2204,14 +2220,14 @@ void readModem(){
           }
         } else {
           liveFeedBufferIndex=0;
-        }
+        }*/
         // set date and time
         Format_Raw_In.DateInt = GPSData.Date.DateInt;
         Format_Raw_In.TimeInt = GPSData.Time.TimeInt;
         // write data to live feed
-        LiveFeedBuffer[liveFeedBufferIndex] = Format_Raw_In;
+        //LiveFeedBuffer[liveFeedBufferIndex] = Format_Raw_In;
         // let other systems know there is data in the live feed
-        liveFeedIsEmpty = false;
+        //liveFeedIsEmpty = false;
         // write live feed data to SD card
         writeRawDataToSd(Format_Raw_In);
         //Serial.print(F("Total APRS Message Length="));Serial.println(i-1);
@@ -2864,6 +2880,18 @@ void handleSerial(){
           deleteAllRawData();
         } else if (strstr(SD_cmd, "Print") != NULL) {
           printRawDataFromSd();
+        } else if (strstr(SD_cmd, "Test") != NULL) {
+          APRSFormat_Raw RawData;
+          uint32_t RawDataRecordCount;
+          RawDataRecordCount = getRawDataRecord(1, RawData);
+          Serial.print("Raw Data Record Count"); Serial.println(RawDataRecordCount);
+          Serial.print("src:"); Serial.print(RawData.src);
+          Serial.print("\tdst:"); Serial.print(RawData.dst);
+          Serial.print("\tpath:"); Serial.print(RawData.path);
+          Serial.print("\tdata:"); Serial.print(RawData.data);
+          Serial.print("\tdate:"); Serial.print(RawData.DateInt);
+          Serial.print("\ttime:"); Serial.print(RawData.TimeInt);
+          
         } else {
           Serial.println(InvalidCommand);
         }
@@ -3291,46 +3319,35 @@ void handleKeyboard(){
 }
 
 void writeRawDataToSd(APRSFormat_Raw RawData){
-  File myFile;
   byte *buff = (byte *) &RawData; // to access RawData as bytes
-
-  // open the file. note that only one file can be open at a time,
-  // so you have to close this one before opening another.
-  Serial.println("Opening raw.txt...");
-  myFile = SD.open("raw.txt", FILE_WRITE);
+  RawDataFile = SD.open(RawDataFileName, FILE_WRITE);
 
   // if the file opened okay, write to it:
-  if (myFile) {
+  if (RawDataFile) {
     Serial.println("Writing to raw.txt...");
-    myFile.write(buff, sizeof(APRSFormat_Raw)); myFile.write('\n');
-    // close the file:
-    myFile.close();
+    RawDataFile.seek(RawDataFile.size()); // go to end of file first
+    RawDataFile.write(buff, sizeof(APRSFormat_Raw)); RawDataFile.write('\n');
     Serial.println("done.");
   } else {
     // if the file didn't open, print an error:
     Serial.println("error opening raw.txt");
   }
-  // prob need to error check this and restart or something
-  myFile.close();
+  
+  RawDataFile.flush(); // will save data
 }
 
 void printRawDataFromSd(){
   APRSFormat_Raw RawData;
-  File myFile;
   byte *buff = (byte *) &RawData; // to access RawData as bytes
-
-  // open the file. note that only one file can be open at a time,
-  // so you have to close this one before opening another.
-  Serial.println("Opening raw.txt...");
-  myFile = SD.open("raw.txt", FILE_READ);
+  RawDataFile = SD.open(RawDataFileName, FILE_READ);
 
   // if the file opened okay, write to it:
-  if (myFile) {
+  if (RawDataFile) {
     Serial.println("Reading from raw.txt...");
-    while (myFile.available()) {
+    while (RawDataFile.available()) {
       for (int count=0;count<sizeof(APRSFormat_Raw); count++) { 
-        if (myFile.available()) {
-          *(buff+count) = myFile.read();
+        if (RawDataFile.available()) {
+          *(buff+count) = RawDataFile.read();
         }
       }
       Serial.print("src:"); Serial.print(RawData.src);
@@ -3339,59 +3356,46 @@ void printRawDataFromSd(){
       Serial.print("\tdata:"); Serial.print(RawData.data);
       Serial.print("\tdate:"); Serial.print(RawData.DateInt);
       Serial.print("\ttime:"); Serial.print(RawData.TimeInt);
-      Serial.println(myFile.read()); // take care of the '\n' (maybe not write this in future)
+      Serial.println(RawDataFile.read()); // take care of the '\n' (maybe not write this in future)
     }
   } else {
     // if the file didn't open, print an error:
     Serial.println("error opening raw.txt");
   }
 
-  // prob need to error check this and restart or something
-  myFile.close();
+  RawDataFile.flush(); // will save data
 }
 
 void writeMsgDataToSd(APRSFormat_Msg MsgData){
-  File myFile;
   byte *buff = (byte *) &MsgData; // to access RawData as bytes
-
-  // open the file. note that only one file can be open at a time,
-  // so you have to close this one before opening another.
-  Serial.println("Opening msg.txt...");
-  myFile = SD.open("msg.txt", FILE_WRITE);
+  MsgDataFile = SD.open(MsgDataFileName, FILE_WRITE);
 
   // if the file opened okay, write to it:
-  if (myFile) {
+  if (MsgDataFile) {
     Serial.println("Writing to msg.txt...");
-    myFile.write(buff, sizeof(APRSFormat_Msg)); myFile.write('\n');
-    // close the file:
-    myFile.close();
+    MsgDataFile.seek(MsgDataFile.size()); // go to end of file first
+    MsgDataFile.write(buff, sizeof(APRSFormat_Msg)); MsgDataFile.write('\n');
     Serial.println("done.");
   } else {
     // if the file didn't open, print an error:
     Serial.println("error opening msg.txt");
   }
   
-  // prob need to error check this and restart or something
-  myFile.close();
+  MsgDataFile.flush(); // will save data
 }
 
 void printMsgDataFromSd(){
   APRSFormat_Msg MsgData;
-  File myFile;
   byte *buff = (byte *) &MsgData; // to access RawData as bytes
-
-  // open the file. note that only one file can be open at a time,
-  // so you have to close this one before opening another.
-  Serial.println("Opening msg.txt...");
-  myFile = SD.open("msg.txt", FILE_READ);
+  MsgDataFile = SD.open(MsgDataFileName, FILE_READ);
 
   // if the file opened okay, write to it:
-  if (myFile) {
+  if (MsgDataFile) {
     Serial.println("Reading from msg.txt...");
-    while (myFile.available()) {
+    while (MsgDataFile.available()) {
       for (int count=0;count<sizeof(APRSFormat_Msg); count++) { 
-        if (myFile.available()) {
-          *(buff+count) = myFile.read();
+        if (MsgDataFile.available()) {
+          *(buff+count) = MsgDataFile.read();
         }
       }
       Serial.print("to:"); Serial.print(MsgData.to);
@@ -3401,37 +3405,93 @@ void printMsgDataFromSd(){
       Serial.print("\tack:"); Serial.print(MsgData.ack);
       Serial.print("\tdate:"); Serial.print(MsgData.DateInt);
       Serial.print("\ttime:"); Serial.print(MsgData.TimeInt);
-      Serial.println(myFile.read()); // take care of the '\n' (maybe not write this in future)
+      Serial.println(MsgDataFile.read()); // take care of the '\n' (maybe not write this in future)
     }
   } else {
     // if the file didn't open, print an error:
     Serial.println("error opening msg.txt");
   }
   
-  // prob need to error check this and restart or something
-  myFile.close();
+  MsgDataFile.flush(); // will save data
 }
 
 void deleteAllMessages(){
-  Serial.println();
+/*   Serial.println();
   Serial.println("deleting msg.txt");
-  if (SD.exists("msg.txt")) {
-    SD.remove("msg.txt");
+  if (SD.exists(MsgDataFileName)) {
+    SD.remove(MsgDataFileName);
     Serial.println("msg.txt has been deleted.");
   } else {
     Serial.println("msg.txt does not exist.");
-  }
+  } */
 }
 
 void deleteAllRawData(){
-  Serial.println();
+/*   Serial.println();
   Serial.println("deleting raw.txt");
-  if (SD.exists("raw.txt")) {
-    SD.remove("raw.txt");
+  if (SD.exists(RawDataFileName)) {
+    SD.remove(RawDataFileName);
     Serial.println("raw.txt has been deleted.");
   } else {
     Serial.println("raw.txt does not exist.");
+  } */
+}
+
+uint32_t recordCount(char *fileName, uint32_t recordSize){
+/*   Serial.print("Getting record count."); 
+  uint32_t myFileSize;
+  File myFile;
+  myFile = SD.open(fileName, FILE_READ);
+  if (myFile) {
+    myFileSize = myFile.size();
   }
+  myFile.close();
+  Serial.println();
+  Serial.print("File Size:"); Serial.println(myFileSize);
+  Serial.print("Record Size:"); Serial.println(recordSize);
+  return myFileSize / recordSize; */
+}
+
+uint32_t getRawDataRecord(uint32_t RecordNumber, APRSFormat_Raw &RawData){
+  //APRSFormat_Raw RawData;
+  uint32_t RecordCount;
+  byte *buff = (byte *) &RawData; // to access RawData as bytes
+  // get size of APRSFormat_Raw so we know how long each record is
+  uint32_t RecordSize;
+  RecordSize = sizeof(APRSFormat_Raw) + 1; // add one for line feed
+  // must reopen the file each time so we are in the right mode i.e. FILE_READ
+  RawDataFile = SD.open(RawDataFileName, FILE_READ);
+  // get the size of the file so we can move backwards and get the latest messages in order
+  uint32_t RawDataFileSize;
+  RawDataFileSize = RawDataFile.size();
+  // if the file is opened okay, write to it:
+  if (RawDataFile) {
+    // print out how many records there are
+    RecordCount = RawDataFileSize/RecordSize;
+    if (RecordNumber <= RecordCount) {
+      // seek to end of file minus total number of records size to get the record of interest
+      RawDataFile.seek(RawDataFileSize-(RecordSize*RecordNumber));
+      for (int count=0;count<sizeof(APRSFormat_Raw); count++) { 
+        if (RawDataFile.available()) {
+          *(buff+count) = RawDataFile.read();
+        }
+      }
+      /*
+      Serial.print("src:"); Serial.print(RawData.src);
+      Serial.print("\tdst:"); Serial.print(RawData.dst);
+      Serial.print("\tpath:"); Serial.print(RawData.path);
+      Serial.print("\tdata:"); Serial.print(RawData.data);
+      Serial.print("\tdate:"); Serial.print(RawData.DateInt);
+      Serial.print("\ttime:"); Serial.print(RawData.TimeInt);
+      Serial.println(RawDataFile.read()); // take care of the '\n' (maybe not write this in future)
+      */
+    }
+  } else {
+    // if the file didn't open, print an error:
+    Serial.println("error opening file");
+  }
+  RawDataFile.flush(); // will save data
+  return RecordCount;
 }
 
 void printDateTime(){
@@ -3467,6 +3527,13 @@ void setup(){
     while (1);
   }
   Serial.println("initialization done.");
+
+  delay(100);
+
+  // go ahead and open the files but I don't think I need to do this here.
+  Serial.println("Opening files...");
+  RawDataFile = SD.open(RawDataFileName, FILE_READ);
+  MsgDataFile = SD.open(MsgDataFileName, FILE_READ);
   
   Wire.begin(); // M5Stack Keyboard
   
