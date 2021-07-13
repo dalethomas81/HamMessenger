@@ -198,17 +198,6 @@ struct GPS {
 
 #define MAXIMUM_MODEM_COMMAND_RATE 100        // maximum rate that commands can be sent to modem
 
-#define LIVEFEED_BUFFER_SIZE  2
-long liveFeedBufferIndex = -1, oldliveFeedBufferIndex = -1, liveFeedBufferIndex_RecordCount = 0;
-bool liveFeedIsEmpty = true;
-APRSFormat_Raw LiveFeedBuffer[LIVEFEED_BUFFER_SIZE] = {'\0'};
-//byte *buff = (byte *) &LiveFeedBuffer; // to access LiveFeedBuffer as bytes
-
-#define INCOMING_MESSAGE_BUFFER_SIZE 2
-long incomingMessageBufferIndex = -1, oldIncomingMessageBufferIndex = -1, incomingMessageBufferIndex_RecordCount = 0;
-bool messageFeedIsEmpty = true;
-APRSFormat_Msg IncomingMessageBuffer[INCOMING_MESSAGE_BUFFER_SIZE];
-
 // input pins
 #define rxPin A5 // using analog input pins
 #define txPin A6
@@ -1163,6 +1152,8 @@ void handleDisplay_Home(){
   }
 }
 
+APRSFormat_Msg MsgData;
+uint32_t MsgDataRecordCount;
 void handleDisplay_Messages(){
   //  Radio 1: CMD: Modem:#Hi!
   //  Radio 1: SRC: [NOCALL-3] DST: [APRS-0] PATH: [WIDE1-1] [WIDE2-2] DATA: :NOCALL-3 :Hi!{006
@@ -1170,36 +1161,27 @@ void handleDisplay_Messages(){
   
   // on first show
   if (!displayInitialized){
-    displayInitialized= true;
+    displayInitialized = true;
     cursorPosition_X = 0;
-    if (incomingMessageBufferIndex >= 0) {
-      cursorPosition_Y = incomingMessageBufferIndex;
-    } else {
-      cursorPosition_Y = 0;
-    }
+    cursorPosition_Y = 0;
     cursorPosition_X_Last = cursorPosition_X;
     cursorPosition_Y_Last = -1;
-    oldIncomingMessageBufferIndex = incomingMessageBufferIndex; 
+    //MsgDataRecordCount = getMsgDataRecord(cursorPosition_Y + 1, MsgData);
     leave_display_timer = millis();
-  }
-  // change cursor position as new mesasages arrive
-  if (incomingMessageBufferIndex != oldIncomingMessageBufferIndex) {
-    oldIncomingMessageBufferIndex = incomingMessageBufferIndex;
-    cursorPosition_Y = incomingMessageBufferIndex;
   }
   // handle button context for current display
   if (keyboardInputChar == KEYBOARD_UP_KEY){
-    if (cursorPosition_Y > 0){
-      cursorPosition_Y--;
-    } else {
-      cursorPosition_Y=incomingMessageBufferIndex_RecordCount - 1;
-    }
-  }
-  if (keyboardInputChar == KEYBOARD_DOWN_KEY){
-    if (cursorPosition_Y < incomingMessageBufferIndex_RecordCount - 1){ // dont scroll past the number of records in the array
+    if (cursorPosition_Y < MsgDataRecordCount - 1){
       cursorPosition_Y++;
     } else {
       cursorPosition_Y=0;
+    }
+  }
+  if (keyboardInputChar == KEYBOARD_DOWN_KEY){
+    if (cursorPosition_Y > 0){ // dont scroll past the number of records in the array
+      cursorPosition_Y--;
+    } else {
+      cursorPosition_Y=(MsgDataRecordCount > 0 ? MsgDataRecordCount - 1 : 0); // wanna roll to the end. check if record count is not 0 first
     }
   }
   if (keyboardInputChar == KEYBOARD_ENTER_KEY){
@@ -1212,7 +1194,8 @@ void handleDisplay_Messages(){
   if (displayRefresh_Scroll || keyboardInputChar != 0){
     if (cursorPosition_Y != cursorPosition_Y_Last){ // changed to new record (index)
       cursorPosition_Y_Last = cursorPosition_Y; 
-      int dataLen = strlen(IncomingMessageBuffer[cursorPosition_Y].msg);
+      MsgDataRecordCount = getMsgDataRecord(cursorPosition_Y + 1, MsgData); // adding 1 here because cursorPosition_Y is zero indexed but getMsgDataRecord is not
+      int dataLen = strlen(MsgData.msg);
       ScrollingIndex_MessageFeed_minX = -10 * dataLen; // 10 = 5 pixels/character * text size 2
       if (!SETTINGS_DISPLAY_SCROLL_MESSAGES) {
         ScrollingIndex_MessageFeed = 0;
@@ -1224,37 +1207,43 @@ void handleDisplay_Messages(){
     display.clearDisplay();
     // add global objects to buffer
     handleDisplay_Global();
-    if (!messageFeedIsEmpty){
+    if (MsgDataRecordCount > 0){
       char to_from[24] = {'\0'};
       byte index = 0;
-      for (byte i=0;i<sizeof(IncomingMessageBuffer[cursorPosition_Y].from)-1;i++){
-        if (IncomingMessageBuffer[cursorPosition_Y].from[i] != '\0'){
-          to_from[index] = IncomingMessageBuffer[cursorPosition_Y].from[i];
+      for (byte i=0;i<sizeof(MsgData.from)-1;i++){
+        if (MsgData.from[i] != '\0'){
+          to_from[index] = MsgData.from[i];
           index++;
         } else {
-          i = sizeof(IncomingMessageBuffer[cursorPosition_Y].from); // get out
+          i = sizeof(MsgData.from); // get out
         }
       }
       to_from[index] = '>'; index++;
-      for (byte i=0;i<sizeof(IncomingMessageBuffer[cursorPosition_Y].to)-1;i++){
-        if (IncomingMessageBuffer[cursorPosition_Y].to[i] != '\0'){
-          to_from[index] = IncomingMessageBuffer[cursorPosition_Y].to[i];
+      for (byte i=0;i<sizeof(MsgData.to)-1;i++){
+        if (MsgData.to[i] != '\0'){
+          to_from[index] = MsgData.to[i];
           index++;
         } else {
-          i = sizeof(IncomingMessageBuffer[cursorPosition_Y].to); // get out
+          i = sizeof(MsgData.to); // get out
         }
       }
-      // display the cursor position (represents record number in this case)
-      display.setCursor(0,UI_DISPLAY_ROW_01);
-      display.print(cursorPosition_Y+1);
       // display who the message is to and from
-      display.setCursor(12,UI_DISPLAY_ROW_01);
+      display.setCursor(0,UI_DISPLAY_ROW_01);
       display.print(to_from);
       // display message
       display.setCursor(ScrollingIndex_MessageFeed,UI_DISPLAY_ROW_02);
       display.setTextSize(2);
-      display.print(IncomingMessageBuffer[cursorPosition_Y].msg); 
+      display.print(MsgData.msg); 
+      // go back to original text size
       display.setTextSize(1); // Normal 1:1 pixel scale - default letter size is 5x8 pixels
+      // display the cursor position (represents record number in this case)
+      display.setCursor(0,UI_DISPLAY_ROW_04); display.print("Record: ");
+      display.setCursor(45,UI_DISPLAY_ROW_04); display.print(cursorPosition_Y+1);
+      // display the date and time
+      display.setCursor(0,UI_DISPLAY_ROW_05); display.print("D:");
+      display.setCursor(15,UI_DISPLAY_ROW_05); display.print(MsgData.DateInt);
+      display.setCursor(60,UI_DISPLAY_ROW_05); display.print("T:");
+      display.setCursor(75,UI_DISPLAY_ROW_05); display.print(MsgData.TimeInt);
       unsigned int scrollPixelCount = (SETTINGS_DISPLAY_SCROLL_MESSAGES ? SETTINGS_DISPLAY_SCROLL_SPEED : 32);
       if (keyboardInputChar == KEYBOARD_LEFT_KEY || SETTINGS_DISPLAY_SCROLL_MESSAGES){ //  scroll only when enter pressed TODO: this wont work because key press not persistent
         ScrollingIndex_MessageFeed = ScrollingIndex_MessageFeed - scrollPixelCount; // higher number here is faster scroll but choppy
@@ -1282,30 +1271,19 @@ void handleDisplay_Messages(){
   }
 }
 
+APRSFormat_Raw RawData;
+uint32_t RawDataRecordCount;
 void handleDisplay_LiveFeed(){
-  APRSFormat_Raw RawData;
-  uint32_t RawDataRecordCount;
   // on first show
   if (!displayInitialized){
     displayInitialized = true;
     cursorPosition_X = 0;
-    /*if (liveFeedBufferIndex >= 0) {
-      cursorPosition_Y = liveFeedBufferIndex;
-    } else {
-      cursorPosition_Y = 0;
-    }*/
     cursorPosition_Y = 0;
     cursorPosition_X_Last = cursorPosition_X;
     cursorPosition_Y_Last = -1;
-    RawDataRecordCount = getRawDataRecord(cursorPosition_Y + 1, RawData);
-    //oldliveFeedBufferIndex = liveFeedBufferIndex;
+    //RawDataRecordCount = getRawDataRecord(cursorPosition_Y + 1, RawData);
     leave_display_timer = millis();
   }
-  // change cursor position as new mesasages arrive
-  /*if (liveFeedBufferIndex != oldliveFeedBufferIndex) {
-    oldliveFeedBufferIndex = liveFeedBufferIndex;
-    cursorPosition_Y = liveFeedBufferIndex;
-  }*/
   // handle button context for current display
   if (keyboardInputChar == KEYBOARD_UP_KEY){
     if (cursorPosition_Y < RawDataRecordCount - 1){
@@ -2210,27 +2188,9 @@ void readModem(){
         i = sizeof(modemData); // setting i to size of modem data will make loop exit sooner
       }
       if (foundSrc && foundDst && foundPath && foundData) {
-        // handle the live feed index circular buffer
-        /*if (liveFeedBufferIndex < LIVEFEED_BUFFER_SIZE - 1){
-          liveFeedBufferIndex++;
-          if (liveFeedBufferIndex_RecordCount == 0) {
-            liveFeedBufferIndex_RecordCount = 1;
-          } else if (liveFeedBufferIndex_RecordCount <= liveFeedBufferIndex) {
-            liveFeedBufferIndex_RecordCount = liveFeedBufferIndex + 1; // get total number of records stored
-          }
-        } else {
-          liveFeedBufferIndex=0;
-        }*/
-        // set date and time
         Format_Raw_In.DateInt = GPSData.Date.DateInt;
         Format_Raw_In.TimeInt = GPSData.Time.TimeInt;
-        // write data to live feed
-        //LiveFeedBuffer[liveFeedBufferIndex] = Format_Raw_In;
-        // let other systems know there is data in the live feed
-        //liveFeedIsEmpty = false;
-        // write live feed data to SD card
         writeRawDataToSd(Format_Raw_In);
-        //Serial.print(F("Total APRS Message Length="));Serial.println(i-1);
         i = sizeof(modemData); // setting i to size of modem data will make loop exit sooner
       }
     }
@@ -2290,30 +2250,12 @@ void readModem(){
       Serial.print("Msg=");Serial.println(Format_Msg_In.msg);
       Serial.print("Line=");Serial.println(Format_Msg_In.line);
       Serial.print("Ack=");Serial.println(Format_Msg_In.ack);
-      // if message to users callsign add to feed
-      // SETTINGS_APRS_CALLSIGN      callsign
-      // SETTINGS_APRS_CALLSIGN_SSID      callsign ssid
       if (strstr(Format_Msg_In.to, SETTINGS_APRS_CALLSIGN) != NULL) {
         // if message is an acknowledge don't add.
         if (!Format_Msg_In.ack) {
-          // 
           wakeDisplay = true;
-          // handle the incoming message index circular buffer
-          if (incomingMessageBufferIndex < INCOMING_MESSAGE_BUFFER_SIZE - 1){
-            incomingMessageBufferIndex++;
-            if (incomingMessageBufferIndex_RecordCount == 0) {
-              incomingMessageBufferIndex_RecordCount = 1;
-            } else if (incomingMessageBufferIndex_RecordCount <= incomingMessageBufferIndex) {
-              incomingMessageBufferIndex_RecordCount = incomingMessageBufferIndex + 1; // get total number of records stored
-            }
-          } else {
-            incomingMessageBufferIndex=0;
-          }
-          // add message to feed
-          IncomingMessageBuffer[incomingMessageBufferIndex] = Format_Msg_In;
-          // let other systems know there is data in the live feed
-          messageFeedIsEmpty = false;
-          // write msg to sd card
+          Format_Msg_In.DateInt = GPSData.Date.DateInt;
+          Format_Msg_In.TimeInt = GPSData.Time.TimeInt;
           writeMsgDataToSd(Format_Msg_In);
           // switch to message display
           if (currentDisplay == UI_DISPLAY_HOME) currentDisplay = UI_DISPLAY_MESSAGES;
@@ -2881,8 +2823,8 @@ void handleSerial(){
         } else if (strstr(SD_cmd, "Print") != NULL) {
           printRawDataFromSd();
         } else if (strstr(SD_cmd, "Test") != NULL) {
-          APRSFormat_Raw RawData;
-          uint32_t RawDataRecordCount;
+          //APRSFormat_Raw RawData;
+          //uint32_t RawDataRecordCount;
           RawDataRecordCount = getRawDataRecord(1, RawData);
           Serial.print("Raw Data Record Count"); Serial.println(RawDataRecordCount);
           Serial.print("src:"); Serial.print(RawData.src);
@@ -2909,6 +2851,18 @@ void handleSerial(){
           deleteAllMessages();
         } else if (strstr(SD_cmd, "Print") != NULL) {
           printMsgDataFromSd();
+        } else if (strstr(SD_cmd, "Test") != NULL) {
+          //APRSFormat_Msg MsgData;
+          //uint32_t MsgDataRecordCount;
+          MsgDataRecordCount = getMsgDataRecord(1, MsgData);
+          Serial.print("Msg Data Record Count"); Serial.println(MsgDataRecordCount);
+          Serial.print("to:"); Serial.print(MsgData.to);
+          Serial.print("\tfrom:"); Serial.print(MsgData.from);
+          Serial.print("\tmsg:"); Serial.print(MsgData.msg);
+          Serial.print("\tline:"); Serial.print(MsgData.line);
+          Serial.print("\tack:"); Serial.print(MsgData.ack);
+          Serial.print("\tdate:"); Serial.print(MsgData.DateInt);
+          Serial.print("\ttime:"); Serial.print(MsgData.TimeInt);
         } else {
           Serial.println(InvalidCommand);
         }
@@ -3367,7 +3321,7 @@ void printRawDataFromSd(){
 }
 
 void writeMsgDataToSd(APRSFormat_Msg MsgData){
-  byte *buff = (byte *) &MsgData; // to access RawData as bytes
+  byte *buff = (byte *) &MsgData; // to access MsgData as bytes
   MsgDataFile = SD.open(MsgDataFileName, FILE_WRITE);
 
   // if the file opened okay, write to it:
@@ -3386,7 +3340,7 @@ void writeMsgDataToSd(APRSFormat_Msg MsgData){
 
 void printMsgDataFromSd(){
   APRSFormat_Msg MsgData;
-  byte *buff = (byte *) &MsgData; // to access RawData as bytes
+  byte *buff = (byte *) &MsgData; // to access MsgData as bytes
   MsgDataFile = SD.open(MsgDataFileName, FILE_READ);
 
   // if the file opened okay, write to it:
@@ -3437,23 +3391,7 @@ void deleteAllRawData(){
   } */
 }
 
-uint32_t recordCount(char *fileName, uint32_t recordSize){
-/*   Serial.print("Getting record count."); 
-  uint32_t myFileSize;
-  File myFile;
-  myFile = SD.open(fileName, FILE_READ);
-  if (myFile) {
-    myFileSize = myFile.size();
-  }
-  myFile.close();
-  Serial.println();
-  Serial.print("File Size:"); Serial.println(myFileSize);
-  Serial.print("Record Size:"); Serial.println(recordSize);
-  return myFileSize / recordSize; */
-}
-
 uint32_t getRawDataRecord(uint32_t RecordNumber, APRSFormat_Raw &RawData){
-  //APRSFormat_Raw RawData;
   uint32_t RecordCount;
   byte *buff = (byte *) &RawData; // to access RawData as bytes
   // get size of APRSFormat_Raw so we know how long each record is
@@ -3464,11 +3402,11 @@ uint32_t getRawDataRecord(uint32_t RecordNumber, APRSFormat_Raw &RawData){
   // get the size of the file so we can move backwards and get the latest messages in order
   uint32_t RawDataFileSize;
   RawDataFileSize = RawDataFile.size();
-  // if the file is opened okay, write to it:
+  // if the file is opened okay, read from it:
   if (RawDataFile) {
     // print out how many records there are
     RecordCount = RawDataFileSize/RecordSize;
-    if (RecordNumber <= RecordCount) {
+    if (RecordNumber <= RecordCount && RecordNumber > 0) {
       // seek to end of file minus total number of records size to get the record of interest
       RawDataFile.seek(RawDataFileSize-(RecordSize*RecordNumber));
       for (int count=0;count<sizeof(APRSFormat_Raw); count++) { 
@@ -3476,21 +3414,44 @@ uint32_t getRawDataRecord(uint32_t RecordNumber, APRSFormat_Raw &RawData){
           *(buff+count) = RawDataFile.read();
         }
       }
-      /*
-      Serial.print("src:"); Serial.print(RawData.src);
-      Serial.print("\tdst:"); Serial.print(RawData.dst);
-      Serial.print("\tpath:"); Serial.print(RawData.path);
-      Serial.print("\tdata:"); Serial.print(RawData.data);
-      Serial.print("\tdate:"); Serial.print(RawData.DateInt);
-      Serial.print("\ttime:"); Serial.print(RawData.TimeInt);
-      Serial.println(RawDataFile.read()); // take care of the '\n' (maybe not write this in future)
-      */
     }
   } else {
     // if the file didn't open, print an error:
     Serial.println("error opening file");
   }
   RawDataFile.flush(); // will save data
+  return RecordCount;
+}
+
+uint32_t getMsgDataRecord(uint32_t RecordNumber, APRSFormat_Msg &MsgData){
+  uint32_t RecordCount;
+  byte *buff = (byte *) &MsgData; // to access MsgData as bytes
+  // get size of APRSFormat_Msg so we know how long each record is
+  uint32_t RecordSize;
+  RecordSize = sizeof(APRSFormat_Msg) + 1; // add one for line feed
+  // must reopen the file each time so we are in the right mode i.e. FILE_READ
+  MsgDataFile = SD.open(MsgDataFileName, FILE_READ);
+  // get the size of the file so we can move backwards and get the latest messages in order
+  uint32_t MsgDataFileSize;
+  MsgDataFileSize = MsgDataFile.size();
+  // if the file is opened okay, read from it:
+  if (MsgDataFile) {
+    // print out how many records there are
+    RecordCount = MsgDataFileSize/RecordSize;
+    if (RecordNumber <= RecordCount && RecordNumber > 0) {
+      // seek to end of file minus total number of records size to get the record of interest
+      MsgDataFile.seek(MsgDataFileSize-(RecordSize*RecordNumber));
+      for (int count=0;count<sizeof(APRSFormat_Msg); count++) { 
+        if (MsgDataFile.available()) {
+          *(buff+count) = MsgDataFile.read();
+        }
+      }
+    }
+  } else {
+    // if the file didn't open, print an error:
+    Serial.println("error opening file");
+  }
+  MsgDataFile.flush(); // will save data
   return RecordCount;
 }
 
