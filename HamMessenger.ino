@@ -1161,7 +1161,7 @@ void handleDisplay_Messages(){
   
   // on first show
   if (!displayInitialized){
-    displayInitialized= true;
+    displayInitialized = true;
     cursorPosition_X = 0;
     cursorPosition_Y = 0;
     cursorPosition_X_Last = cursorPosition_X;
@@ -1194,7 +1194,7 @@ void handleDisplay_Messages(){
   if (displayRefresh_Scroll || keyboardInputChar != 0){
     if (cursorPosition_Y != cursorPosition_Y_Last){ // changed to new record (index)
       cursorPosition_Y_Last = cursorPosition_Y; 
-      MsgDataRecordCount = getMsgDataRecord(cursorPosition_Y + 1, MsgData); // adding 1 here becasue cursorPosition_Y is zero indexed but getRawDataRecord is not
+      MsgDataRecordCount = getMsgDataRecord(cursorPosition_Y + 1, MsgData); // adding 1 here because cursorPosition_Y is zero indexed but getRawDataRecord is not
       int dataLen = strlen(MsgData.msg);
       ScrollingIndex_MessageFeed_minX = -10 * dataLen; // 10 = 5 pixels/character * text size 2
       if (!SETTINGS_DISPLAY_SCROLL_MESSAGES) {
