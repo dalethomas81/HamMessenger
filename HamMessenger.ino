@@ -1164,6 +1164,8 @@ void handleDisplay_Home(){
 }
 
 void handleDisplay_Messages(){
+  APRSFormat_Msg MsgData;
+  uint32_t MsgDataRecordCount;
   //  Radio 1: CMD: Modem:#Hi!
   //  Radio 1: SRC: [NOCALL-3] DST: [APRS-0] PATH: [WIDE1-1] [WIDE2-2] DATA: :NOCALL-3 :Hi!{006
   //  Radio 2: SRC: [NOCALL-3] DST: [APRS-0] PATH: [WIDE1-1] [WIDE2-2] DATA: :NOCALL-3 :ack006
@@ -1172,34 +1174,36 @@ void handleDisplay_Messages(){
   if (!displayInitialized){
     displayInitialized= true;
     cursorPosition_X = 0;
-    if (incomingMessageBufferIndex >= 0) {
+    /*if (incomingMessageBufferIndex >= 0) {
       cursorPosition_Y = incomingMessageBufferIndex;
     } else {
       cursorPosition_Y = 0;
-    }
+    }*/
+    cursorPosition_Y = 0;
     cursorPosition_X_Last = cursorPosition_X;
     cursorPosition_Y_Last = -1;
-    oldIncomingMessageBufferIndex = incomingMessageBufferIndex; 
+    MsgDataRecordCount = getMsgDataRecord(cursorPosition_Y + 1, MsgData);
+    //oldIncomingMessageBufferIndex = incomingMessageBufferIndex; 
     leave_display_timer = millis();
   }
   // change cursor position as new mesasages arrive
-  if (incomingMessageBufferIndex != oldIncomingMessageBufferIndex) {
+  /*if (incomingMessageBufferIndex != oldIncomingMessageBufferIndex) {
     oldIncomingMessageBufferIndex = incomingMessageBufferIndex;
     cursorPosition_Y = incomingMessageBufferIndex;
-  }
+  }*/
   // handle button context for current display
   if (keyboardInputChar == KEYBOARD_UP_KEY){
-    if (cursorPosition_Y > 0){
-      cursorPosition_Y--;
-    } else {
-      cursorPosition_Y=incomingMessageBufferIndex_RecordCount - 1;
-    }
-  }
-  if (keyboardInputChar == KEYBOARD_DOWN_KEY){
-    if (cursorPosition_Y < incomingMessageBufferIndex_RecordCount - 1){ // dont scroll past the number of records in the array
+    if (cursorPosition_Y < MsgDataRecordCount - 1){
       cursorPosition_Y++;
     } else {
       cursorPosition_Y=0;
+    }
+  }
+  if (keyboardInputChar == KEYBOARD_DOWN_KEY){
+    if (cursorPosition_Y > 0){ // dont scroll past the number of records in the array
+      cursorPosition_Y--;
+    } else {
+      cursorPosition_Y=(MsgDataRecordCount > 0 ? MsgDataRecordCount - 1 : 0); // wanna roll to the end. check if record count is not 0 first
     }
   }
   if (keyboardInputChar == KEYBOARD_ENTER_KEY){
@@ -1212,7 +1216,8 @@ void handleDisplay_Messages(){
   if (displayRefresh_Scroll || keyboardInputChar != 0){
     if (cursorPosition_Y != cursorPosition_Y_Last){ // changed to new record (index)
       cursorPosition_Y_Last = cursorPosition_Y; 
-      int dataLen = strlen(IncomingMessageBuffer[cursorPosition_Y].msg);
+      MsgDataRecordCount = getMsgDataRecord(cursorPosition_Y + 1, MsgData); // adding 1 here becasue cursorPosition_Y is zero indexed but getRawDataRecord is not
+      int dataLen = strlen(MsgData.msg);
       ScrollingIndex_MessageFeed_minX = -10 * dataLen; // 10 = 5 pixels/character * text size 2
       if (!SETTINGS_DISPLAY_SCROLL_MESSAGES) {
         ScrollingIndex_MessageFeed = 0;
@@ -1224,37 +1229,43 @@ void handleDisplay_Messages(){
     display.clearDisplay();
     // add global objects to buffer
     handleDisplay_Global();
-    if (!messageFeedIsEmpty){
+    if (MsgDataRecordCount > 0){
       char to_from[24] = {'\0'};
       byte index = 0;
-      for (byte i=0;i<sizeof(IncomingMessageBuffer[cursorPosition_Y].from)-1;i++){
-        if (IncomingMessageBuffer[cursorPosition_Y].from[i] != '\0'){
-          to_from[index] = IncomingMessageBuffer[cursorPosition_Y].from[i];
+      for (byte i=0;i<sizeof(MsgData.from)-1;i++){
+        if (MsgData.from[i] != '\0'){
+          to_from[index] = MsgData.from[i];
           index++;
         } else {
-          i = sizeof(IncomingMessageBuffer[cursorPosition_Y].from); // get out
+          i = sizeof(MsgData.from); // get out
         }
       }
       to_from[index] = '>'; index++;
-      for (byte i=0;i<sizeof(IncomingMessageBuffer[cursorPosition_Y].to)-1;i++){
-        if (IncomingMessageBuffer[cursorPosition_Y].to[i] != '\0'){
-          to_from[index] = IncomingMessageBuffer[cursorPosition_Y].to[i];
+      for (byte i=0;i<sizeof(IMsgData.to)-1;i++){
+        if (IMsgData.to[i] != '\0'){
+          to_from[index] = MsgData.to[i];
           index++;
         } else {
-          i = sizeof(IncomingMessageBuffer[cursorPosition_Y].to); // get out
+          i = sizeof(MsgData.to); // get out
         }
       }
-      // display the cursor position (represents record number in this case)
-      display.setCursor(0,UI_DISPLAY_ROW_01);
-      display.print(cursorPosition_Y+1);
       // display who the message is to and from
-      display.setCursor(12,UI_DISPLAY_ROW_01);
+      display.setCursor(0,UI_DISPLAY_ROW_01);
       display.print(to_from);
       // display message
       display.setCursor(ScrollingIndex_MessageFeed,UI_DISPLAY_ROW_02);
       display.setTextSize(2);
-      display.print(IncomingMessageBuffer[cursorPosition_Y].msg); 
+      display.print(MsgData.msg); 
+      // go back to original text size
       display.setTextSize(1); // Normal 1:1 pixel scale - default letter size is 5x8 pixels
+      // display the cursor position (represents record number in this case)
+      display.setCursor(0,UI_DISPLAY_ROW_04); display.print("Record: ");
+      display.setCursor(45,UI_DISPLAY_ROW_04); display.print(cursorPosition_Y+1);
+      // display the date and time
+      display.setCursor(0,UI_DISPLAY_ROW_05); display.print("D:");
+      display.setCursor(15,UI_DISPLAY_ROW_05); display.print(MsgData.DateInt);
+      display.setCursor(60,UI_DISPLAY_ROW_05); display.print("T:");
+      display.setCursor(75,UI_DISPLAY_ROW_05); display.print(MsgData.TimeInt);
       unsigned int scrollPixelCount = (SETTINGS_DISPLAY_SCROLL_MESSAGES ? SETTINGS_DISPLAY_SCROLL_SPEED : 32);
       if (keyboardInputChar == KEYBOARD_LEFT_KEY || SETTINGS_DISPLAY_SCROLL_MESSAGES){ //  scroll only when enter pressed TODO: this wont work because key press not persistent
         ScrollingIndex_MessageFeed = ScrollingIndex_MessageFeed - scrollPixelCount; // higher number here is faster scroll but choppy
@@ -3453,7 +3464,6 @@ uint32_t recordCount(char *fileName, uint32_t recordSize){
 }
 
 uint32_t getRawDataRecord(uint32_t RecordNumber, APRSFormat_Raw &RawData){
-  //APRSFormat_Raw RawData;
   uint32_t RecordCount;
   byte *buff = (byte *) &RawData; // to access RawData as bytes
   // get size of APRSFormat_Raw so we know how long each record is
@@ -3464,11 +3474,11 @@ uint32_t getRawDataRecord(uint32_t RecordNumber, APRSFormat_Raw &RawData){
   // get the size of the file so we can move backwards and get the latest messages in order
   uint32_t RawDataFileSize;
   RawDataFileSize = RawDataFile.size();
-  // if the file is opened okay, write to it:
+  // if the file is opened okay, read from it:
   if (RawDataFile) {
     // print out how many records there are
     RecordCount = RawDataFileSize/RecordSize;
-    if (RecordNumber <= RecordCount) {
+    if (RecordNumber <= RecordCount && RecordNumber > 0) {
       // seek to end of file minus total number of records size to get the record of interest
       RawDataFile.seek(RawDataFileSize-(RecordSize*RecordNumber));
       for (int count=0;count<sizeof(APRSFormat_Raw); count++) { 
@@ -3476,21 +3486,44 @@ uint32_t getRawDataRecord(uint32_t RecordNumber, APRSFormat_Raw &RawData){
           *(buff+count) = RawDataFile.read();
         }
       }
-      /*
-      Serial.print("src:"); Serial.print(RawData.src);
-      Serial.print("\tdst:"); Serial.print(RawData.dst);
-      Serial.print("\tpath:"); Serial.print(RawData.path);
-      Serial.print("\tdata:"); Serial.print(RawData.data);
-      Serial.print("\tdate:"); Serial.print(RawData.DateInt);
-      Serial.print("\ttime:"); Serial.print(RawData.TimeInt);
-      Serial.println(RawDataFile.read()); // take care of the '\n' (maybe not write this in future)
-      */
     }
   } else {
     // if the file didn't open, print an error:
     Serial.println("error opening file");
   }
   RawDataFile.flush(); // will save data
+  return RecordCount;
+}
+
+uint32_t getMessageRecord(uint32_t RecordNumber, APRSFormat_Msg &MsgData){
+  uint32_t RecordCount;
+  byte *buff = (byte *) &MsgData; // to access MsgData as bytes
+  // get size of APRSFormat_Msg so we know how long each record is
+  uint32_t RecordSize;
+  RecordSize = sizeof(APRSFormat_Msg) + 1; // add one for line feed
+  // must reopen the file each time so we are in the right mode i.e. FILE_READ
+  MsgDataFile = SD.open(MsgDataFileName, FILE_READ);
+  // get the size of the file so we can move backwards and get the latest messages in order
+  uint32_t MsgDataFileSize;
+  MsgDataFileSize = MsgDataFile.size();
+  // if the file is opened okay, read from it:
+  if (MsgDataFile) {
+    // print out how many records there are
+    RecordCount = MsgDataFileSize/RecordSize;
+    if (RecordNumber <= RecordCount && RecordNumber > 0) {
+      // seek to end of file minus total number of records size to get the record of interest
+      MsgDataFile.seek(MsgDataFileSize-(RecordSize*RecordNumber));
+      for (int count=0;count<sizeof(APRSFormat_Msg); count++) { 
+        if (MsgDataFile.available()) {
+          *(buff+count) = MsgDataFile.read();
+        }
+      }
+    }
+  } else {
+    // if the file didn't open, print an error:
+    Serial.println("error opening file");
+  }
+  MsgDataFile.flush(); // will save data
   return RecordCount;
 }
 
