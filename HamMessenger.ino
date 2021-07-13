@@ -198,17 +198,6 @@ struct GPS {
 
 #define MAXIMUM_MODEM_COMMAND_RATE 100        // maximum rate that commands can be sent to modem
 
-#define LIVEFEED_BUFFER_SIZE  2
-long liveFeedBufferIndex = -1, oldliveFeedBufferIndex = -1, liveFeedBufferIndex_RecordCount = 0;
-bool liveFeedIsEmpty = true;
-APRSFormat_Raw LiveFeedBuffer[LIVEFEED_BUFFER_SIZE] = {'\0'};
-//byte *buff = (byte *) &LiveFeedBuffer; // to access LiveFeedBuffer as bytes
-
-#define INCOMING_MESSAGE_BUFFER_SIZE 2
-long incomingMessageBufferIndex = -1, oldIncomingMessageBufferIndex = -1, incomingMessageBufferIndex_RecordCount = 0;
-bool messageFeedIsEmpty = true;
-APRSFormat_Msg IncomingMessageBuffer[INCOMING_MESSAGE_BUFFER_SIZE];
-
 // input pins
 #define rxPin A5 // using analog input pins
 #define txPin A6
@@ -1174,23 +1163,12 @@ void handleDisplay_Messages(){
   if (!displayInitialized){
     displayInitialized= true;
     cursorPosition_X = 0;
-    /*if (incomingMessageBufferIndex >= 0) {
-      cursorPosition_Y = incomingMessageBufferIndex;
-    } else {
-      cursorPosition_Y = 0;
-    }*/
     cursorPosition_Y = 0;
     cursorPosition_X_Last = cursorPosition_X;
     cursorPosition_Y_Last = -1;
     MsgDataRecordCount = getMsgDataRecord(cursorPosition_Y + 1, MsgData);
-    //oldIncomingMessageBufferIndex = incomingMessageBufferIndex; 
     leave_display_timer = millis();
   }
-  // change cursor position as new mesasages arrive
-  /*if (incomingMessageBufferIndex != oldIncomingMessageBufferIndex) {
-    oldIncomingMessageBufferIndex = incomingMessageBufferIndex;
-    cursorPosition_Y = incomingMessageBufferIndex;
-  }*/
   // handle button context for current display
   if (keyboardInputChar == KEYBOARD_UP_KEY){
     if (cursorPosition_Y < MsgDataRecordCount - 1){
@@ -1241,8 +1219,8 @@ void handleDisplay_Messages(){
         }
       }
       to_from[index] = '>'; index++;
-      for (byte i=0;i<sizeof(IMsgData.to)-1;i++){
-        if (IMsgData.to[i] != '\0'){
+      for (byte i=0;i<sizeof(MsgData.to)-1;i++){
+        if (MsgData.to[i] != '\0'){
           to_from[index] = MsgData.to[i];
           index++;
         } else {
@@ -1300,23 +1278,12 @@ void handleDisplay_LiveFeed(){
   if (!displayInitialized){
     displayInitialized = true;
     cursorPosition_X = 0;
-    /*if (liveFeedBufferIndex >= 0) {
-      cursorPosition_Y = liveFeedBufferIndex;
-    } else {
-      cursorPosition_Y = 0;
-    }*/
     cursorPosition_Y = 0;
     cursorPosition_X_Last = cursorPosition_X;
     cursorPosition_Y_Last = -1;
     RawDataRecordCount = getRawDataRecord(cursorPosition_Y + 1, RawData);
-    //oldliveFeedBufferIndex = liveFeedBufferIndex;
     leave_display_timer = millis();
   }
-  // change cursor position as new mesasages arrive
-  /*if (liveFeedBufferIndex != oldliveFeedBufferIndex) {
-    oldliveFeedBufferIndex = liveFeedBufferIndex;
-    cursorPosition_Y = liveFeedBufferIndex;
-  }*/
   // handle button context for current display
   if (keyboardInputChar == KEYBOARD_UP_KEY){
     if (cursorPosition_Y < RawDataRecordCount - 1){
@@ -2221,27 +2188,9 @@ void readModem(){
         i = sizeof(modemData); // setting i to size of modem data will make loop exit sooner
       }
       if (foundSrc && foundDst && foundPath && foundData) {
-        // handle the live feed index circular buffer
-        /*if (liveFeedBufferIndex < LIVEFEED_BUFFER_SIZE - 1){
-          liveFeedBufferIndex++;
-          if (liveFeedBufferIndex_RecordCount == 0) {
-            liveFeedBufferIndex_RecordCount = 1;
-          } else if (liveFeedBufferIndex_RecordCount <= liveFeedBufferIndex) {
-            liveFeedBufferIndex_RecordCount = liveFeedBufferIndex + 1; // get total number of records stored
-          }
-        } else {
-          liveFeedBufferIndex=0;
-        }*/
-        // set date and time
         Format_Raw_In.DateInt = GPSData.Date.DateInt;
         Format_Raw_In.TimeInt = GPSData.Time.TimeInt;
-        // write data to live feed
-        //LiveFeedBuffer[liveFeedBufferIndex] = Format_Raw_In;
-        // let other systems know there is data in the live feed
-        //liveFeedIsEmpty = false;
-        // write live feed data to SD card
         writeRawDataToSd(Format_Raw_In);
-        //Serial.print(F("Total APRS Message Length="));Serial.println(i-1);
         i = sizeof(modemData); // setting i to size of modem data will make loop exit sooner
       }
     }
@@ -2301,30 +2250,12 @@ void readModem(){
       Serial.print("Msg=");Serial.println(Format_Msg_In.msg);
       Serial.print("Line=");Serial.println(Format_Msg_In.line);
       Serial.print("Ack=");Serial.println(Format_Msg_In.ack);
-      // if message to users callsign add to feed
-      // SETTINGS_APRS_CALLSIGN      callsign
-      // SETTINGS_APRS_CALLSIGN_SSID      callsign ssid
       if (strstr(Format_Msg_In.to, SETTINGS_APRS_CALLSIGN) != NULL) {
         // if message is an acknowledge don't add.
         if (!Format_Msg_In.ack) {
-          // 
           wakeDisplay = true;
-          // handle the incoming message index circular buffer
-          if (incomingMessageBufferIndex < INCOMING_MESSAGE_BUFFER_SIZE - 1){
-            incomingMessageBufferIndex++;
-            if (incomingMessageBufferIndex_RecordCount == 0) {
-              incomingMessageBufferIndex_RecordCount = 1;
-            } else if (incomingMessageBufferIndex_RecordCount <= incomingMessageBufferIndex) {
-              incomingMessageBufferIndex_RecordCount = incomingMessageBufferIndex + 1; // get total number of records stored
-            }
-          } else {
-            incomingMessageBufferIndex=0;
-          }
-          // add message to feed
-          IncomingMessageBuffer[incomingMessageBufferIndex] = Format_Msg_In;
-          // let other systems know there is data in the live feed
-          messageFeedIsEmpty = false;
-          // write msg to sd card
+          Format_Msg_In.DateInt = GPSData.Date.DateInt;
+          Format_Msg_In.TimeInt = GPSData.Time.TimeInt;
           writeMsgDataToSd(Format_Msg_In);
           // switch to message display
           if (currentDisplay == UI_DISPLAY_HOME) currentDisplay = UI_DISPLAY_MESSAGES;
@@ -3495,7 +3426,7 @@ uint32_t getRawDataRecord(uint32_t RecordNumber, APRSFormat_Raw &RawData){
   return RecordCount;
 }
 
-uint32_t getMessageRecord(uint32_t RecordNumber, APRSFormat_Msg &MsgData){
+uint32_t getMsgDataRecord(uint32_t RecordNumber, APRSFormat_Msg &MsgData){
   uint32_t RecordCount;
   byte *buff = (byte *) &MsgData; // to access MsgData as bytes
   // get size of APRSFormat_Msg so we know how long each record is
