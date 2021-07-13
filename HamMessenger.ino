@@ -1152,9 +1152,9 @@ void handleDisplay_Home(){
   }
 }
 
+APRSFormat_Msg MsgData;
+uint32_t MsgDataRecordCount;
 void handleDisplay_Messages(){
-  APRSFormat_Msg MsgData;
-  uint32_t MsgDataRecordCount;
   //  Radio 1: CMD: Modem:#Hi!
   //  Radio 1: SRC: [NOCALL-3] DST: [APRS-0] PATH: [WIDE1-1] [WIDE2-2] DATA: :NOCALL-3 :Hi!{006
   //  Radio 2: SRC: [NOCALL-3] DST: [APRS-0] PATH: [WIDE1-1] [WIDE2-2] DATA: :NOCALL-3 :ack006
@@ -1166,7 +1166,7 @@ void handleDisplay_Messages(){
     cursorPosition_Y = 0;
     cursorPosition_X_Last = cursorPosition_X;
     cursorPosition_Y_Last = -1;
-    MsgDataRecordCount = getMsgDataRecord(cursorPosition_Y + 1, MsgData);
+    //MsgDataRecordCount = getMsgDataRecord(cursorPosition_Y + 1, MsgData);
     leave_display_timer = millis();
   }
   // handle button context for current display
@@ -1194,7 +1194,7 @@ void handleDisplay_Messages(){
   if (displayRefresh_Scroll || keyboardInputChar != 0){
     if (cursorPosition_Y != cursorPosition_Y_Last){ // changed to new record (index)
       cursorPosition_Y_Last = cursorPosition_Y; 
-      MsgDataRecordCount = getMsgDataRecord(cursorPosition_Y + 1, MsgData); // adding 1 here because cursorPosition_Y is zero indexed but getRawDataRecord is not
+      MsgDataRecordCount = getMsgDataRecord(cursorPosition_Y + 1, MsgData); // adding 1 here because cursorPosition_Y is zero indexed but getMsgDataRecord is not
       int dataLen = strlen(MsgData.msg);
       ScrollingIndex_MessageFeed_minX = -10 * dataLen; // 10 = 5 pixels/character * text size 2
       if (!SETTINGS_DISPLAY_SCROLL_MESSAGES) {
@@ -1271,9 +1271,9 @@ void handleDisplay_Messages(){
   }
 }
 
+APRSFormat_Raw RawData;
+uint32_t RawDataRecordCount;
 void handleDisplay_LiveFeed(){
-  APRSFormat_Raw RawData;
-  uint32_t RawDataRecordCount;
   // on first show
   if (!displayInitialized){
     displayInitialized = true;
@@ -1281,7 +1281,7 @@ void handleDisplay_LiveFeed(){
     cursorPosition_Y = 0;
     cursorPosition_X_Last = cursorPosition_X;
     cursorPosition_Y_Last = -1;
-    RawDataRecordCount = getRawDataRecord(cursorPosition_Y + 1, RawData);
+    //RawDataRecordCount = getRawDataRecord(cursorPosition_Y + 1, RawData);
     leave_display_timer = millis();
   }
   // handle button context for current display
@@ -2823,8 +2823,8 @@ void handleSerial(){
         } else if (strstr(SD_cmd, "Print") != NULL) {
           printRawDataFromSd();
         } else if (strstr(SD_cmd, "Test") != NULL) {
-          APRSFormat_Raw RawData;
-          uint32_t RawDataRecordCount;
+          //APRSFormat_Raw RawData;
+          //uint32_t RawDataRecordCount;
           RawDataRecordCount = getRawDataRecord(1, RawData);
           Serial.print("Raw Data Record Count"); Serial.println(RawDataRecordCount);
           Serial.print("src:"); Serial.print(RawData.src);
@@ -2851,6 +2851,18 @@ void handleSerial(){
           deleteAllMessages();
         } else if (strstr(SD_cmd, "Print") != NULL) {
           printMsgDataFromSd();
+        } else if (strstr(SD_cmd, "Test") != NULL) {
+          //APRSFormat_Msg MsgData;
+          //uint32_t MsgDataRecordCount;
+          MsgDataRecordCount = getMsgDataRecord(1, MsgData);
+          Serial.print("Msg Data Record Count"); Serial.println(MsgDataRecordCount);
+          Serial.print("to:"); Serial.print(MsgData.to);
+          Serial.print("\tfrom:"); Serial.print(MsgData.from);
+          Serial.print("\tmsg:"); Serial.print(MsgData.msg);
+          Serial.print("\tline:"); Serial.print(MsgData.line);
+          Serial.print("\tack:"); Serial.print(MsgData.ack);
+          Serial.print("\tdate:"); Serial.print(MsgData.DateInt);
+          Serial.print("\ttime:"); Serial.print(MsgData.TimeInt);
         } else {
           Serial.println(InvalidCommand);
         }
@@ -3309,7 +3321,7 @@ void printRawDataFromSd(){
 }
 
 void writeMsgDataToSd(APRSFormat_Msg MsgData){
-  byte *buff = (byte *) &MsgData; // to access RawData as bytes
+  byte *buff = (byte *) &MsgData; // to access MsgData as bytes
   MsgDataFile = SD.open(MsgDataFileName, FILE_WRITE);
 
   // if the file opened okay, write to it:
@@ -3328,7 +3340,7 @@ void writeMsgDataToSd(APRSFormat_Msg MsgData){
 
 void printMsgDataFromSd(){
   APRSFormat_Msg MsgData;
-  byte *buff = (byte *) &MsgData; // to access RawData as bytes
+  byte *buff = (byte *) &MsgData; // to access MsgData as bytes
   MsgDataFile = SD.open(MsgDataFileName, FILE_READ);
 
   // if the file opened okay, write to it:
@@ -3377,21 +3389,6 @@ void deleteAllRawData(){
   } else {
     Serial.println("raw.txt does not exist.");
   } */
-}
-
-uint32_t recordCount(char *fileName, uint32_t recordSize){
-/*   Serial.print("Getting record count."); 
-  uint32_t myFileSize;
-  File myFile;
-  myFile = SD.open(fileName, FILE_READ);
-  if (myFile) {
-    myFileSize = myFile.size();
-  }
-  myFile.close();
-  Serial.println();
-  Serial.print("File Size:"); Serial.println(myFileSize);
-  Serial.print("Record Size:"); Serial.println(recordSize);
-  return myFileSize / recordSize; */
 }
 
 uint32_t getRawDataRecord(uint32_t RecordNumber, APRSFormat_Raw &RawData){
