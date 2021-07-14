@@ -93,14 +93,12 @@ short int ScrollingIndex_MessageFeed, ScrollingIndex_MessageFeed_minX;
 // do something on first show of display
 bool displayInitialized = false;
 // leave the display after a timeout period
-bool leaveDisplay_MessageFeed = false, leaveDisplay_LiveFeed = false, leaveDisplay_Settings = false, leaveDisplay_Settings_Save = false;
-bool leaveDisplay_Settings_APRS = false, leaveDisplay_Settings_GPS = false, leaveDisplay_Settings_Display = false;
+bool leaveDisplay_MessageFeed = false, leaveDisplay_LiveFeed = false, leaveDisplay_Settings = false;
 // refresh the displays
 bool displayRefresh_Global = true, displayRefresh_Scroll = true;
 // go into edit mode in the settings
 bool editMode_Settings = false;
-bool displayBlink = false, characterIncrement = false;
-unsigned char Settings_EditType = 0;
+bool displayBlink = false;
 unsigned char Settings_EditValueSize = 0;
 bool settingsChanged = false;
 bool displayDim = false;
@@ -122,7 +120,6 @@ unsigned long leave_display_timer;
 unsigned long voltage_check_timer;
 unsigned long processor_scan_time, scanTime;
 unsigned long display_blink_timer, display_timeout_timer, display_off_timer;
-unsigned long button_hold_timer_down, character_increment_timer;
 unsigned long message_retry_timer;
 
 // http://ember2ash.com/lat.htm
@@ -291,19 +288,7 @@ const char InvalidData_UnsignedLong[] = {"Invalid data. Expected unsigned long 0
 const char InvalidData_TrueFalse[] = {"Invalid data. Expected True/False or 1/0"};
 const char Initialized[] = {"Initialized03"}; // change this to something unique if you want to re-init the EEPROM during flashing. useful when there has been a change to a settings array.
 
-template <typename T>
-T numberOfDigits(T number){
-  // https://studyfied.com/program/cpp-basic/count-number-of-digits-in-a-given-integer/
-  // https://stackoverflow.com/questions/8627625/is-it-possible-to-make-function-that-will-accept-multiple-data-types-for-given-a/8627646
-
-    int count = 0;
-    while(number != 0) {
-      count++;
-      number /= 10;
-  }
-  return count;
-}
-
+#pragma region "VOLTAGE"
 long readVcc(){
   // Read 1.1V reference against AVcc
   // set the reference to Vcc and the measurement to the internal 1.1V reference
@@ -330,6 +315,284 @@ long readVcc(){
   return result; // Vcc in millivolts
 }
 
+void handleVoltage(){
+  if (millis() - voltage_check_timer > VOLTAGE_CHECK_RATE){
+    Voltage = readVcc();
+    VoltagePercent = constrain(map(Voltage,(int)BATT_DISCHARGED,(int)BATT_CHARGED,0,100),0,100);
+    voltage_check_timer = millis();
+  }
+}
+#pragma endregion
+
+#pragma region "KEYBOARD"
+void handleKeyboard(){
+  keyboardInputChar = 0;
+  Wire.requestFrom(CARDKB_ADDR, 1);
+  while(Wire.available())
+  {
+    char c = Wire.read();
+    if (c != 0)
+    {
+      if (!displayDim) { // key presses should only register if screen awake
+        keyboardInputChar = c;
+      }
+      wakeDisplay = true;
+    }
+  }
+}
+#pragma endregion
+
+#pragma region "GPS"
+void readGPS(){
+/*
+// degrees minutes seconds (dms) to decimal degrees (dd)
+// DD = d + (min/60) + (sec/3600)
+// if lat positive (+) then north (N) else south (S)
+// if lon positive (+) then east (E) else west (W)
+
+// decimal degrees (dd) to degrees minutes seconds (dms)
+// d = int(DD)
+// m = int((DD-d) * 60)
+// s = (DD-d-m/60) * 3600
+
+float long = 45.124783;
+int deglong = long;
+long -= deglong; // remove the degrees from the calculation
+long *= 60; // convert to minutes
+int minlong = long;
+long -= minlong; // remove the minuts from the calculation
+long *= 60; // convert to seconds
+*/
+  //// For one second we parse GPS data and report some key values
+  //for (unsigned long start = millis(); millis() - start < 1000;)
+  //{
+      while (Serial2.available() > 0)
+        //Serial.write(Serial2.read()); // uncomment this line if you want to see the GPS data flowing
+        gps.encode(Serial2.read());
+  //}
+      
+  if ( millis() - gps_report_timer > SETTINGS_GPS_UPDATE_FREQUENCY){
+      // reset timer
+      gps_report_timer = millis();
+      if (gps.location.isUpdated())
+      {
+        //Serial.print(F("LOCATION   Fix Age="));
+        //Serial.print(gps.location.age());
+        //Serial.print(F("ms Raw Lat="));
+        //Serial.print(gps.location.rawLat().negative ? "-" : "+");
+        //Serial.print(gps.location.rawLat().deg);
+        //Serial.print("[+");
+        //Serial.print(gps.location.rawLat().billionths);
+        //Serial.print(F(" billionths],  Raw Long="));
+        //Serial.print(gps.location.rawLng().negative ? "-" : "+");
+        //Serial.print(gps.location.rawLng().deg);
+        //Serial.print("[+");
+        //Serial.print(gps.location.rawLng().billionths);
+        //Serial.print(F(" billionths],  Lat="));
+        //Serial.print(F(" Lat="));
+        //Serial.print(gps.location.lat(), 6);
+        //Serial.print(F(" Long="));
+        //Serial.print(gps.location.lng(), 6);
+        
+        // DDMM.MM http://ember2ash.com/lat.htm
+        //Serial.print(F(" Lat2="));
+        currentLatDeg = gps.location.rawLat().deg*100.0 + gps.location.rawLat().billionths*0.000000001*60.0;
+        dtostrf(currentLatDeg, 8, 3, currentLat);
+        currentLat[7] = gps.location.rawLat().negative ? 'S' : 'N';
+        for (byte i = 0; i < sizeof(currentLat) - 1; i++) {
+          if (currentLat[i] == ' ') currentLat[i] = '0';
+        }
+        if (currentLatDeg > lastLatDeg + lastLatDeg*(SETTINGS_GPS_POSITION_TOLERANCE/100)  || currentLatDeg < lastLatDeg - lastLatDeg*(SETTINGS_GPS_POSITION_TOLERANCE/100)) {
+          modemCmdFlag_Lat=true;
+          lastLatDeg = currentLatDeg;
+        }
+        
+        //Serial.print(F(" Long2="));
+        currentLngDeg = gps.location.rawLng().deg*100.0 + gps.location.rawLng().billionths*0.000000001*60.0;
+        dtostrf(currentLngDeg, 9, 3, currentLng);
+        currentLng[8] = gps.location.rawLng().negative ? 'W' : 'E';
+        for (byte i = 0; i < sizeof(currentLng) - 1; i++) {
+          if (currentLng[i] == ' ') currentLng[i] = '0';
+        }
+        if (currentLngDeg > lastLngDeg + lastLngDeg*(SETTINGS_GPS_POSITION_TOLERANCE/100) || currentLngDeg < lastLngDeg - lastLngDeg*(SETTINGS_GPS_POSITION_TOLERANCE/100)) {
+          modemCmdFlag_Lng=true;
+          lastLngDeg = currentLngDeg;
+        }
+        /*
+        Serial.println();
+        Serial.print("Comment=");
+        byte j = 0;
+        for (byte i = 0; i < sizeof(strAprsComment) - 1; i++) {
+          if (strAprsComment[i] != 0){
+            Serial.print(strAprsComment[i]);
+            j++;
+          }
+        }
+        Serial.print(" Size=");
+        Serial.print(j);
+        */
+        //Serial.println();
+        //Serial.print("CommentLength=");
+        //Serial.println(stringLength(strAprsComment,sizeof(strAprsComment)));
+        
+      }
+      if (gps.date.isUpdated())
+      {
+        /*
+        Serial.print(F("DATE       Fix Age="));
+        Serial.print(gps.date.age());
+        Serial.print(F("ms Raw="));
+        Serial.print(gps.date.value());
+        Serial.print(F(" Year="));
+        Serial.print(gps.date.year());
+        Serial.print(F(" Month="));
+        Serial.print(gps.date.month());
+        Serial.print(F(" Day="));
+        Serial.println(gps.date.day());
+        */
+        GPSData.Date.Day = gps.date.day();
+        GPSData.Date.Month = gps.date.month();
+        GPSData.Date.Year = gps.date.year();
+        GPSData.Date.DateInt = gps.date.value();
+      }
+      if (gps.time.isUpdated())
+      {
+        /*
+        Serial.print(F("TIME       Fix Age="));
+        Serial.print(gps.time.age());
+        Serial.print(F("ms Raw="));
+        Serial.print(gps.time.value());
+        Serial.print(F(" Hour="));
+        Serial.print(gps.time.hour());
+        Serial.print(F(" Minute="));
+        Serial.print(gps.time.minute());
+        Serial.print(F(" Second="));
+        Serial.print(gps.time.second());
+        Serial.print(F(" Hundredths="));
+        Serial.println(gps.time.centisecond());
+        */
+        GPSData.Time.Hour = gps.time.hour();
+        GPSData.Time.Minute = gps.time.minute();
+        GPSData.Time.Second = gps.time.second();
+        GPSData.Time.CentiSecond = gps.time.centisecond();
+        GPSData.Time.TimeInt = gps.time.value();
+      }
+      if (gps.speed.isUpdated())
+      {
+        /*
+        Serial.print(F("SPEED      Fix Age="));
+        Serial.print(gps.speed.age());
+        Serial.print(F("ms Raw="));
+        Serial.print(gps.speed.value());
+        Serial.print(F(" Knots="));
+        Serial.print(gps.speed.knots());
+        Serial.print(F(" MPH="));
+        Serial.print(gps.speed.mph());
+        Serial.print(F(" m/s="));
+        Serial.print(gps.speed.mps());
+        Serial.print(F(" km/h="));
+        Serial.println(gps.speed.kmph());
+        */
+      }
+      if (gps.course.isUpdated())
+      {
+        /*
+        Serial.print(F("COURSE     Fix Age="));
+        Serial.print(gps.course.age());
+        Serial.print(F("ms Raw="));
+        Serial.print(gps.course.value());
+        Serial.print(F(" Deg="));
+        Serial.println(gps.course.deg());
+        */
+      }
+      if (gps.altitude.isUpdated())
+      {
+        /*
+        Serial.print(F("ALTITUDE   Fix Age="));
+        Serial.print(gps.altitude.age());
+        Serial.print(F("ms Raw="));
+        Serial.print(gps.altitude.value());
+        Serial.print(F(" Meters="));
+        Serial.print(gps.altitude.meters());
+        Serial.print(F(" Miles="));
+        Serial.print(gps.altitude.miles());
+        Serial.print(F(" KM="));
+        Serial.print(gps.altitude.kilometers());
+        Serial.print(F(" Feet="));
+        Serial.println(gps.altitude.feet());
+        */
+      }
+      if (gps.satellites.isUpdated())
+      {
+        /*
+        Serial.print(F("SATELLITES Fix Age="));
+        Serial.print(gps.satellites.age());
+        Serial.print(F("ms Value="));
+        Serial.println(gps.satellites.value());
+        */
+        GPSData.Satellites = gps.satellites.value();
+      }
+      if (gps.hdop.isUpdated())
+      {
+        /*
+        Serial.print(F("HDOP       Fix Age="));
+        Serial.print(gps.hdop.age());
+        Serial.print(F("ms raw="));
+        Serial.print(gps.hdop.value());
+        Serial.print(F(" hdop="));
+        Serial.println(gps.hdop.hdop());
+        */
+      }
+      if (millis() - destination_report_timer > DESTINATION_REPORT_FREQUENCY)
+      {/*
+        Serial.println();
+        if (gps.location.isValid())
+        {
+          double distanceToDestination =
+            TinyGPSPlus::distanceBetween(
+              gps.location.lat(),
+              gps.location.lng(),
+              DESTINATION_LAT, 
+              DESTINATION_LON);
+          double courseToDestination =
+            TinyGPSPlus::courseTo(
+              gps.location.lat(),
+              gps.location.lng(),
+              SETTINGS_GPS_DESTINATION_LATITUDE, 
+              SETTINGS_GPS_DESTINATION_LONGITUDE);
+    
+          Serial.print(F("DESTINATION     Distance="));
+          Serial.print((distanceToDestination/1000.0)*0.621371, 6); // mile factor 0.621371
+          Serial.print(F(" mi Course-to="));
+          Serial.print(courseToDestination, 6);
+          Serial.print(F(" degrees ["));
+          Serial.print(TinyGPSPlus::cardinal(courseToDestination));
+          Serial.println(F("]"));
+        }
+        
+        /*
+        Serial.print(F("DIAGS      Chars="));
+        Serial.print(gps.charsProcessed());
+        Serial.print(F(" Sentences-with-Fix="));
+        Serial.print(gps.sentencesWithFix());
+        Serial.print(F(" Failed-checksum="));
+        Serial.print(gps.failedChecksum());
+        Serial.print(F(" Passed-checksum="));
+        Serial.println(gps.passedChecksum());
+        */
+    /*
+        if (gps.charsProcessed() < 10)
+          Serial.println(F("WARNING: No GPS data.  Check wiring."));
+    
+        destination_report_timer = millis();
+        Serial.println();*/
+      }
+
+  }
+}
+#pragma endregion
+
+#pragma region "SETTINGS"
 void checkInit(){
   Serial.println(F("Checking initialization..."));
   bool writeDefaults = false;
@@ -617,6 +880,169 @@ void printOutSettings(){
   Serial.println();
   Serial.print(F("Version=")); Serial.println(version);
   Serial.println();
+}
+
+void handleSettings(){  
+  if (applySettings){
+    applySettings=false;
+    applySettings_Seq=1;
+  }
+
+  switch (applySettings_Seq){
+    case 0:
+      break;
+    case 1:
+      Serial.println(F("Applying settings..."));
+      applySettings_Seq++;
+      break;
+    case 2:
+      modemCmdFlag_Setc=true;  // callsign
+      applySettings_Seq++;
+      break;
+    case 3:
+      if(!modemCmdFlag_Setc){
+        applySettings_Seq++;
+      }
+      break;
+    case 4:
+      modemCmdFlag_Setd=true;  // destination
+      applySettings_Seq++;
+      break;
+    case 5:
+      if(!modemCmdFlag_Setd){
+        applySettings_Seq++;
+      }
+      break;
+    case 6:
+      modemCmdFlag_Set1=true;  // path1
+      applySettings_Seq++;
+      break;
+    case 7:
+      if(!modemCmdFlag_Set1){
+        applySettings_Seq++;
+      }
+      break;
+    case 8:
+      modemCmdFlag_Set2=true;  // path2
+      applySettings_Seq++;
+      break;
+    case 9:
+      if(!modemCmdFlag_Set2){
+        applySettings_Seq++;
+      }
+      break;
+    case 10:
+      modemCmdFlag_Setsc=true; // callsign ssid
+      applySettings_Seq++;
+      break;
+    case 11:
+      if(!modemCmdFlag_Setsc){
+        applySettings_Seq++;
+      }
+      break;
+    case 12:
+      modemCmdFlag_Setsd=true; // destination ssid
+      applySettings_Seq++;
+      break;
+    case 13:
+      if(!modemCmdFlag_Setsd){
+        applySettings_Seq++;
+      }
+      break;
+    case 14:
+      modemCmdFlag_Sets1=true; // path1 ssid
+      applySettings_Seq++;
+      break;
+    case 15:
+      if(!modemCmdFlag_Sets1){
+        applySettings_Seq++;
+      }
+      break;
+    case 16:
+      modemCmdFlag_Sets2=true; // path2 ssid
+      applySettings_Seq++;
+      break;
+    case 17:
+      if(!modemCmdFlag_Sets2){
+        applySettings_Seq++;
+      }
+      break;
+    case 18:
+      modemCmdFlag_Setls=true; // symbol
+      applySettings_Seq++;
+      break;
+    case 19:
+      if(!modemCmdFlag_Setls){
+        applySettings_Seq++;
+      }
+      break;
+    case 20:
+      modemCmdFlag_Setlt=true; // table
+      applySettings_Seq++;
+      break;
+    case 21:
+      if(!modemCmdFlag_Setlt){
+        applySettings_Seq++;
+      }
+      break;
+    case 22:
+      modemCmdFlag_Setma=true; // auto ack on/off
+      applySettings_Seq++;
+      break;
+    case 23:
+      if(!modemCmdFlag_Setma){
+        applySettings_Seq++;
+      }
+      break;
+    case 24:
+      modemCmdFlag_Setw=true;  // preamble
+      applySettings_Seq++;
+      break;
+    case 25:
+      if(!modemCmdFlag_Setw){
+        applySettings_Seq++;
+      }
+      break;
+    case 26:
+      modemCmdFlag_SetW=true;  // tail
+      applySettings_Seq++;
+      break;
+    case 27:
+      if(!modemCmdFlag_SetW){
+        applySettings_Seq++;
+      }
+      break;
+    case 28:
+      if (saveModemSettings) {
+        saveModemSettings=false;
+        modemCmdFlag_SetS==true; // save the configuration
+        applySettings_Seq++;
+      } else {
+        applySettings_Seq=0;
+      }
+      break;
+    case 29:
+      if(!modemCmdFlag_SetS){
+        applySettings_Seq=0;
+      }
+      break;
+  }
+}
+#pragma endregion
+
+#pragma region "DISPLAYS"
+
+template <typename T>
+T numberOfDigits(T number){
+  // https://studyfied.com/program/cpp-basic/count-number-of-digits-in-a-given-integer/
+  // https://stackoverflow.com/questions/8627625/is-it-possible-to-make-function-that-will-accept-multiple-data-types-for-given-a/8627646
+
+    int count = 0;
+    while(number != 0) {
+      count++;
+      number /= 10;
+  }
+  return count;
 }
 
 void handleDisplay_TempVarDisplay(int SettingsEditType){
@@ -1239,6 +1665,8 @@ void handleDisplay_Messages(){
       // display the cursor position (represents record number in this case)
       display.setCursor(0,UI_DISPLAY_ROW_04); display.print("Record: ");
       display.setCursor(45,UI_DISPLAY_ROW_04); display.print(cursorPosition_Y+1);
+      display.setCursor(45 + numberOfDigits<uint32_t>(cursorPosition_Y+1) * 5,UI_DISPLAY_ROW_04); display.print(" of ");
+      display.setCursor(65 + numberOfDigits<uint32_t>(cursorPosition_Y+1) * 5,UI_DISPLAY_ROW_04); display.print(MsgDataRecordCount);
       // display the date and time
       display.setCursor(0,UI_DISPLAY_ROW_05); display.print("D:");
       display.setCursor(15,UI_DISPLAY_ROW_05); display.print(MsgData.DateInt);
@@ -1354,6 +1782,8 @@ void handleDisplay_LiveFeed(){
       // display the cursor position (represents record number in this case)
       display.setCursor(0,UI_DISPLAY_ROW_04); display.print("Record: ");
       display.setCursor(45,UI_DISPLAY_ROW_04); display.print(cursorPosition_Y+1);
+      display.setCursor(45 + numberOfDigits<uint32_t>(cursorPosition_Y+1) * 5,UI_DISPLAY_ROW_04); display.print(" of ");
+      display.setCursor(65 + numberOfDigits<uint32_t>(cursorPosition_Y+1) * 5,UI_DISPLAY_ROW_04); display.print(RawDataRecordCount);
       // display the date and time
       display.setCursor(0,UI_DISPLAY_ROW_05); display.print("D:");
       display.setCursor(15,UI_DISPLAY_ROW_05); display.print(RawData.DateInt);
@@ -1869,7 +2299,9 @@ void handleDisplay_Settings_Display(){
     display.display();
   } 
 }
+#pragma endregion
 
+#pragma region "MODEM"
 void handleAprsBeacon(){
   if ( millis() - aprs_beacon_timer > SETTINGS_APRS_BEACON_FREQUENCY ){
     if (aprsAutomaticCommentEnabled==true){
@@ -2268,412 +2700,9 @@ void readModem(){
     }
   }
 }
+#pragma endregion
 
-void readGPS(){
-/*
-// degrees minutes seconds (dms) to decimal degrees (dd)
-// DD = d + (min/60) + (sec/3600)
-// if lat positive (+) then north (N) else south (S)
-// if lon positive (+) then east (E) else west (W)
-
-// decimal degrees (dd) to degrees minutes seconds (dms)
-// d = int(DD)
-// m = int((DD-d) * 60)
-// s = (DD-d-m/60) * 3600
-
-float long = 45.124783;
-int deglong = long;
-long -= deglong; // remove the degrees from the calculation
-long *= 60; // convert to minutes
-int minlong = long;
-long -= minlong; // remove the minuts from the calculation
-long *= 60; // convert to seconds
-*/
-  //// For one second we parse GPS data and report some key values
-  //for (unsigned long start = millis(); millis() - start < 1000;)
-  //{
-      while (Serial2.available() > 0)
-        //Serial.write(Serial2.read()); // uncomment this line if you want to see the GPS data flowing
-        gps.encode(Serial2.read());
-  //}
-      
-  if ( millis() - gps_report_timer > SETTINGS_GPS_UPDATE_FREQUENCY){
-      // reset timer
-      gps_report_timer = millis();
-      if (gps.location.isUpdated())
-      {
-        //Serial.print(F("LOCATION   Fix Age="));
-        //Serial.print(gps.location.age());
-        //Serial.print(F("ms Raw Lat="));
-        //Serial.print(gps.location.rawLat().negative ? "-" : "+");
-        //Serial.print(gps.location.rawLat().deg);
-        //Serial.print("[+");
-        //Serial.print(gps.location.rawLat().billionths);
-        //Serial.print(F(" billionths],  Raw Long="));
-        //Serial.print(gps.location.rawLng().negative ? "-" : "+");
-        //Serial.print(gps.location.rawLng().deg);
-        //Serial.print("[+");
-        //Serial.print(gps.location.rawLng().billionths);
-        //Serial.print(F(" billionths],  Lat="));
-        //Serial.print(F(" Lat="));
-        //Serial.print(gps.location.lat(), 6);
-        //Serial.print(F(" Long="));
-        //Serial.print(gps.location.lng(), 6);
-        
-        // DDMM.MM http://ember2ash.com/lat.htm
-        //Serial.print(F(" Lat2="));
-        currentLatDeg = gps.location.rawLat().deg*100.0 + gps.location.rawLat().billionths*0.000000001*60.0;
-        dtostrf(currentLatDeg, 8, 3, currentLat);
-        currentLat[7] = gps.location.rawLat().negative ? 'S' : 'N';
-        for (byte i = 0; i < sizeof(currentLat) - 1; i++) {
-          if (currentLat[i] == ' ') currentLat[i] = '0';
-        }
-        if (currentLatDeg > lastLatDeg + lastLatDeg*(SETTINGS_GPS_POSITION_TOLERANCE/100)  || currentLatDeg < lastLatDeg - lastLatDeg*(SETTINGS_GPS_POSITION_TOLERANCE/100)) {
-          modemCmdFlag_Lat=true;
-          lastLatDeg = currentLatDeg;
-        }
-        
-        //Serial.print(F(" Long2="));
-        currentLngDeg = gps.location.rawLng().deg*100.0 + gps.location.rawLng().billionths*0.000000001*60.0;
-        dtostrf(currentLngDeg, 9, 3, currentLng);
-        currentLng[8] = gps.location.rawLng().negative ? 'W' : 'E';
-        for (byte i = 0; i < sizeof(currentLng) - 1; i++) {
-          if (currentLng[i] == ' ') currentLng[i] = '0';
-        }
-        if (currentLngDeg > lastLngDeg + lastLngDeg*(SETTINGS_GPS_POSITION_TOLERANCE/100) || currentLngDeg < lastLngDeg - lastLngDeg*(SETTINGS_GPS_POSITION_TOLERANCE/100)) {
-          modemCmdFlag_Lng=true;
-          lastLngDeg = currentLngDeg;
-        }
-        /*
-        Serial.println();
-        Serial.print("Comment=");
-        byte j = 0;
-        for (byte i = 0; i < sizeof(strAprsComment) - 1; i++) {
-          if (strAprsComment[i] != 0){
-            Serial.print(strAprsComment[i]);
-            j++;
-          }
-        }
-        Serial.print(" Size=");
-        Serial.print(j);
-        */
-        //Serial.println();
-        //Serial.print("CommentLength=");
-        //Serial.println(stringLength(strAprsComment,sizeof(strAprsComment)));
-        
-      }
-      if (gps.date.isUpdated())
-      {
-        /*
-        Serial.print(F("DATE       Fix Age="));
-        Serial.print(gps.date.age());
-        Serial.print(F("ms Raw="));
-        Serial.print(gps.date.value());
-        Serial.print(F(" Year="));
-        Serial.print(gps.date.year());
-        Serial.print(F(" Month="));
-        Serial.print(gps.date.month());
-        Serial.print(F(" Day="));
-        Serial.println(gps.date.day());
-        */
-        GPSData.Date.Day = gps.date.day();
-        GPSData.Date.Month = gps.date.month();
-        GPSData.Date.Year = gps.date.year();
-        GPSData.Date.DateInt = gps.date.value();
-      }
-      if (gps.time.isUpdated())
-      {
-        /*
-        Serial.print(F("TIME       Fix Age="));
-        Serial.print(gps.time.age());
-        Serial.print(F("ms Raw="));
-        Serial.print(gps.time.value());
-        Serial.print(F(" Hour="));
-        Serial.print(gps.time.hour());
-        Serial.print(F(" Minute="));
-        Serial.print(gps.time.minute());
-        Serial.print(F(" Second="));
-        Serial.print(gps.time.second());
-        Serial.print(F(" Hundredths="));
-        Serial.println(gps.time.centisecond());
-        */
-        GPSData.Time.Hour = gps.time.hour();
-        GPSData.Time.Minute = gps.time.minute();
-        GPSData.Time.Second = gps.time.second();
-        GPSData.Time.CentiSecond = gps.time.centisecond();
-        GPSData.Time.TimeInt = gps.time.value();
-      }
-      if (gps.speed.isUpdated())
-      {
-        /*
-        Serial.print(F("SPEED      Fix Age="));
-        Serial.print(gps.speed.age());
-        Serial.print(F("ms Raw="));
-        Serial.print(gps.speed.value());
-        Serial.print(F(" Knots="));
-        Serial.print(gps.speed.knots());
-        Serial.print(F(" MPH="));
-        Serial.print(gps.speed.mph());
-        Serial.print(F(" m/s="));
-        Serial.print(gps.speed.mps());
-        Serial.print(F(" km/h="));
-        Serial.println(gps.speed.kmph());
-        */
-      }
-      if (gps.course.isUpdated())
-      {
-        /*
-        Serial.print(F("COURSE     Fix Age="));
-        Serial.print(gps.course.age());
-        Serial.print(F("ms Raw="));
-        Serial.print(gps.course.value());
-        Serial.print(F(" Deg="));
-        Serial.println(gps.course.deg());
-        */
-      }
-      if (gps.altitude.isUpdated())
-      {
-        /*
-        Serial.print(F("ALTITUDE   Fix Age="));
-        Serial.print(gps.altitude.age());
-        Serial.print(F("ms Raw="));
-        Serial.print(gps.altitude.value());
-        Serial.print(F(" Meters="));
-        Serial.print(gps.altitude.meters());
-        Serial.print(F(" Miles="));
-        Serial.print(gps.altitude.miles());
-        Serial.print(F(" KM="));
-        Serial.print(gps.altitude.kilometers());
-        Serial.print(F(" Feet="));
-        Serial.println(gps.altitude.feet());
-        */
-      }
-      if (gps.satellites.isUpdated())
-      {
-        /*
-        Serial.print(F("SATELLITES Fix Age="));
-        Serial.print(gps.satellites.age());
-        Serial.print(F("ms Value="));
-        Serial.println(gps.satellites.value());
-        */
-        GPSData.Satellites = gps.satellites.value();
-      }
-      if (gps.hdop.isUpdated())
-      {
-        /*
-        Serial.print(F("HDOP       Fix Age="));
-        Serial.print(gps.hdop.age());
-        Serial.print(F("ms raw="));
-        Serial.print(gps.hdop.value());
-        Serial.print(F(" hdop="));
-        Serial.println(gps.hdop.hdop());
-        */
-      }
-      if (millis() - destination_report_timer > DESTINATION_REPORT_FREQUENCY)
-      {/*
-        Serial.println();
-        if (gps.location.isValid())
-        {
-          double distanceToDestination =
-            TinyGPSPlus::distanceBetween(
-              gps.location.lat(),
-              gps.location.lng(),
-              DESTINATION_LAT, 
-              DESTINATION_LON);
-          double courseToDestination =
-            TinyGPSPlus::courseTo(
-              gps.location.lat(),
-              gps.location.lng(),
-              SETTINGS_GPS_DESTINATION_LATITUDE, 
-              SETTINGS_GPS_DESTINATION_LONGITUDE);
-    
-          Serial.print(F("DESTINATION     Distance="));
-          Serial.print((distanceToDestination/1000.0)*0.621371, 6); // mile factor 0.621371
-          Serial.print(F(" mi Course-to="));
-          Serial.print(courseToDestination, 6);
-          Serial.print(F(" degrees ["));
-          Serial.print(TinyGPSPlus::cardinal(courseToDestination));
-          Serial.println(F("]"));
-        }
-        
-        /*
-        Serial.print(F("DIAGS      Chars="));
-        Serial.print(gps.charsProcessed());
-        Serial.print(F(" Sentences-with-Fix="));
-        Serial.print(gps.sentencesWithFix());
-        Serial.print(F(" Failed-checksum="));
-        Serial.print(gps.failedChecksum());
-        Serial.print(F(" Passed-checksum="));
-        Serial.println(gps.passedChecksum());
-        */
-    /*
-        if (gps.charsProcessed() < 10)
-          Serial.println(F("WARNING: No GPS data.  Check wiring."));
-    
-        destination_report_timer = millis();
-        Serial.println();*/
-      }
-
-  }
-}
-
-void handleVoltage(){
-  if (millis() - voltage_check_timer > VOLTAGE_CHECK_RATE){
-    Voltage = readVcc();
-    VoltagePercent = constrain(map(Voltage,(int)BATT_DISCHARGED,(int)BATT_CHARGED,0,100),0,100);
-    //Serial.print("Voltage: "); Serial.print(Voltage); Serial.println("mv");
-    //Serial.print("Voltage: "); Serial.print(VoltagePercent); Serial.println("%");
-    voltage_check_timer = millis();
-  }
-}
-
-void handleSettings(){  
-  if (applySettings){
-    applySettings=false;
-    applySettings_Seq=1;
-  }
-
-  switch (applySettings_Seq){
-    case 0:
-      break;
-    case 1:
-      Serial.println(F("Applying settings..."));
-      applySettings_Seq++;
-      break;
-    case 2:
-      modemCmdFlag_Setc=true;  // callsign
-      applySettings_Seq++;
-      break;
-    case 3:
-      if(!modemCmdFlag_Setc){
-        applySettings_Seq++;
-      }
-      break;
-    case 4:
-      modemCmdFlag_Setd=true;  // destination
-      applySettings_Seq++;
-      break;
-    case 5:
-      if(!modemCmdFlag_Setd){
-        applySettings_Seq++;
-      }
-      break;
-    case 6:
-      modemCmdFlag_Set1=true;  // path1
-      applySettings_Seq++;
-      break;
-    case 7:
-      if(!modemCmdFlag_Set1){
-        applySettings_Seq++;
-      }
-      break;
-    case 8:
-      modemCmdFlag_Set2=true;  // path2
-      applySettings_Seq++;
-      break;
-    case 9:
-      if(!modemCmdFlag_Set2){
-        applySettings_Seq++;
-      }
-      break;
-    case 10:
-      modemCmdFlag_Setsc=true; // callsign ssid
-      applySettings_Seq++;
-      break;
-    case 11:
-      if(!modemCmdFlag_Setsc){
-        applySettings_Seq++;
-      }
-      break;
-    case 12:
-      modemCmdFlag_Setsd=true; // destination ssid
-      applySettings_Seq++;
-      break;
-    case 13:
-      if(!modemCmdFlag_Setsd){
-        applySettings_Seq++;
-      }
-      break;
-    case 14:
-      modemCmdFlag_Sets1=true; // path1 ssid
-      applySettings_Seq++;
-      break;
-    case 15:
-      if(!modemCmdFlag_Sets1){
-        applySettings_Seq++;
-      }
-      break;
-    case 16:
-      modemCmdFlag_Sets2=true; // path2 ssid
-      applySettings_Seq++;
-      break;
-    case 17:
-      if(!modemCmdFlag_Sets2){
-        applySettings_Seq++;
-      }
-      break;
-    case 18:
-      modemCmdFlag_Setls=true; // symbol
-      applySettings_Seq++;
-      break;
-    case 19:
-      if(!modemCmdFlag_Setls){
-        applySettings_Seq++;
-      }
-      break;
-    case 20:
-      modemCmdFlag_Setlt=true; // table
-      applySettings_Seq++;
-      break;
-    case 21:
-      if(!modemCmdFlag_Setlt){
-        applySettings_Seq++;
-      }
-      break;
-    case 22:
-      modemCmdFlag_Setma=true; // auto ack on/off
-      applySettings_Seq++;
-      break;
-    case 23:
-      if(!modemCmdFlag_Setma){
-        applySettings_Seq++;
-      }
-      break;
-    case 24:
-      modemCmdFlag_Setw=true;  // preamble
-      applySettings_Seq++;
-      break;
-    case 25:
-      if(!modemCmdFlag_Setw){
-        applySettings_Seq++;
-      }
-      break;
-    case 26:
-      modemCmdFlag_SetW=true;  // tail
-      applySettings_Seq++;
-      break;
-    case 27:
-      if(!modemCmdFlag_SetW){
-        applySettings_Seq++;
-      }
-      break;
-    case 28:
-      if (saveModemSettings) {
-        saveModemSettings=false;
-        modemCmdFlag_SetS==true; // save the configuration
-        applySettings_Seq++;
-      } else {
-        applySettings_Seq=0;
-      }
-      break;
-    case 29:
-      if(!modemCmdFlag_SetS){
-        applySettings_Seq=0;
-      }
-      break;
-  }
-}
-
+#pragma region "TERMINAL"
 void getDataTypeExample(int dataType, char* outExample){
 
   const char chrNone[] = {":<Unknown>"};
@@ -2823,8 +2852,6 @@ void handleSerial(){
         } else if (strstr(SD_cmd, "Print") != NULL) {
           printRawDataFromSd();
         } else if (strstr(SD_cmd, "Test") != NULL) {
-          //APRSFormat_Raw RawData;
-          //uint32_t RawDataRecordCount;
           RawDataRecordCount = getRawDataRecord(1, RawData);
           Serial.print("Raw Data Record Count"); Serial.println(RawDataRecordCount);
           Serial.print("src:"); Serial.print(RawData.src);
@@ -2848,12 +2875,10 @@ void handleSerial(){
           i++; j_sdc++;
         }
         if (strstr(SD_cmd, "Delete") != NULL) {
-          deleteAllMessages();
+          deleteAllMsgData();
         } else if (strstr(SD_cmd, "Print") != NULL) {
           printMsgDataFromSd();
         } else if (strstr(SD_cmd, "Test") != NULL) {
-          //APRSFormat_Msg MsgData;
-          //uint32_t MsgDataRecordCount;
           MsgDataRecordCount = getMsgDataRecord(1, MsgData);
           Serial.print("Msg Data Record Count"); Serial.println(MsgDataRecordCount);
           Serial.print("to:"); Serial.print(MsgData.to);
@@ -3255,33 +3280,17 @@ void handleSerial(){
     }
   }
 }
+#pragma endregion
 
-void handleKeyboard(){
-  keyboardInputChar = 0;
-  Wire.requestFrom(CARDKB_ADDR, 1);
-  while(Wire.available())
-  {
-    char c = Wire.read();
-    if (c != 0)
-    {
-      if (!displayDim) { // key presses should only register if screen awake
-        keyboardInputChar = c;
-      }
-      wakeDisplay = true;
-    }
-  }
-}
-
+#pragma region "SD"
 void writeRawDataToSd(APRSFormat_Raw RawData){
   byte *buff = (byte *) &RawData; // to access RawData as bytes
   RawDataFile = SD.open(RawDataFileName, FILE_WRITE);
 
   // if the file opened okay, write to it:
   if (RawDataFile) {
-    Serial.println("Writing to raw.txt...");
     RawDataFile.seek(RawDataFile.size()); // go to end of file first
     RawDataFile.write(buff, sizeof(APRSFormat_Raw)); RawDataFile.write('\n');
-    Serial.println("done.");
   } else {
     // if the file didn't open, print an error:
     Serial.println("error opening raw.txt");
@@ -3326,10 +3335,8 @@ void writeMsgDataToSd(APRSFormat_Msg MsgData){
 
   // if the file opened okay, write to it:
   if (MsgDataFile) {
-    Serial.println("Writing to msg.txt...");
     MsgDataFile.seek(MsgDataFile.size()); // go to end of file first
     MsgDataFile.write(buff, sizeof(APRSFormat_Msg)); MsgDataFile.write('\n');
-    Serial.println("done.");
   } else {
     // if the file didn't open, print an error:
     Serial.println("error opening msg.txt");
@@ -3369,26 +3376,28 @@ void printMsgDataFromSd(){
   MsgDataFile.flush(); // will save data
 }
 
-void deleteAllMessages(){
-/*   Serial.println();
-  Serial.println("deleting msg.txt");
+// THIS METHOD HAS NOT BEEN TESTED YET
+void deleteAllMsgData(){
   if (SD.exists(MsgDataFileName)) {
+    MsgDataFile.close();
     SD.remove(MsgDataFileName);
+    MsgDataFile = SD.open(MsgDataFileName, FILE_READ);
     Serial.println("msg.txt has been deleted.");
   } else {
     Serial.println("msg.txt does not exist.");
-  } */
+  }
 }
 
+// THIS METHOD HAS NOT BEEN TESTED YET
 void deleteAllRawData(){
-/*   Serial.println();
-  Serial.println("deleting raw.txt");
   if (SD.exists(RawDataFileName)) {
+    RawDataFile.close();
     SD.remove(RawDataFileName);
+    RawDataFile = SD.open(RawDataFileName, FILE_READ);
     Serial.println("raw.txt has been deleted.");
   } else {
     Serial.println("raw.txt does not exist.");
-  } */
+  }
 }
 
 uint32_t getRawDataRecord(uint32_t RecordNumber, APRSFormat_Raw &RawData){
@@ -3454,13 +3463,7 @@ uint32_t getMsgDataRecord(uint32_t RecordNumber, APRSFormat_Msg &MsgData){
   MsgDataFile.flush(); // will save data
   return RecordCount;
 }
-
-void printDateTime(){
-  Serial.println();
-  Serial.print("Todays Date: "); Serial.println(GPSData.Date.DateInt);
-  Serial.print("The Time Now Is: "); Serial.println(GPSData.Time.TimeInt);
-  Serial.println();
-}
+#pragma endregion
 
 void setup(){
   // reset dimmer timer
