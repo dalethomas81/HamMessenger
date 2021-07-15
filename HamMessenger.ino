@@ -20,275 +20,63 @@
 
 */
 
-// http://www.aprs.net/vm/DOS/PROTOCOL.HTM
-
-// sketch will write default settings if new build
-//const char version[] = "build "  __DATE__ " " __TIME__; 
 const char version[] = __DATE__ " " __TIME__; 
 
-#include <Adafruit_GFX.h>
-#include <Adafruit_SH1106.h>
-#include <TinyGPS++.h>
-#include <EEPROM.h>
-#include <SPI.h>
-#include <SD.h>
+#pragma region "STRUCTURES"
+  
+  struct APRSFormat_Raw {
+    char src[15];
+    char dst[15];
+    char path[10];
+    char data[125];
+    uint32_t DateInt;
+    uint32_t TimeInt;
+  };
 
-File RawDataFile;
-File MsgDataFile;
-const char RawDataFileName[] = {"raw.txt"};
-const char MsgDataFileName[] = {"msg.txt"};
+  struct APRSFormat_Msg {
+    char from[15] = {'\0'};
+    char to[15] = {'\0'};
+    char msg[100] = {'\0'};
+    int line = 0;
+    bool ack = false;
+    uint32_t DateInt;
+    uint32_t TimeInt;
+  };
 
-// M5Stack Keyboard https://docs.m5stack.com/en/unit/cardkb
-#include <Wire.h> 
-#define CARDKB_ADDR 0x5F  
-char keyboardInputChar;
+  struct GPS_Date {
+    byte Day = 1;
+    byte Month = 1;
+    int Year = 1970;
+    uint32_t DateInt;
+    //char DateString[9];
+  };
 
-#define KEYBOARD_NUMBER_KEYS            (keyboardInputChar >= 48 && keyboardInputChar <= 57)
-#define KEYBOARD_DIRECTIONAL_KEYS       (keyboardInputChar >= -76 && keyboardInputChar <= -73)
-#define KEYBOARD_PRINTABLE_CHARACTERS   (keyboardInputChar >= 32 && keyboardInputChar <= 126)
-#define KEYBOARD_BACKSPACE_KEY          8
-#define KEYBOARD_ENTER_KEY              13
-#define KEYBOARD_ESCAPE_KEY             27
-#define KEYBOARD_MINUS_KEY              45
-#define KEYBOARD_PERIOD_KEY             46
-#define KEYBOARD_RIGHT_KEY              -73
-#define KEYBOARD_DOWN_KEY               -74
-#define KEYBOARD_UP_KEY                 -75
-#define KEYBOARD_LEFT_KEY               -76
+  struct GPS_Time {
+    byte Hour = 0;
+    byte Minute = 0;
+    byte Second = 0;
+    byte CentiSecond = 0;
+    uint32_t TimeInt;
+    //char TimeString[9];
+  };
 
-#if !defined(ARRAY_SIZE)
-    #define ARRAY_SIZE(x) (sizeof((x)) / sizeof((x)[0]))
-#endif
+  struct GPS {
+    byte Satellites;
+    GPS_Date Date;
+    GPS_Time Time;
+  } GPSData;
 
-// oled display
-#define DISPLAY_REFRESH_RATE                  100
-#define DISPLAY_REFRESH_RATE_SCROLL           80       // min 60
-#define DISPLAY_BLINK_RATE                    500
-#define UI_DISPLAY_HOME                       0
-#define UI_DISPLAY_MESSAGES                   1
-#define UI_DISPLAY_LIVEFEED                   2
-#define UI_DISPLAY_SETTINGS                   3
-#define UI_DISPLAY_SETTINGS_APRS              4
-#define UI_DISPLAY_SETTINGS_GPS               5
-#define UI_DISPLAY_SETTINGS_DISPLAY           6
-#define UI_DISPLAY_SETTINGS_SAVE              7
-
-#define UI_DISPLAY_ROW_TOP                    0
-#define UI_DISPLAY_ROW_01                     8
-#define UI_DISPLAY_ROW_02                     16
-#define UI_DISPLAY_ROW_03                     24
-#define UI_DISPLAY_ROW_04                     32
-#define UI_DISPLAY_ROW_05                     40
-#define UI_DISPLAY_ROW_06                     48
-#define UI_DISPLAY_ROW_BOTTOM                 56
-
-unsigned char currentDisplay = UI_DISPLAY_HOME;
-unsigned char currentDisplayLast = currentDisplay;
-unsigned char previousDisplay = UI_DISPLAY_HOME;
-uint32_t cursorPosition_X = 0, cursorPosition_X_Last = 0;
-uint32_t cursorPosition_Y = 0, cursorPosition_Y_Last = 0;
-short int ScrollingIndex_LiveFeed, ScrollingIndex_LiveFeed_minX;
-short int ScrollingIndex_MessageFeed, ScrollingIndex_MessageFeed_minX;
-
-// do something on first show of display
-bool displayInitialized = false;
-// leave the display after a timeout period
-bool leaveDisplay_MessageFeed = false, leaveDisplay_LiveFeed = false, leaveDisplay_Settings = false;
-// refresh the displays
-bool displayRefresh_Global = true, displayRefresh_Scroll = true;
-// go into edit mode in the settings
-bool editMode_Settings = false;
-bool displayBlink = false;
-unsigned char Settings_EditValueSize = 0;
-bool settingsChanged = false;
-bool displayDim = false;
-bool wakeDisplay = false;
-
-// Declaration for an SSD1306 display connected to I2C (SDA, SCL pins)
-#define OLED_RESET -1 // Reset pin # (or -1 if sharing Arduino reset pin)
-Adafruit_SH1106 display(OLED_RESET);
-
-#if (SH1106_LCDHEIGHT != 64)
-#error("Height incorrect, please fix Adafruit_SH1106.h!");
-#endif
-
-// neo-6m GPS
-TinyGPSPlus gps;
-#define DESTINATION_REPORT_FREQUENCY 20000    // how often distance to target is sent to serial - will be removed
-unsigned long gps_report_timer, destination_report_timer, modem_command_timer, aprs_beacon_timer, display_refresh_timer, display_refresh_timer_scroll;
-unsigned long leave_display_timer;
-unsigned long voltage_check_timer;
-unsigned long processor_scan_time, scanTime;
-unsigned long display_blink_timer, display_timeout_timer, display_off_timer;
-unsigned long message_retry_timer;
-
-// http://ember2ash.com/lat.htm
-float currentLatDeg = 0;
-float currentLngDeg = 0;
-//float positionTolerance = 0.00001;
-float lastLatDeg = 0.0;
-float lastLngDeg = 0.0;
-char currentLat[9] = {'0','0','0','0','.','0','0','N','\0'};
-char currentLng[10] = {'0','0','0','0','0','.','0','0','N','\0'};
-bool modemCmdFlag_Lat=false, modemCmdFlag_Lng=false;
-bool modemCmdFlag_Raw=false, modemCmdFlag_Cmt=false, modemCmdFlag_Msg=false;
-bool modemCmdFlag_MsgRecipient=false, modemCmdFlag_MsgRecipientSSID=false;
-bool modemCmdFlag_Setc=false, modemCmdFlag_Setsc=false;
-bool modemCmdFlag_Setd=false, modemCmdFlag_Setsd=false;
-bool modemCmdFlag_Set1=false, modemCmdFlag_Sets1=false;
-bool modemCmdFlag_Set2=false, modemCmdFlag_Sets2=false;
-bool modemCmdFlag_Setls=false, modemCmdFlag_Setlt=false;
-bool modemCmdFlag_Setma=false, modemCmdFlag_Setw=false;
-bool modemCmdFlag_SetW=false, modemCmdFlag_Setmr=false;
-bool modemCmdFlag_SetS=false, modemCmdFlag_SetC=false;
-bool modemCmdFlag_SetH=false;
-bool aprsAutomaticCommentEnabled = true;
-bool applySettings=false, saveModemSettings=false;
-unsigned char applySettings_Seq=0;
-bool sendMessage=false, sendMessage_Ack=false;
-unsigned char sendMessage_Seq=0, sendMessage_Retrys;
-
-// London                                 LAT:51.508131     LNG:-0.128002
-//double DESTINATION_LAT = 51.508131, DESTINATION_LON = -0.128002;
-
-struct APRSFormat_Raw {
-  char src[15];
-  char dst[15];
-  char path[10];
-  char data[125];
-  uint32_t DateInt;
-  uint32_t TimeInt;
-};
-
-struct APRSFormat_Msg {
-  char from[15] = {'\0'};
-  char to[15] = {'\0'};
-  char msg[100] = {'\0'};
-  int line = 0;
-  bool ack = false;
-  uint32_t DateInt;
-  uint32_t TimeInt;
-};
-
-struct GPS_Date {
-  byte Day = 1;
-  byte Month = 1;
-  int Year = 1970;
-  uint32_t DateInt;
-  //char DateString[9];
-};
-
-struct GPS_Time {
-  byte Hour = 0;
-  byte Minute = 0;
-  byte Second = 0;
-  byte CentiSecond = 0;
-  uint32_t TimeInt;
-  //char TimeString[9];
-};
-
-struct GPS {
-  byte Satellites;
-  GPS_Date Date;
-  GPS_Time Time;
-} GPSData;
-
-#define MAXIMUM_MODEM_COMMAND_RATE 100        // maximum rate that commands can be sent to modem
-
-// input pins
-#define rxPin A5 // using analog input pins
-#define txPin A6
-
-// voltage settings
-unsigned char VoltagePercent = 0;
-long Voltage = 0;
-#define BATT_CHARGED            7200
-#define BATT_DISCHARGED         5600
-#define VOLTAGE_CHECK_RATE      10000
-
-// settings
-#define EEPROM_SETTINGS_START_ADDR      1000
-#define SETTINGS_EDIT_TYPE_NONE         0
-#define SETTINGS_EDIT_TYPE_BOOLEAN      1
-#define SETTINGS_EDIT_TYPE_INT          2
-#define SETTINGS_EDIT_TYPE_UINT         3
-#define SETTINGS_EDIT_TYPE_LONG         4
-#define SETTINGS_EDIT_TYPE_ULONG        5
-#define SETTINGS_EDIT_TYPE_FLOAT        6
-#define SETTINGS_EDIT_TYPE_STRING2      7
-#define SETTINGS_EDIT_TYPE_STRING7      8
-#define SETTINGS_EDIT_TYPE_STRING100    9
-                        
-const char *MenuItems_Settings[] = {"APRS","GPS","Display"};
-const char *MenuItems_Settings_APRS[] = {"Beacon Frequency","Raw Packet","Comment","Message","Recipient Callsign","Recipient SSID", "My Callsign","Callsign SSID", 
-                                        "Dest Callsign", "Dest SSID", "PATH1 Callsign", "PATH1 SSID", "PATH2 Callsign", "PATH2 SSID",
-                                        "Symbol", "Table", "Automatic ACK", "Preamble", "Tail", "Retry Count", "Retry Interval"};
-const char *MenuItems_Settings_GPS[] = {"Update Freq","Pos Tolerance", "Dest Latitude", "Dest Longitude"};
-const char *MenuItems_Settings_Display[] = {"Timeout", "Brightness", "Show Position", "Scroll Messages", "Scroll Speed", "Invert"};
-
-unsigned char Settings_Type_APRS[] = {SETTINGS_EDIT_TYPE_ULONG,SETTINGS_EDIT_TYPE_STRING100,SETTINGS_EDIT_TYPE_STRING100,SETTINGS_EDIT_TYPE_STRING100,SETTINGS_EDIT_TYPE_STRING7,SETTINGS_EDIT_TYPE_STRING2,SETTINGS_EDIT_TYPE_STRING7,SETTINGS_EDIT_TYPE_STRING2,
-                            SETTINGS_EDIT_TYPE_STRING7,SETTINGS_EDIT_TYPE_STRING2,SETTINGS_EDIT_TYPE_STRING7,SETTINGS_EDIT_TYPE_STRING2,SETTINGS_EDIT_TYPE_STRING7,SETTINGS_EDIT_TYPE_STRING2,
-                            SETTINGS_EDIT_TYPE_STRING2,SETTINGS_EDIT_TYPE_STRING2,SETTINGS_EDIT_TYPE_BOOLEAN,SETTINGS_EDIT_TYPE_UINT,SETTINGS_EDIT_TYPE_UINT,SETTINGS_EDIT_TYPE_UINT,SETTINGS_EDIT_TYPE_UINT};
-unsigned char Settings_Type_GPS[] = {SETTINGS_EDIT_TYPE_ULONG,SETTINGS_EDIT_TYPE_FLOAT,SETTINGS_EDIT_TYPE_FLOAT,SETTINGS_EDIT_TYPE_FLOAT};
-unsigned char Settings_Type_Display[] = {SETTINGS_EDIT_TYPE_ULONG, SETTINGS_EDIT_TYPE_UINT, SETTINGS_EDIT_TYPE_BOOLEAN, SETTINGS_EDIT_TYPE_BOOLEAN, SETTINGS_EDIT_TYPE_UINT, SETTINGS_EDIT_TYPE_BOOLEAN};
-unsigned char Settings_TypeIndex_APRS[] = {0,0,1,2,0,0,1,1,2,2,3,3,4,4,5,6,2,1,2,4,5}; // this is the index in the array of the data arrays below
-unsigned char Settings_TypeIndex_GPS[] = {1,0,1,2};
-unsigned char Settings_TypeIndex_Display[] = {2,0,0,1,3,3};
-// data arrays
-bool Settings_TypeBool[4] = {true,true,true,false}; // display show position, scroll messages, auto ACK, invert
-int Settings_TypeInt[0] = {};
-unsigned int Settings_TypeUInt[6] = {100,400,80,4,5,10000}; // display brightness, aprs preamble, aprs tail, scroll speed, Retry Count, Retry Interval
-long Settings_TypeLong[0] = {};
-unsigned long Settings_TypeULong[3] = {300000,10000,2000}; // aprs beacon frequency, gps update frequency, display timeout
-float Settings_TypeFloat[3] = {0.00001,34.790040,-82.790672}; // gps position tolerance, gps latitude, gps longitude
-char Settings_TypeString2[7][2] = {'0','\0'};
-char Settings_TypeString7[5][7] = {'N','O','C','A','L','L','\0'};
-char Settings_TypeString100[3][100] = {'T','e','s','t','\0'};
-char Settings_TempDispCharArr[100];
-
-#define SETTINGS_APRS_BEACON_FREQUENCY        Settings_TypeULong[Settings_TypeIndex_APRS[0]]        // beacon frequency
-#define SETTINGS_APRS_RAW_PACKET              Settings_TypeString100[Settings_TypeIndex_APRS[1]]    // raw packet
-#define SETTINGS_APRS_COMMENT                 Settings_TypeString100[Settings_TypeIndex_APRS[2]]    // comment
-#define SETTINGS_APRS_MESSAGE                 Settings_TypeString100[Settings_TypeIndex_APRS[3]]    // message
-#define SETTINGS_APRS_RECIPIENT_CALL          Settings_TypeString7[Settings_TypeIndex_APRS[4]]      // recipient
-#define SETTINGS_APRS_RECIPIENT_SSID          Settings_TypeString2[Settings_TypeIndex_APRS[5]]      // recipient ssid
-#define SETTINGS_APRS_CALLSIGN                Settings_TypeString7[Settings_TypeIndex_APRS[6]]      // callsign
-#define SETTINGS_APRS_CALLSIGN_SSID           Settings_TypeString2[Settings_TypeIndex_APRS[7]]      // callsign ssid
-#define SETTINGS_APRS_DESTINATION_CALL        Settings_TypeString7[Settings_TypeIndex_APRS[8]]      // Destination Callsign
-#define SETTINGS_APRS_DESTINATION_SSID        Settings_TypeString2[Settings_TypeIndex_APRS[9]]      // Destination SSID
-#define SETTINGS_APRS_PATH1_CALL              Settings_TypeString7[Settings_TypeIndex_APRS[10]]     // PATH1 Callsign
-#define SETTINGS_APRS_PATH1_SSID              Settings_TypeString2[Settings_TypeIndex_APRS[11]]     // PATH1 SSID
-#define SETTINGS_APRS_PATH2_CALL              Settings_TypeString7[Settings_TypeIndex_APRS[12]]     // PATH2 Callsign
-#define SETTINGS_APRS_PATH2_SSID              Settings_TypeString2[Settings_TypeIndex_APRS[13]]     // PATH2 SSID
-#define SETTINGS_APRS_SYMBOL                  Settings_TypeString2[Settings_TypeIndex_APRS[14]]     // Symbol
-#define SETTINGS_APRS_SYMBOL_TABLE            Settings_TypeString2[Settings_TypeIndex_APRS[15]]     // Symbol Table
-#define SETTINGS_APRS_AUTOMATIC_ACK           Settings_TypeBool[Settings_TypeIndex_APRS[16]]        // Automatic ACK
-#define SETTINGS_APRS_PREAMBLE                Settings_TypeUInt[Settings_TypeIndex_APRS[17]]        // Preamble
-#define SETTINGS_APRS_TAIL                    Settings_TypeUInt[Settings_TypeIndex_APRS[18]]        // Tail
-#define SETTINGS_APRS_RETRY_COUNT             Settings_TypeUInt[Settings_TypeIndex_APRS[19]]        // Retry Count
-#define SETTINGS_APRS_RETRY_INTERVAL          Settings_TypeUInt[Settings_TypeIndex_APRS[20]]        // Retry Interval
-
-#define SETTINGS_GPS_UPDATE_FREQUENCY         Settings_TypeULong[Settings_TypeIndex_GPS[0]]       // update frequency
-#define SETTINGS_GPS_POSITION_TOLERANCE       Settings_TypeFloat[Settings_TypeIndex_GPS[1]]       // position tolerance
-#define SETTINGS_GPS_DESTINATION_LATITUDE     Settings_TypeFloat[Settings_TypeIndex_GPS[2]]       // destination latitude
-#define SETTINGS_GPS_DESTINATION_LONGITUDE    Settings_TypeFloat[Settings_TypeIndex_GPS[3]]       // destination longitute
-
-#define SETTINGS_DISPLAY_TIMEOUT              Settings_TypeULong[Settings_TypeIndex_Display[0]]        // timeout
-#define SETTINGS_DISPLAY_BRIGHTNESS           Settings_TypeUInt[Settings_TypeIndex_Display[1]]         // brightness
-#define SETTINGS_DISPLAY_SHOW_POSITION        Settings_TypeBool[Settings_TypeIndex_Display[2]]         // show position
-#define SETTINGS_DISPLAY_SCROLL_MESSAGES      Settings_TypeBool[Settings_TypeIndex_Display[3]]         // scroll messages
-#define SETTINGS_DISPLAY_SCROLL_SPEED         Settings_TypeUInt[Settings_TypeIndex_Display[4]]         // scroll speed
-#define SETTINGS_DISPLAY_INVERT               Settings_TypeBool[Settings_TypeIndex_Display[5]]         // scroll speed
-
-// store common strings here
-const char DataEntered[] = {"Data entered="};
-const char InvalidCommand[] = {"Invalid command."};
-const char InvalidData_UnsignedInt[] = {"Invalid data. Expected unsigned integer 0-65535 instead got "};
-const char InvalidData_UnsignedLong[] = {"Invalid data. Expected unsigned long 0-4294967295 instead got "};
-const char InvalidData_TrueFalse[] = {"Invalid data. Expected True/False or 1/0"};
-const char Initialized[] = {"Initialized03"}; // change this to something unique if you want to re-init the EEPROM during flashing. useful when there has been a change to a settings array.
+#pragma endregion
 
 #pragma region "VOLTAGE"
+
+  #define BATT_CHARGED            7200
+  #define BATT_DISCHARGED         5600
+  #define VOLTAGE_CHECK_RATE      10000
+
+  unsigned char VoltagePercent = 0;
+  long Voltage = 0;
+  unsigned long voltage_check_timer;
 
   long readVcc(){
     // Read 1.1V reference against AVcc
@@ -327,6 +115,26 @@ const char Initialized[] = {"Initialized03"}; // change this to something unique
 #pragma endregion
 
 #pragma region "KEYBOARD"
+
+  // M5Stack Keyboard https://docs.m5stack.com/en/unit/cardkb
+  #include <Wire.h> 
+  #define CARDKB_ADDR 0x5F  
+  char keyboardInputChar;
+  bool wakeDisplay = false;
+  bool displayDim = false;
+
+  #define KEYBOARD_NUMBER_KEYS            (keyboardInputChar >= 48 && keyboardInputChar <= 57)
+  #define KEYBOARD_DIRECTIONAL_KEYS       (keyboardInputChar >= -76 && keyboardInputChar <= -73)
+  #define KEYBOARD_PRINTABLE_CHARACTERS   (keyboardInputChar >= 32 && keyboardInputChar <= 126)
+  #define KEYBOARD_BACKSPACE_KEY          8
+  #define KEYBOARD_ENTER_KEY              13
+  #define KEYBOARD_ESCAPE_KEY             27
+  #define KEYBOARD_MINUS_KEY              45
+  #define KEYBOARD_PERIOD_KEY             46
+  #define KEYBOARD_RIGHT_KEY              -73
+  #define KEYBOARD_DOWN_KEY               -74
+  #define KEYBOARD_UP_KEY                 -75
+  #define KEYBOARD_LEFT_KEY               -76
   
   void handleKeyboard(){
   keyboardInputChar = 0;
@@ -346,260 +154,101 @@ const char Initialized[] = {"Initialized03"}; // change this to something unique
 
 #pragma endregion
 
-#pragma region "GPS"
-
-  void readGPS(){
-/*
-// degrees minutes seconds (dms) to decimal degrees (dd)
-// DD = d + (min/60) + (sec/3600)
-// if lat positive (+) then north (N) else south (S)
-// if lon positive (+) then east (E) else west (W)
-
-// decimal degrees (dd) to degrees minutes seconds (dms)
-// d = int(DD)
-// m = int((DD-d) * 60)
-// s = (DD-d-m/60) * 3600
-
-float long = 45.124783;
-int deglong = long;
-long -= deglong; // remove the degrees from the calculation
-long *= 60; // convert to minutes
-int minlong = long;
-long -= minlong; // remove the minuts from the calculation
-long *= 60; // convert to seconds
-*/
-  //// For one second we parse GPS data and report some key values
-  //for (unsigned long start = millis(); millis() - start < 1000;)
-  //{
-      while (Serial2.available() > 0)
-        //Serial.write(Serial2.read()); // uncomment this line if you want to see the GPS data flowing
-        gps.encode(Serial2.read());
-  //}
-      
-  if ( millis() - gps_report_timer > SETTINGS_GPS_UPDATE_FREQUENCY){
-      // reset timer
-      gps_report_timer = millis();
-      if (gps.location.isUpdated())
-      {
-        //Serial.print(F("LOCATION   Fix Age="));
-        //Serial.print(gps.location.age());
-        //Serial.print(F("ms Raw Lat="));
-        //Serial.print(gps.location.rawLat().negative ? "-" : "+");
-        //Serial.print(gps.location.rawLat().deg);
-        //Serial.print("[+");
-        //Serial.print(gps.location.rawLat().billionths);
-        //Serial.print(F(" billionths],  Raw Long="));
-        //Serial.print(gps.location.rawLng().negative ? "-" : "+");
-        //Serial.print(gps.location.rawLng().deg);
-        //Serial.print("[+");
-        //Serial.print(gps.location.rawLng().billionths);
-        //Serial.print(F(" billionths],  Lat="));
-        //Serial.print(F(" Lat="));
-        //Serial.print(gps.location.lat(), 6);
-        //Serial.print(F(" Long="));
-        //Serial.print(gps.location.lng(), 6);
-        
-        // DDMM.MM http://ember2ash.com/lat.htm
-        //Serial.print(F(" Lat2="));
-        currentLatDeg = gps.location.rawLat().deg*100.0 + gps.location.rawLat().billionths*0.000000001*60.0;
-        dtostrf(currentLatDeg, 8, 3, currentLat);
-        currentLat[7] = gps.location.rawLat().negative ? 'S' : 'N';
-        for (byte i = 0; i < sizeof(currentLat) - 1; i++) {
-          if (currentLat[i] == ' ') currentLat[i] = '0';
-        }
-        if (currentLatDeg > lastLatDeg + lastLatDeg*(SETTINGS_GPS_POSITION_TOLERANCE/100)  || currentLatDeg < lastLatDeg - lastLatDeg*(SETTINGS_GPS_POSITION_TOLERANCE/100)) {
-          modemCmdFlag_Lat=true;
-          lastLatDeg = currentLatDeg;
-        }
-        
-        //Serial.print(F(" Long2="));
-        currentLngDeg = gps.location.rawLng().deg*100.0 + gps.location.rawLng().billionths*0.000000001*60.0;
-        dtostrf(currentLngDeg, 9, 3, currentLng);
-        currentLng[8] = gps.location.rawLng().negative ? 'W' : 'E';
-        for (byte i = 0; i < sizeof(currentLng) - 1; i++) {
-          if (currentLng[i] == ' ') currentLng[i] = '0';
-        }
-        if (currentLngDeg > lastLngDeg + lastLngDeg*(SETTINGS_GPS_POSITION_TOLERANCE/100) || currentLngDeg < lastLngDeg - lastLngDeg*(SETTINGS_GPS_POSITION_TOLERANCE/100)) {
-          modemCmdFlag_Lng=true;
-          lastLngDeg = currentLngDeg;
-        }
-        /*
-        Serial.println();
-        Serial.print("Comment=");
-        byte j = 0;
-        for (byte i = 0; i < sizeof(strAprsComment) - 1; i++) {
-          if (strAprsComment[i] != 0){
-            Serial.print(strAprsComment[i]);
-            j++;
-          }
-        }
-        Serial.print(" Size=");
-        Serial.print(j);
-        */
-        //Serial.println();
-        //Serial.print("CommentLength=");
-        //Serial.println(stringLength(strAprsComment,sizeof(strAprsComment)));
-        
-      }
-      if (gps.date.isUpdated())
-      {
-        /*
-        Serial.print(F("DATE       Fix Age="));
-        Serial.print(gps.date.age());
-        Serial.print(F("ms Raw="));
-        Serial.print(gps.date.value());
-        Serial.print(F(" Year="));
-        Serial.print(gps.date.year());
-        Serial.print(F(" Month="));
-        Serial.print(gps.date.month());
-        Serial.print(F(" Day="));
-        Serial.println(gps.date.day());
-        */
-        GPSData.Date.Day = gps.date.day();
-        GPSData.Date.Month = gps.date.month();
-        GPSData.Date.Year = gps.date.year();
-        GPSData.Date.DateInt = gps.date.value();
-      }
-      if (gps.time.isUpdated())
-      {
-        /*
-        Serial.print(F("TIME       Fix Age="));
-        Serial.print(gps.time.age());
-        Serial.print(F("ms Raw="));
-        Serial.print(gps.time.value());
-        Serial.print(F(" Hour="));
-        Serial.print(gps.time.hour());
-        Serial.print(F(" Minute="));
-        Serial.print(gps.time.minute());
-        Serial.print(F(" Second="));
-        Serial.print(gps.time.second());
-        Serial.print(F(" Hundredths="));
-        Serial.println(gps.time.centisecond());
-        */
-        GPSData.Time.Hour = gps.time.hour();
-        GPSData.Time.Minute = gps.time.minute();
-        GPSData.Time.Second = gps.time.second();
-        GPSData.Time.CentiSecond = gps.time.centisecond();
-        GPSData.Time.TimeInt = gps.time.value();
-      }
-      if (gps.speed.isUpdated())
-      {
-        /*
-        Serial.print(F("SPEED      Fix Age="));
-        Serial.print(gps.speed.age());
-        Serial.print(F("ms Raw="));
-        Serial.print(gps.speed.value());
-        Serial.print(F(" Knots="));
-        Serial.print(gps.speed.knots());
-        Serial.print(F(" MPH="));
-        Serial.print(gps.speed.mph());
-        Serial.print(F(" m/s="));
-        Serial.print(gps.speed.mps());
-        Serial.print(F(" km/h="));
-        Serial.println(gps.speed.kmph());
-        */
-      }
-      if (gps.course.isUpdated())
-      {
-        /*
-        Serial.print(F("COURSE     Fix Age="));
-        Serial.print(gps.course.age());
-        Serial.print(F("ms Raw="));
-        Serial.print(gps.course.value());
-        Serial.print(F(" Deg="));
-        Serial.println(gps.course.deg());
-        */
-      }
-      if (gps.altitude.isUpdated())
-      {
-        /*
-        Serial.print(F("ALTITUDE   Fix Age="));
-        Serial.print(gps.altitude.age());
-        Serial.print(F("ms Raw="));
-        Serial.print(gps.altitude.value());
-        Serial.print(F(" Meters="));
-        Serial.print(gps.altitude.meters());
-        Serial.print(F(" Miles="));
-        Serial.print(gps.altitude.miles());
-        Serial.print(F(" KM="));
-        Serial.print(gps.altitude.kilometers());
-        Serial.print(F(" Feet="));
-        Serial.println(gps.altitude.feet());
-        */
-      }
-      if (gps.satellites.isUpdated())
-      {
-        /*
-        Serial.print(F("SATELLITES Fix Age="));
-        Serial.print(gps.satellites.age());
-        Serial.print(F("ms Value="));
-        Serial.println(gps.satellites.value());
-        */
-        GPSData.Satellites = gps.satellites.value();
-      }
-      if (gps.hdop.isUpdated())
-      {
-        /*
-        Serial.print(F("HDOP       Fix Age="));
-        Serial.print(gps.hdop.age());
-        Serial.print(F("ms raw="));
-        Serial.print(gps.hdop.value());
-        Serial.print(F(" hdop="));
-        Serial.println(gps.hdop.hdop());
-        */
-      }
-      if (millis() - destination_report_timer > DESTINATION_REPORT_FREQUENCY)
-      {/*
-        Serial.println();
-        if (gps.location.isValid())
-        {
-          double distanceToDestination =
-            TinyGPSPlus::distanceBetween(
-              gps.location.lat(),
-              gps.location.lng(),
-              DESTINATION_LAT, 
-              DESTINATION_LON);
-          double courseToDestination =
-            TinyGPSPlus::courseTo(
-              gps.location.lat(),
-              gps.location.lng(),
-              SETTINGS_GPS_DESTINATION_LATITUDE, 
-              SETTINGS_GPS_DESTINATION_LONGITUDE);
-    
-          Serial.print(F("DESTINATION     Distance="));
-          Serial.print((distanceToDestination/1000.0)*0.621371, 6); // mile factor 0.621371
-          Serial.print(F(" mi Course-to="));
-          Serial.print(courseToDestination, 6);
-          Serial.print(F(" degrees ["));
-          Serial.print(TinyGPSPlus::cardinal(courseToDestination));
-          Serial.println(F("]"));
-        }
-        
-        /*
-        Serial.print(F("DIAGS      Chars="));
-        Serial.print(gps.charsProcessed());
-        Serial.print(F(" Sentences-with-Fix="));
-        Serial.print(gps.sentencesWithFix());
-        Serial.print(F(" Failed-checksum="));
-        Serial.print(gps.failedChecksum());
-        Serial.print(F(" Passed-checksum="));
-        Serial.println(gps.passedChecksum());
-        */
-    /*
-        if (gps.charsProcessed() < 10)
-          Serial.println(F("WARNING: No GPS data.  Check wiring."));
-    
-        destination_report_timer = millis();
-        Serial.println();*/
-      }
-
-  }
-}
-
-#pragma endregion
-
 #pragma region "SETTINGS"
+
+  #include <EEPROM.h>
+
+  const char Initialized[] = {"Initialized03"}; // change this to something unique if you want to re-init the EEPROM during flashing. useful when there has been a change to a settings array.
+
+  #define EEPROM_SETTINGS_START_ADDR      1000
+  #define SETTINGS_EDIT_TYPE_NONE         0
+  #define SETTINGS_EDIT_TYPE_BOOLEAN      1
+  #define SETTINGS_EDIT_TYPE_INT          2
+  #define SETTINGS_EDIT_TYPE_UINT         3
+  #define SETTINGS_EDIT_TYPE_LONG         4
+  #define SETTINGS_EDIT_TYPE_ULONG        5
+  #define SETTINGS_EDIT_TYPE_FLOAT        6
+  #define SETTINGS_EDIT_TYPE_STRING2      7
+  #define SETTINGS_EDIT_TYPE_STRING7      8
+  #define SETTINGS_EDIT_TYPE_STRING100    9
+                          
+  const char *MenuItems_Settings[] = {"APRS","GPS","Display"};
+  const char *MenuItems_Settings_APRS[] = {"Beacon Frequency","Raw Packet","Comment","Message","Recipient Callsign","Recipient SSID", "My Callsign","Callsign SSID", 
+                                          "Dest Callsign", "Dest SSID", "PATH1 Callsign", "PATH1 SSID", "PATH2 Callsign", "PATH2 SSID",
+                                          "Symbol", "Table", "Automatic ACK", "Preamble", "Tail", "Retry Count", "Retry Interval"};
+  const char *MenuItems_Settings_GPS[] = {"Update Freq","Pos Tolerance", "Dest Latitude", "Dest Longitude"};
+  const char *MenuItems_Settings_Display[] = {"Timeout", "Brightness", "Show Position", "Scroll Messages", "Scroll Speed", "Invert"};
+
+  unsigned char Settings_Type_APRS[] = {SETTINGS_EDIT_TYPE_ULONG,SETTINGS_EDIT_TYPE_STRING100,SETTINGS_EDIT_TYPE_STRING100,SETTINGS_EDIT_TYPE_STRING100,SETTINGS_EDIT_TYPE_STRING7,SETTINGS_EDIT_TYPE_STRING2,SETTINGS_EDIT_TYPE_STRING7,SETTINGS_EDIT_TYPE_STRING2,
+                              SETTINGS_EDIT_TYPE_STRING7,SETTINGS_EDIT_TYPE_STRING2,SETTINGS_EDIT_TYPE_STRING7,SETTINGS_EDIT_TYPE_STRING2,SETTINGS_EDIT_TYPE_STRING7,SETTINGS_EDIT_TYPE_STRING2,
+                              SETTINGS_EDIT_TYPE_STRING2,SETTINGS_EDIT_TYPE_STRING2,SETTINGS_EDIT_TYPE_BOOLEAN,SETTINGS_EDIT_TYPE_UINT,SETTINGS_EDIT_TYPE_UINT,SETTINGS_EDIT_TYPE_UINT,SETTINGS_EDIT_TYPE_UINT};
+  unsigned char Settings_Type_GPS[] = {SETTINGS_EDIT_TYPE_ULONG,SETTINGS_EDIT_TYPE_FLOAT,SETTINGS_EDIT_TYPE_FLOAT,SETTINGS_EDIT_TYPE_FLOAT};
+  unsigned char Settings_Type_Display[] = {SETTINGS_EDIT_TYPE_ULONG, SETTINGS_EDIT_TYPE_UINT, SETTINGS_EDIT_TYPE_BOOLEAN, SETTINGS_EDIT_TYPE_BOOLEAN, SETTINGS_EDIT_TYPE_UINT, SETTINGS_EDIT_TYPE_BOOLEAN};
+  unsigned char Settings_TypeIndex_APRS[] = {0,0,1,2,0,0,1,1,2,2,3,3,4,4,5,6,2,1,2,4,5}; // this is the index in the array of the data arrays below
+  unsigned char Settings_TypeIndex_GPS[] = {1,0,1,2};
+  unsigned char Settings_TypeIndex_Display[] = {2,0,0,1,3,3};
+  // data arrays
+  bool Settings_TypeBool[4] = {true,true,true,false}; // display show position, scroll messages, auto ACK, invert
+  int Settings_TypeInt[0] = {};
+  unsigned int Settings_TypeUInt[6] = {100,400,80,4,5,10000}; // display brightness, aprs preamble, aprs tail, scroll speed, Retry Count, Retry Interval
+  long Settings_TypeLong[0] = {};
+  unsigned long Settings_TypeULong[3] = {300000,10000,2000}; // aprs beacon frequency, gps update frequency, display timeout
+  float Settings_TypeFloat[3] = {0.00001,34.790040,-82.790672}; // gps position tolerance, gps latitude, gps longitude
+  char Settings_TypeString2[7][2] = {'0','\0'};
+  char Settings_TypeString7[5][7] = {'N','O','C','A','L','L','\0'};
+  char Settings_TypeString100[3][100] = {'T','e','s','t','\0'};
+  char Settings_TempDispCharArr[100];
+
+  #define SETTINGS_APRS_BEACON_FREQUENCY        Settings_TypeULong[Settings_TypeIndex_APRS[0]]        // beacon frequency
+  #define SETTINGS_APRS_RAW_PACKET              Settings_TypeString100[Settings_TypeIndex_APRS[1]]    // raw packet
+  #define SETTINGS_APRS_COMMENT                 Settings_TypeString100[Settings_TypeIndex_APRS[2]]    // comment
+  #define SETTINGS_APRS_MESSAGE                 Settings_TypeString100[Settings_TypeIndex_APRS[3]]    // message
+  #define SETTINGS_APRS_RECIPIENT_CALL          Settings_TypeString7[Settings_TypeIndex_APRS[4]]      // recipient
+  #define SETTINGS_APRS_RECIPIENT_SSID          Settings_TypeString2[Settings_TypeIndex_APRS[5]]      // recipient ssid
+  #define SETTINGS_APRS_CALLSIGN                Settings_TypeString7[Settings_TypeIndex_APRS[6]]      // callsign
+  #define SETTINGS_APRS_CALLSIGN_SSID           Settings_TypeString2[Settings_TypeIndex_APRS[7]]      // callsign ssid
+  #define SETTINGS_APRS_DESTINATION_CALL        Settings_TypeString7[Settings_TypeIndex_APRS[8]]      // Destination Callsign
+  #define SETTINGS_APRS_DESTINATION_SSID        Settings_TypeString2[Settings_TypeIndex_APRS[9]]      // Destination SSID
+  #define SETTINGS_APRS_PATH1_CALL              Settings_TypeString7[Settings_TypeIndex_APRS[10]]     // PATH1 Callsign
+  #define SETTINGS_APRS_PATH1_SSID              Settings_TypeString2[Settings_TypeIndex_APRS[11]]     // PATH1 SSID
+  #define SETTINGS_APRS_PATH2_CALL              Settings_TypeString7[Settings_TypeIndex_APRS[12]]     // PATH2 Callsign
+  #define SETTINGS_APRS_PATH2_SSID              Settings_TypeString2[Settings_TypeIndex_APRS[13]]     // PATH2 SSID
+  #define SETTINGS_APRS_SYMBOL                  Settings_TypeString2[Settings_TypeIndex_APRS[14]]     // Symbol
+  #define SETTINGS_APRS_SYMBOL_TABLE            Settings_TypeString2[Settings_TypeIndex_APRS[15]]     // Symbol Table
+  #define SETTINGS_APRS_AUTOMATIC_ACK           Settings_TypeBool[Settings_TypeIndex_APRS[16]]        // Automatic ACK
+  #define SETTINGS_APRS_PREAMBLE                Settings_TypeUInt[Settings_TypeIndex_APRS[17]]        // Preamble
+  #define SETTINGS_APRS_TAIL                    Settings_TypeUInt[Settings_TypeIndex_APRS[18]]        // Tail
+  #define SETTINGS_APRS_RETRY_COUNT             Settings_TypeUInt[Settings_TypeIndex_APRS[19]]        // Retry Count
+  #define SETTINGS_APRS_RETRY_INTERVAL          Settings_TypeUInt[Settings_TypeIndex_APRS[20]]        // Retry Interval
+
+  #define SETTINGS_GPS_UPDATE_FREQUENCY         Settings_TypeULong[Settings_TypeIndex_GPS[0]]       // update frequency
+  #define SETTINGS_GPS_POSITION_TOLERANCE       Settings_TypeFloat[Settings_TypeIndex_GPS[1]]       // position tolerance
+  #define SETTINGS_GPS_DESTINATION_LATITUDE     Settings_TypeFloat[Settings_TypeIndex_GPS[2]]       // destination latitude
+  #define SETTINGS_GPS_DESTINATION_LONGITUDE    Settings_TypeFloat[Settings_TypeIndex_GPS[3]]       // destination longitute
+
+  #define SETTINGS_DISPLAY_TIMEOUT              Settings_TypeULong[Settings_TypeIndex_Display[0]]        // timeout
+  #define SETTINGS_DISPLAY_BRIGHTNESS           Settings_TypeUInt[Settings_TypeIndex_Display[1]]         // brightness
+  #define SETTINGS_DISPLAY_SHOW_POSITION        Settings_TypeBool[Settings_TypeIndex_Display[2]]         // show position
+  #define SETTINGS_DISPLAY_SCROLL_MESSAGES      Settings_TypeBool[Settings_TypeIndex_Display[3]]         // scroll messages
+  #define SETTINGS_DISPLAY_SCROLL_SPEED         Settings_TypeUInt[Settings_TypeIndex_Display[4]]         // scroll speed
+  #define SETTINGS_DISPLAY_INVERT               Settings_TypeBool[Settings_TypeIndex_Display[5]]         // scroll speed
+
+  bool applySettings=false, saveModemSettings=false;
+  unsigned char applySettings_Seq=0;
+  bool modemCmdFlag_Setc=false, modemCmdFlag_Setsc=false;
+  bool modemCmdFlag_Setd=false, modemCmdFlag_Setsd=false;
+  bool modemCmdFlag_Set1=false, modemCmdFlag_Sets1=false;
+  bool modemCmdFlag_Set2=false, modemCmdFlag_Sets2=false;
+  bool modemCmdFlag_Setls=false, modemCmdFlag_Setlt=false;
+  bool modemCmdFlag_Setma=false, modemCmdFlag_Setw=false;
+  bool modemCmdFlag_SetW=false, modemCmdFlag_Setmr=false;
+  bool modemCmdFlag_SetS=false, modemCmdFlag_SetC=false;
+  bool modemCmdFlag_SetH=false;
   
+  #if !defined(ARRAY_SIZE)
+      #define ARRAY_SIZE(x) (sizeof((x)) / sizeof((x)[0]))
+  #endif
+
   void checkInit(){
     Serial.println(F("Checking initialization..."));
     bool writeDefaults = false;
@@ -1038,7 +687,298 @@ long *= 60; // convert to seconds
 
 #pragma endregion
 
+#pragma region "GPS"
+
+  #include <TinyGPS++.h>
+  TinyGPSPlus gps;
+  #define DESTINATION_REPORT_FREQUENCY 20000    // how often distance to target is sent to serial
+  // http://ember2ash.com/lat.htm
+  float currentLatDeg = 0;
+  float currentLngDeg = 0;
+  //float positionTolerance = 0.00001;
+  float lastLatDeg = 0.0;
+  float lastLngDeg = 0.0;
+  char currentLat[9] = {'0','0','0','0','.','0','0','N','\0'};
+  char currentLng[10] = {'0','0','0','0','0','.','0','0','N','\0'};
+  bool modemCmdFlag_Lat=false, modemCmdFlag_Lng=false;
+  unsigned long gps_report_timer, destination_report_timer;
+
+  // London                                 LAT:51.508131     LNG:-0.128002
+  //double DESTINATION_LAT = 51.508131, DESTINATION_LON = -0.128002;
+
+  void readGPS(){
+ 
+  while (Serial2.available() > 0)
+
+  gps.encode(Serial2.read());
+      
+  if ( millis() - gps_report_timer > SETTINGS_GPS_UPDATE_FREQUENCY){
+      // reset timer
+      gps_report_timer = millis();
+      if (gps.location.isUpdated())
+      {
+        //Serial.print(F("LOCATION   Fix Age="));
+        //Serial.print(gps.location.age());
+        //Serial.print(F("ms Raw Lat="));
+        //Serial.print(gps.location.rawLat().negative ? "-" : "+");
+        //Serial.print(gps.location.rawLat().deg);
+        //Serial.print("[+");
+        //Serial.print(gps.location.rawLat().billionths);
+        //Serial.print(F(" billionths],  Raw Long="));
+        //Serial.print(gps.location.rawLng().negative ? "-" : "+");
+        //Serial.print(gps.location.rawLng().deg);
+        //Serial.print("[+");
+        //Serial.print(gps.location.rawLng().billionths);
+        //Serial.print(F(" billionths],  Lat="));
+        //Serial.print(F(" Lat="));
+        //Serial.print(gps.location.lat(), 6);
+        //Serial.print(F(" Long="));
+        //Serial.print(gps.location.lng(), 6);
+        
+        // DDMM.MM http://ember2ash.com/lat.htm
+        //Serial.print(F(" Lat2="));
+        currentLatDeg = gps.location.rawLat().deg*100.0 + gps.location.rawLat().billionths*0.000000001*60.0;
+        dtostrf(currentLatDeg, 8, 3, currentLat);
+        currentLat[7] = gps.location.rawLat().negative ? 'S' : 'N';
+        for (byte i = 0; i < sizeof(currentLat) - 1; i++) {
+          if (currentLat[i] == ' ') currentLat[i] = '0';
+        }
+        if (currentLatDeg > lastLatDeg + lastLatDeg*(SETTINGS_GPS_POSITION_TOLERANCE/100)  || currentLatDeg < lastLatDeg - lastLatDeg*(SETTINGS_GPS_POSITION_TOLERANCE/100)) {
+          modemCmdFlag_Lat=true;
+          lastLatDeg = currentLatDeg;
+        }
+        
+        //Serial.print(F(" Long2="));
+        currentLngDeg = gps.location.rawLng().deg*100.0 + gps.location.rawLng().billionths*0.000000001*60.0;
+        dtostrf(currentLngDeg, 9, 3, currentLng);
+        currentLng[8] = gps.location.rawLng().negative ? 'W' : 'E';
+        for (byte i = 0; i < sizeof(currentLng) - 1; i++) {
+          if (currentLng[i] == ' ') currentLng[i] = '0';
+        }
+        if (currentLngDeg > lastLngDeg + lastLngDeg*(SETTINGS_GPS_POSITION_TOLERANCE/100) || currentLngDeg < lastLngDeg - lastLngDeg*(SETTINGS_GPS_POSITION_TOLERANCE/100)) {
+          modemCmdFlag_Lng=true;
+          lastLngDeg = currentLngDeg;
+        }
+        
+      }
+      if (gps.date.isUpdated())
+      {
+        /*
+        Serial.print(F("DATE       Fix Age="));
+        Serial.print(gps.date.age());
+        Serial.print(F("ms Raw="));
+        Serial.print(gps.date.value());
+        Serial.print(F(" Year="));
+        Serial.print(gps.date.year());
+        Serial.print(F(" Month="));
+        Serial.print(gps.date.month());
+        Serial.print(F(" Day="));
+        Serial.println(gps.date.day());
+        */
+        GPSData.Date.Day = gps.date.day();
+        GPSData.Date.Month = gps.date.month();
+        GPSData.Date.Year = gps.date.year();
+        GPSData.Date.DateInt = gps.date.value();
+      }
+      if (gps.time.isUpdated())
+      {
+        /*
+        Serial.print(F("TIME       Fix Age="));
+        Serial.print(gps.time.age());
+        Serial.print(F("ms Raw="));
+        Serial.print(gps.time.value());
+        Serial.print(F(" Hour="));
+        Serial.print(gps.time.hour());
+        Serial.print(F(" Minute="));
+        Serial.print(gps.time.minute());
+        Serial.print(F(" Second="));
+        Serial.print(gps.time.second());
+        Serial.print(F(" Hundredths="));
+        Serial.println(gps.time.centisecond());
+        */
+        GPSData.Time.Hour = gps.time.hour();
+        GPSData.Time.Minute = gps.time.minute();
+        GPSData.Time.Second = gps.time.second();
+        GPSData.Time.CentiSecond = gps.time.centisecond();
+        GPSData.Time.TimeInt = gps.time.value();
+      }
+      if (gps.speed.isUpdated())
+      {
+        /*
+        Serial.print(F("SPEED      Fix Age="));
+        Serial.print(gps.speed.age());
+        Serial.print(F("ms Raw="));
+        Serial.print(gps.speed.value());
+        Serial.print(F(" Knots="));
+        Serial.print(gps.speed.knots());
+        Serial.print(F(" MPH="));
+        Serial.print(gps.speed.mph());
+        Serial.print(F(" m/s="));
+        Serial.print(gps.speed.mps());
+        Serial.print(F(" km/h="));
+        Serial.println(gps.speed.kmph());
+        */
+      }
+      if (gps.course.isUpdated())
+      {
+        /*
+        Serial.print(F("COURSE     Fix Age="));
+        Serial.print(gps.course.age());
+        Serial.print(F("ms Raw="));
+        Serial.print(gps.course.value());
+        Serial.print(F(" Deg="));
+        Serial.println(gps.course.deg());
+        */
+      }
+      if (gps.altitude.isUpdated())
+      {
+        /*
+        Serial.print(F("ALTITUDE   Fix Age="));
+        Serial.print(gps.altitude.age());
+        Serial.print(F("ms Raw="));
+        Serial.print(gps.altitude.value());
+        Serial.print(F(" Meters="));
+        Serial.print(gps.altitude.meters());
+        Serial.print(F(" Miles="));
+        Serial.print(gps.altitude.miles());
+        Serial.print(F(" KM="));
+        Serial.print(gps.altitude.kilometers());
+        Serial.print(F(" Feet="));
+        Serial.println(gps.altitude.feet());
+        */
+      }
+      if (gps.satellites.isUpdated())
+      {
+        /*
+        Serial.print(F("SATELLITES Fix Age="));
+        Serial.print(gps.satellites.age());
+        Serial.print(F("ms Value="));
+        Serial.println(gps.satellites.value());
+        */
+        GPSData.Satellites = gps.satellites.value();
+      }
+      if (gps.hdop.isUpdated())
+      {
+        /*
+        Serial.print(F("HDOP       Fix Age="));
+        Serial.print(gps.hdop.age());
+        Serial.print(F("ms raw="));
+        Serial.print(gps.hdop.value());
+        Serial.print(F(" hdop="));
+        Serial.println(gps.hdop.hdop());
+        */
+      }
+      if (millis() - destination_report_timer > DESTINATION_REPORT_FREQUENCY)
+      {/*
+        Serial.println();
+        if (gps.location.isValid())
+        {
+          double distanceToDestination =
+            TinyGPSPlus::distanceBetween(
+              gps.location.lat(),
+              gps.location.lng(),
+              DESTINATION_LAT, 
+              DESTINATION_LON);
+          double courseToDestination =
+            TinyGPSPlus::courseTo(
+              gps.location.lat(),
+              gps.location.lng(),
+              SETTINGS_GPS_DESTINATION_LATITUDE, 
+              SETTINGS_GPS_DESTINATION_LONGITUDE);
+    
+          Serial.print(F("DESTINATION     Distance="));
+          Serial.print((distanceToDestination/1000.0)*0.621371, 6); // mile factor 0.621371
+          Serial.print(F(" mi Course-to="));
+          Serial.print(courseToDestination, 6);
+          Serial.print(F(" degrees ["));
+          Serial.print(TinyGPSPlus::cardinal(courseToDestination));
+          Serial.println(F("]"));
+        }
+        
+        /*
+        Serial.print(F("DIAGS      Chars="));
+        Serial.print(gps.charsProcessed());
+        Serial.print(F(" Sentences-with-Fix="));
+        Serial.print(gps.sentencesWithFix());
+        Serial.print(F(" Failed-checksum="));
+        Serial.print(gps.failedChecksum());
+        Serial.print(F(" Passed-checksum="));
+        Serial.println(gps.passedChecksum());
+        */
+    /*
+        if (gps.charsProcessed() < 10)
+          Serial.println(F("WARNING: No GPS data.  Check wiring."));
+    
+        destination_report_timer = millis();
+        Serial.println();*/
+      }
+
+  }
+}
+
+#pragma endregion
+
 #pragma region "DISPLAYS"
+
+  #include <Adafruit_GFX.h>
+  #include <Adafruit_SH1106.h>
+
+  #define DISPLAY_REFRESH_RATE                  100
+  #define DISPLAY_REFRESH_RATE_SCROLL           80       // min 60
+  #define DISPLAY_BLINK_RATE                    500
+  #define UI_DISPLAY_HOME                       0
+  #define UI_DISPLAY_MESSAGES                   1
+  #define UI_DISPLAY_LIVEFEED                   2
+  #define UI_DISPLAY_SETTINGS                   3
+  #define UI_DISPLAY_SETTINGS_APRS              4
+  #define UI_DISPLAY_SETTINGS_GPS               5
+  #define UI_DISPLAY_SETTINGS_DISPLAY           6
+  #define UI_DISPLAY_SETTINGS_SAVE              7
+
+  #define UI_DISPLAY_ROW_TOP                    0
+  #define UI_DISPLAY_ROW_01                     8
+  #define UI_DISPLAY_ROW_02                     16
+  #define UI_DISPLAY_ROW_03                     24
+  #define UI_DISPLAY_ROW_04                     32
+  #define UI_DISPLAY_ROW_05                     40
+  #define UI_DISPLAY_ROW_06                     48
+  #define UI_DISPLAY_ROW_BOTTOM                 56
+
+  unsigned char currentDisplay = UI_DISPLAY_HOME;
+  unsigned char currentDisplayLast = currentDisplay;
+  unsigned char previousDisplay = UI_DISPLAY_HOME;
+  uint32_t cursorPosition_X = 0, cursorPosition_X_Last = 0;
+  uint32_t cursorPosition_Y = 0, cursorPosition_Y_Last = 0;
+  short int ScrollingIndex_LiveFeed, ScrollingIndex_LiveFeed_minX;
+  short int ScrollingIndex_MessageFeed, ScrollingIndex_MessageFeed_minX;
+
+  // do something on first show of display
+  bool displayInitialized = false;
+  // leave the display after a timeout period
+  bool leaveDisplay_MessageFeed = false, leaveDisplay_LiveFeed = false, leaveDisplay_Settings = false;
+  // refresh the displays
+  bool displayRefresh_Global = true, displayRefresh_Scroll = true;
+  // go into edit mode in the settings
+  bool editMode_Settings = false;
+  bool displayBlink = false;
+  unsigned char Settings_EditValueSize = 0;
+  bool settingsChanged = false;
+  bool sendMessage=false, sendMessage_Ack=false;
+  unsigned long display_refresh_timer, display_refresh_timer_scroll, leave_display_timer;
+  unsigned long display_blink_timer, display_timeout_timer, display_off_timer;
+  unsigned long processor_scan_time, scanTime;
+
+  // Declaration for an SSD1306 display connected to I2C (SDA, SCL pins)
+  #define OLED_RESET -1 // Reset pin # (or -1 if sharing Arduino reset pin)
+  Adafruit_SH1106 display(OLED_RESET);
+
+  #if (SH1106_LCDHEIGHT != 64)
+  #error("Height incorrect, please fix Adafruit_SH1106.h!");
+  #endif
+
+  // input pins
+  #define rxPin A5 // using analog input pins
+  #define txPin A6
 
   template <typename T>
   T numberOfDigits(T number){
@@ -2312,6 +2252,16 @@ long *= 60; // convert to seconds
 
 #pragma region "MODEM"
 
+  // http://www.aprs.net/vm/DOS/PROTOCOL.HTM
+
+  bool modemCmdFlag_Raw=false, modemCmdFlag_Cmt=false, modemCmdFlag_Msg=false;
+  bool modemCmdFlag_MsgRecipient=false, modemCmdFlag_MsgRecipientSSID=false;
+  bool aprsAutomaticCommentEnabled = true;
+  unsigned char sendMessage_Seq=0, sendMessage_Retrys;
+  #define MAXIMUM_MODEM_COMMAND_RATE 100        // maximum rate that commands can be sent to modem
+  unsigned long modem_command_timer, aprs_beacon_timer;
+  unsigned long message_retry_timer;
+
   void handleAprsBeacon(){
     if ( millis() - aprs_beacon_timer > SETTINGS_APRS_BEACON_FREQUENCY ){
       if (aprsAutomaticCommentEnabled==true){
@@ -2714,6 +2664,13 @@ long *= 60; // convert to seconds
 #pragma endregion
 
 #pragma region "TERMINAL"
+
+  // store common strings here just to save space instead of recreating them
+  const char DataEntered[] = {"Data entered="};
+  const char InvalidCommand[] = {"Invalid command."};
+  const char InvalidData_UnsignedInt[] = {"Invalid data. Expected unsigned integer 0-65535 instead got "};
+  const char InvalidData_UnsignedLong[] = {"Invalid data. Expected unsigned long 0-4294967295 instead got "};
+  const char InvalidData_TrueFalse[] = {"Invalid data. Expected True/False or 1/0"};
 
   void getDataTypeExample(int dataType, char* outExample){
 
@@ -3296,6 +3253,14 @@ long *= 60; // convert to seconds
 #pragma endregion
 
 #pragma region "SD"
+
+  #include <SPI.h>
+  #include <SD.h>
+
+  File RawDataFile;
+  File MsgDataFile;
+  const char RawDataFileName[] = {"raw.txt"};
+  const char MsgDataFileName[] = {"msg.txt"};
 
   void writeRawDataToSd(APRSFormat_Raw RawData){
     byte *buff = (byte *) &RawData; // to access RawData as bytes

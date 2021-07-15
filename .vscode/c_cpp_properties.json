@@ -18,13 +18,13 @@
             "includePath": [
                 "/Applications/Arduino.app/Contents/Java/hardware/arduino/avr/cores/arduino",
                 "/Applications/Arduino.app/Contents/Java/hardware/arduino/avr/variants/mega",
+                "/Applications/Arduino.app/Contents/Java/hardware/arduino/avr/libraries/Wire/src",
+                "/Applications/Arduino.app/Contents/Java/hardware/arduino/avr/libraries/EEPROM/src",
+                "/Users/dalethomas/OneDrive/05 - Arduino/libraries/TinyGPSPlus/src",
                 "/Users/dalethomas/OneDrive/05 - Arduino/libraries/Adafruit_GFX_Library",
                 "/Users/dalethomas/OneDrive/05 - Arduino/libraries/Adafruit_SH1106-master",
                 "/Applications/Arduino.app/Contents/Java/hardware/arduino/avr/libraries/SPI/src",
-                "/Users/dalethomas/OneDrive/05 - Arduino/libraries/TinyGPSPlus/src",
-                "/Applications/Arduino.app/Contents/Java/hardware/arduino/avr/libraries/EEPROM/src",
                 "/Users/dalethomas/OneDrive/05 - Arduino/libraries/SD/src",
-                "/Applications/Arduino.app/Contents/Java/hardware/arduino/avr/libraries/Wire/src",
                 "/Applications/Arduino.app/Contents/Java/hardware/tools/avr/lib/gcc/avr/7.3.0/include",
                 "/Applications/Arduino.app/Contents/Java/hardware/tools/avr/lib/gcc/avr/7.3.0/include-fixed",
                 "/Applications/Arduino.app/Contents/Java/hardware/tools/avr/avr/include"
