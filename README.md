@@ -3,7 +3,7 @@ Click [here](https://github.com/dalethomas81/HamMessenger#updates) for updates.
 
 HamMessenger is a portable, battery powered device that runs on a microcontroller and interfaces with an inexpensive ham radio to send and receive text messages and provide position updates using the [APRS](http://www.aprs.org/doc/APRS101.PDF) protocol. Messages and position updates sent via HamMessenger can be viewed on sites such as [aprs.fi](https://aprs.fi). HamMessenger messages are NOT encrypted!  
 
-HamMessenger is intended to be used by licensed ham radio operators. For more information you can check out the ARRL website [here](http://www.arrl.org/what-is-ham-radio).  
+HamMessenger is intended to be used by licensed ham radio operators. For more information you can check out the [ARRL](http://www.arrl.org/what-is-ham-radio) website.  
 
 The goal of the HamMessenger project is to create a device that uses ham radio as a medium for sending and receiving text messages. HamMessenger exists also to promote amateur radio, electronics, and programming. The project is currently in a beta prototyping stage but does function quite well. 
 
