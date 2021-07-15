@@ -1,13 +1,15 @@
 # HamMessenger # 
 Click [here](https://github.com/dalethomas81/HamMessenger#updates) for updates.
 
-HamMessenger is a portable, battery powered device that runs on a microcontroller and interfaces with an inexpensive ham radio to send and recieve text messages and provide position updates using the [APRS](http://www.aprs.org/doc/APRS101.PDF) protocol. Messages and position updates sent via HamMessenger can be viewed on sites such as [aprs.fi](https://aprs.fi). HamMessenger messages are NOT encrypted!
+HamMessenger is a portable, battery powered device that runs on a microcontroller and interfaces with an inexpensive ham radio to send and receive text messages and provide position updates using the [APRS](http://www.aprs.org/doc/APRS101.PDF) protocol. Messages and position updates sent via HamMessenger can be viewed on sites such as [aprs.fi](https://aprs.fi). HamMessenger messages are NOT encrypted!  
+
+HamMessenger is intended to be used by licensed ham radio operators. For more information you can check out the ARRL website [here](http://www.arrl.org/what-is-ham-radio).  
 
 The goal of the HamMessenger project is to create a device that uses ham radio as a medium for sending and receiving text messages. HamMessenger exists also to promote amateur radio, electronics, and programming. The project is currently in a beta prototyping stage but does function quite well. 
 
-At the core of the the project is the [MicroAPRS](https://github.com/markqvist/MicroAPRS) modem created by [markqvist](https://github.com/markqvist). The primary controller is an Arduino Mega 2560 with the MicroAPRS Modem running on an Arduino Pro Mini. HamMessenger includes GPS functionality supplied by a Neo-6M GPS radio. For peripherals, an M5Stack CardKB keyboard is used for input and an SSD1106 Oled display for output.
+At the core of the the project is the [MicroAPRS](https://github.com/markqvist/MicroAPRS) modem created by [markqvist](https://github.com/markqvist). The primary controller is an Arduino Mega 2560 with the MicroAPRS Modem running on an Arduino Pro Mini. HamMessenger includes GPS functionality supplied by a Neo-6M GPS radio. For peripherals, an M5Stack CardKB keyboard is used for input and an SSD1106 Oled display for output.  
 
-I will add some videos and pictures of the device in action asap. Please feel free to contribute to the project. I am very busy outside of this project so any help is greatly appreciated :)
+I will add some videos and pictures of the device in action asap. Please feel free to contribute to the project. I am very busy outside of this project so any help is greatly appreciated :)  
 
 
 ![Illustration](/Media/Illustration-Dark.jpeg)
@@ -17,13 +19,13 @@ I will add some videos and pictures of the device in action asap. Please feel fr
 ![Prototype](Media/Prototype-Table-Single.jpeg)
 
 ## Operation ##
-Full instructions on how to operate HamMessenger will go here. For now, just a couple notes :)
+Full instructions on how to operate HamMessenger will go here. For now, just a couple notes :)  
 
-HamMessenger will beacon your location and comment according to the 'Beacon Frequency' settings in APRS Settings.
+HamMessenger will beacon your location and comment according to the 'Beacon Frequency' settings in APRS Settings.  
 
-To send a direct message to a station, select 'Messages' on the home screen and press the right arrow on the keyboard. A message will be sent according to the settings in APRS Settings.
+To send a direct message to a station, select 'Messages' on the home screen and press the right arrow on the keyboard. A message will be sent according to the settings in APRS Settings.  
 
-Screen navigation information can be found [here](https://github.com/dalethomas81/HamMessenger/blob/master/Documentation/Operating%20Instructions/Screen%20Navigation.md).
+Screen navigation information can be found [here](https://github.com/dalethomas81/HamMessenger/blob/master/Documentation/Operating%20Instructions/Screen%20Navigation.md).  
 
 ## Serial commands ##
 Command | Description | Example
@@ -76,13 +78,13 @@ hardware:
 - design enclosure
 
 software:
-- add "quick message" functionality. currently to send a message you highlight 'Messages' on the home screen and press the right key.
-- add ability to program the radio once connected for 'plug-n-play' experience (is this possible?)
-- add store and recall messages in SD card to save dynamic memory
-- add feature to be selective about message acknowledgments. currently any acknowlegment (from a second conversation) will reset the messaging sequencer.
+- add "quick message" functionality. currently to send a message you highlight 'Messages' on the home screen and press the right key.  
+- add ability to program the radio once connected for 'plug-n-play' experience (is this possible?)  
+- add store and recall messages in SD card to save dynamic memory  
+- add feature to be selective about message acknowledgments. currently any acknowlegment (from a second conversation) will reset the messaging sequencer.  
 
 ## Libraries ##
-Here are links to the non-standard libraries that I am using for this project. All other libraries are standard and can be installed using the library manager built into the Arduino IDE.   
+Here are links to the non-standard libraries that I am using for this project. All other libraries are standard and can be installed using the library manager built into the Arduino IDE.  
 https://github.com/wonho-maker/Adafruit_SH1106  
 https://github.com/mikalhart/TinyGPSPlus/releases/tag/v1.02b  
 https://github.com/adafruit/Adafruit-GFX-Library/releases/tag/1.10.10  
@@ -141,4 +143,4 @@ Battery:
 Panasonic 18650 - don't have a link but you can get them on eBay or Amazon  
 
 ## Updates ##
-04-JUL-2021: Version 1 of the pcb for HamMessenger has be sent for fabrication. The estimated delivery date is the 22nd of July. In the meantime I will be ordering the components to populate the board. As I do that I will make sure to get the links for the components and add them to the BOM in the Eagle folder.
+04-JUL-2021: Version 1 of the pcb for HamMessenger has be sent for fabrication. The estimated delivery date is the 22nd of July. In the meantime I will be ordering the components to populate the board. As I do that I will make sure to get the links for the components and add them to the BOM in the Eagle folder.  
