@@ -23,7 +23,8 @@
 const char version[] = __DATE__ " " __TIME__; 
 
 #pragma region "STRUCTURES"
-  
+
+  // for some reason Ardunio will not allow a structure after a method
   struct APRSFormat_Raw {
     char src[15];
     char dst[15];
@@ -68,7 +69,7 @@ const char version[] = __DATE__ " " __TIME__;
 
 #pragma endregion
 
-#pragma region "VOLTAGE"
+#pragma region "UTILITY"
 
   #define BATT_CHARGED            7200
   #define BATT_DISCHARGED         5600
@@ -77,6 +78,7 @@ const char version[] = __DATE__ " " __TIME__;
   unsigned char VoltagePercent = 0;
   long Voltage = 0;
   unsigned long voltage_check_timer;
+  unsigned long processor_scan_time, scanTime;
 
   long readVcc(){
     // Read 1.1V reference against AVcc
@@ -110,6 +112,11 @@ const char version[] = __DATE__ " " __TIME__;
       VoltagePercent = constrain(map(Voltage,(int)BATT_DISCHARGED,(int)BATT_CHARGED,0,100),0,100);
       voltage_check_timer = millis();
     }
+  }
+
+  void handleStats(){
+    scanTime = millis() - processor_scan_time;
+    processor_scan_time = millis();
   }
 
 #pragma endregion
@@ -958,6 +965,7 @@ const char version[] = __DATE__ " " __TIME__;
   bool leaveDisplay_MessageFeed = false, leaveDisplay_LiveFeed = false, leaveDisplay_Settings = false;
   // refresh the displays
   bool displayRefresh_Global = true, displayRefresh_Scroll = true;
+  bool UnreadMessages = false;
   // go into edit mode in the settings
   bool editMode_Settings = false;
   bool displayBlink = false;
@@ -966,7 +974,6 @@ const char version[] = __DATE__ " " __TIME__;
   bool sendMessage=false, sendMessage_Ack=false;
   unsigned long display_refresh_timer, display_refresh_timer_scroll, leave_display_timer;
   unsigned long display_blink_timer, display_timeout_timer, display_off_timer;
-  unsigned long processor_scan_time, scanTime;
 
   // Declaration for an SSD1306 display connected to I2C (SDA, SCL pins)
   #define OLED_RESET -1 // Reset pin # (or -1 if sharing Arduino reset pin)
@@ -1377,46 +1384,47 @@ const char version[] = __DATE__ " " __TIME__;
     // Clear the buffer
     display.clearDisplay();
     
-    display.setTextSize(1);                     // Normal 1:1 pixel scale - default letter size is 5x8 pixels
-    display.setTextColor(WHITE);        // Draw white text
+    display.setTextSize(1);      // Normal 1:1 pixel scale - default letter size is 5x8 pixels
+    display.setTextColor(WHITE); 
     display.setTextWrap(false);
     
-    display.setCursor(30,UI_DISPLAY_ROW_01);                     // Start at top-left corner 0 pixels right, 0 pixels down
+    display.setCursor(30,UI_DISPLAY_ROW_01); 
     display.println(F("HamMessenger"));
     
-    //display.setCursor(0,UI_DISPLAY_ROW_02);                     // Start at top-left corner 0 pixels right, 0 pixels down
-    //display.println(F("Build Date"));
+    display.setCursor(30,UI_DISPLAY_ROW_03);
+    display.println(F("Build Date"));
     
-    display.setCursor(0,UI_DISPLAY_ROW_03);                     // Start at top-left corner 0 pixels right, 0 pixels down
+    display.setCursor(0,UI_DISPLAY_ROW_04);
     display.println(version);
     
-    display.setCursor(30,UI_DISPLAY_ROW_05);                    // 0 pixels right, 13 pixels down
+    display.setCursor(30,UI_DISPLAY_ROW_06); 
     display.println(F("Call:"));
     
-    display.setCursor(60,UI_DISPLAY_ROW_05);                   // 50 pixels right, 13 pixels down
+    display.setCursor(60,UI_DISPLAY_ROW_06);
     display.println(SETTINGS_APRS_CALLSIGN);
     
     display.display();
-    delay(5000); // Pause for 2 seconds
+    delay(5000);
   }
 
   void handleDisplay_Global(){ 
     if (digitalRead(rxPin) == HIGH){
       display.setCursor(0,UI_DISPLAY_ROW_TOP);
       display.print(F("Rx"));
-      }
-    
-    if (digitalRead(txPin) == HIGH){
-      display.setCursor(15,UI_DISPLAY_ROW_TOP);
-      display.print(F("Tx"));
     }
     
-    display.setCursor(45,UI_DISPLAY_ROW_TOP);
-    display.print(String(Voltage) + F("mV"));
-
-    // show keyboard input on top. remove later and uncomment voltage above
-    //display.setCursor(45,UI_DISPLAY_ROW_TOP);
-    //display.print(String(keyboardInputCharLast) + F(" ")); display.print(keyboardInputCharLast, DEC);
+    if (digitalRead(txPin) == HIGH){
+      display.setCursor(20,UI_DISPLAY_ROW_TOP);
+      display.print(F("Tx"));
+    }
+    /*
+    if (UnreadMessages){
+      display.setCursor(40,UI_DISPLAY_ROW_TOP);
+      display.print(F("Msg"));
+    }
+    */
+    display.setCursor(65,UI_DISPLAY_ROW_TOP);
+    display.print(String((float)Voltage/1000.0,1) + F("V"));
     
     display.setCursor(100,UI_DISPLAY_ROW_TOP);
     display.print(String(scanTime) + F("ms"));
@@ -3440,17 +3448,11 @@ const char version[] = __DATE__ " " __TIME__;
 #pragma endregion
 
 void setup(){
-  // reset dimmer timer
-  display_timeout_timer = millis();
 
-  // Open serial communications and wait for port to open:
   Serial.begin(115200);
   Serial1.begin(9600); // modem
   Serial2.begin(9600); // gps
-  //while (!Serial) // wait for serial port to connect. Needed for Native USB only
   while (!Serial1) // wait for modem
-  
-  delay(2000);
 
   Serial.println();
   Serial.println("HamMessenger Copyright (C) 2021  Dale Thomas");
@@ -3459,29 +3461,21 @@ void setup(){
   Serial.println("under certain conditions.");
   Serial.println();
 
-  Serial.print("Initializing SD card...");
   if (!SD.begin(53)) {
-    Serial.println("initialization failed!");
+    Serial.println("sd card init failed!");
     while (1);
   }
-  Serial.println("initialization done.");
-
-  delay(100);
 
   // go ahead and open the files for read/write access
-  Serial.println("Opening files...");
   RawDataFile = SD.open(RawDataFileName, FILE_WRITE);
   MsgDataFile = SD.open(MsgDataFileName, FILE_WRITE);
   
-  Wire.begin(); // M5Stack Keyboard
+  Wire.begin(); // I2C Keyboard
   
   // check if this is a new device
   checkInit();
-
-  // read in the settings from the eeprom
   readSettingsFromEeprom();
   applySettings=true;
-  //saveModemSettings=true; // comment out so that the modem doesnt write to its eeprom on every boot!
   printOutSettings();
 
   // inputs
@@ -3489,16 +3483,16 @@ void setup(){
   pinMode(txPin, INPUT);
   
   display.begin(SH1106_SWITCHCAPVCC, 0x3C);  // initialize with the I2C addr 0x3D (for the 128x64), 0x3C (for the 128x32)
-
   handleDisplay_Startup();
-  
-  // start gps_read_timer
+
+  // reset timers
   gps_report_timer = millis();
+  display_timeout_timer = millis();
+  voltage_check_timer = millis() + VOLTAGE_CHECK_RATE;
 
 }
 
 void loop(){
-  // run handle routines
   handleKeyboard();
   handleSettings();
   handleDisplays();
@@ -3507,7 +3501,5 @@ void loop(){
   handleModemCommands();
   handleAprsBeacon();
   handleVoltage();
-  // calculate cpu scan time
-  scanTime = millis() - processor_scan_time;
-  processor_scan_time = millis();
+  handleStats();
 }
