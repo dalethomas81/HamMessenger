@@ -49,9 +49,9 @@ https://github.com/adafruit/Adafruit-GFX-Library/releases/tag/1.10.10
 ## Compilation ##
 The easiest way to compile HamMessenger is to use the Ardunio IDE. After all libraries are installed you can use the Verify button to compile or the Upload button to compile and write the binary to the main controller M1. 
 
-The Arduino sourcce code for HamMessenger can be found [here](/Source/HamMessenger).
+The Arduino source code for HamMessenger can be found [here](/Source/HamMessenger).
 
-The modem controller does not need to be compiled as the binary are already made available [here](https://github.com/markqvist/MicroAPRS/tree/master/precompiled).  
+The modem controller does not need to be compiled as the binary files are already made available [here](https://github.com/markqvist/MicroAPRS/tree/master/precompiled).  
 
 You can use AVRDude to write the binary to the modem controller. Instructions on how to do that will be coming soon. In the meantime, if you already know how to install and use AVRDude then feel free to make use of the batch file I created to do use AVRDude and an FTDI serial cable to write to the modem [here](/Source/MicroAPRS%20Firmware%20Installer);  
 
