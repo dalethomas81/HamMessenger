@@ -52,8 +52,8 @@ To program the UV-5R5 (or the other 2 variants above), you can use an open sourc
     39 | ROGER | *N* | OFF | tone at the end of transmission
     27 | MEM-CH | **Y** | empty channel you chose in step 1 | Note: do this last as it will trigger the save!
 
-## sdfasd ##
+## Radio Use ##
 
-The volume
+I have found that the volume of the radio works well at around 30%. I actually havent done much testing here but this works well.
 
-Wear the radio
+HamMessenger is designed so that you can wear the radio on your belt while you use HamMessenger as a texting device in your hand.
