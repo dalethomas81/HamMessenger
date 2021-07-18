@@ -38,7 +38,6 @@ hardware:
 software:
 - add "quick message" functionality. currently to send a message you highlight 'Messages' on the home screen and press the right key.  
 - add ability to program the radio once connected for 'plug-n-play' experience (is this possible?)  
-- add store and recall messages in SD card to save dynamic memory  
 - add feature to be selective about message acknowledgments. currently any acknowlegment (from a second conversation) will reset the messaging sequencer.  
 
 ## Libraries ##
