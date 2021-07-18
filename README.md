@@ -29,7 +29,7 @@ Screen navigation information can be found [here](https://github.com/dalethomas8
 
 Radio setup instructions can be found [here](https://github.com/dalethomas81/HamMessenger/blob/master/Documentation/Operating%20Instructions/Radio%20Setup.md).
 
-Serial interface information can be found [here](https://github.com/dalethomas81/HamMessenger/blob/master/Documentation/Operating%20Instructions/Serial%Interface.md).
+Serial interface information can be found [here](https://github.com/dalethomas81/HamMessenger/blob/master/Documentation/Operating%20Instructions/Serial%20Interface.md).
 
 ## TODO ##
 hardware:
@@ -57,7 +57,7 @@ You can use AVRDude to write the binary to the modem controller. Instructions on
 ## Parts ##
 Find BOM information on parts [here](/Documentation/Parts/BOMs)  
 Find Drawing information on parts [here](/Documentation/Parts/Drawings)  
-Find Vedndor information on parts [here](/Documentation/Parts/Vendors)  
+Find Vendor information on parts [here](/Documentation/Parts/Vendors)  
 
 Arduino:  
 https://www.arduino.cc/en/pmwiki.php?n=Main/ArduinoBoardProMini  
