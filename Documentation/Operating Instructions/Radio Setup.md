@@ -51,3 +51,9 @@ To program the UV-5R5 (or the other 2 variants above), you can use an open sourc
     37 | RPT-RL | *N* | OFF | delay the squelch tail of repeater
     39 | ROGER | *N* | OFF | tone at the end of transmission
     27 | MEM-CH | **Y** | empty channel you chose in step 1 | Note: do this last as it will trigger the save!
+
+## sdfasd ##
+
+The volume
+
+Wear the radio
