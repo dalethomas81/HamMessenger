@@ -57,7 +57,7 @@ The Arduino source code for HamMessenger can be found [here](/Source/HamMessenge
 
 The modem controller does not need to be compiled as the binary files are already made available [here](https://github.com/markqvist/MicroAPRS/tree/master/precompiled).  
 
-You can use AVRDude to write the binary to the modem controller. Instructions on how to do that will be coming soon. In the meantime, if you already know how to install and use AVRDude then feel free to make use of the batch file I created to do use AVRDude and an FTDI serial cable to write to the modem [here](/Source/MicroAPRS%20Firmware%20Installer);  
+You can use AVRDude to write the binary to the modem controller. Instructions on how to do that will be coming soon. In the meantime, if you already know how to install and use AVRDude then feel free to make use of the [batch](/Source/MicroAPRS%20Firmware%20Installer) file I created and an [FTDI](https://www.amazon.com/gp/product/B00DDF8TV6/ref=ox_sc_act_title_4?smid=A2SXV8GJXX3WPH&psc=1) serial cable to write to the modem.
 
 ## Parts ##
 
