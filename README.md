@@ -19,6 +19,7 @@ I will add some videos and pictures of the device in action asap. Please feel fr
 ![Prototype](Media/Prototype-Table-Single.jpeg)
 
 ## Operation ##
+
 Full instructions on how to operate HamMessenger will go here. For now, just a couple notes :)  
 
 HamMessenger will beacon your location and comment according to the 'Beacon Frequency' settings in APRS Settings.  
@@ -32,6 +33,7 @@ Radio setup instructions can be found [here](https://github.com/dalethomas81/Ham
 Serial interface information can be found [here](https://github.com/dalethomas81/HamMessenger/blob/master/Documentation/Operating%20Instructions/Serial%20Interface.md).
 
 ## TODO ##
+
 hardware:
 - design enclosure
 
@@ -41,12 +43,14 @@ software:
 - add feature to be selective about message acknowledgments. currently any acknowlegment (from a second conversation) will reset the messaging sequencer.  
 
 ## Libraries ##
+
 Here are links to the non-standard libraries that I am using for this project. All other libraries are standard and can be installed using the library manager built into the Arduino IDE.  
 https://github.com/wonho-maker/Adafruit_SH1106  
 https://github.com/mikalhart/TinyGPSPlus/releases/tag/v1.02b  
 https://github.com/adafruit/Adafruit-GFX-Library/releases/tag/1.10.10  
 
 ## Compilation ##
+
 The easiest way to compile HamMessenger is to use the Ardunio IDE. After all libraries are installed you can use the Verify button to compile or the Upload button to compile and write the binary to the main controller M1. 
 
 The Arduino source code for HamMessenger can be found [here](/Source/HamMessenger).
@@ -56,11 +60,13 @@ The modem controller does not need to be compiled as the binary files are alread
 You can use AVRDude to write the binary to the modem controller. Instructions on how to do that will be coming soon. In the meantime, if you already know how to install and use AVRDude then feel free to make use of the batch file I created to do use AVRDude and an FTDI serial cable to write to the modem [here](/Source/MicroAPRS%20Firmware%20Installer);  
 
 ## Parts ##
+
 Find BOM information on parts [here](/Documentation/Parts/BOMs)  
 Find Drawing information on parts [here](/Documentation/Parts/Drawings)  
 Find Vendor information on parts [here](/Documentation/Parts/Vendors)  
 
-### Specs ###
+### Part Specs ###
+
 Arduino:  
 https://gallery.autodesk.com/fusion360/projects/arduino-mega-2560-r3  
 
@@ -89,4 +95,7 @@ Battery:
 Panasonic 18650 - don't have a link but you can get them on eBay or Amazon  
 
 ## Updates ##
+
+18-JUL-2021: The printed circuit boards from OSH will be arriving tomorrow! I have added all of the parts needed to build HamMessenger [here](/Documentation/Parts/BOMs).
+
 04-JUL-2021: Version 1 of the pcb for HamMessenger has be sent for fabrication. The estimated delivery date is the 22nd of July. In the meantime I will be ordering the components to populate the board. As I do that I will make sure to get the links for the components and add them to the BOM in the Eagle folder.  

@@ -6,4 +6,5 @@
 | UPS | 1 | Various | unknown | UPS battery power supply | https://www.amazon.com/gp/product/B07SZKNST4/ref=ppx_yo_dt_b_asin_title_o06_s00?ie=UTF8&psc=1
 | PINS | 60+ | Various | Unknown | 2.54mm header pins | https://www.amazon.com/gp/product/B06XR8CV8P/ref=ppx_yo_dt_b_asin_title_o01_s00?ie=UTF8&psc=1
 | RADIO | 1 | Baofeng | UV-5R5 | https://www.amazon.com/gp/product/B091YLJ6CN/ref=ppx_yo_dt_b_asin_title_o00_s02?ie=UTF8&psc=1
-| FERRITE | 1 | various | Unknown | Ferrite rings for cables | https://www.amazon.com/gp/product/B01E5E5IY4/ref=ppx_yo_dt_b_asin_title_o07_s00?ie=UTF8&psc=1 
+| FERRITE | 1 | various | Unknown | Ferrite rings for cables | https://www.amazon.com/gp/product/B01E5E5IY4/ref=ppx_yo_dt_b_asin_title_o07_s00?ie=UTF8&psc=1
+| PCB | 1 | OSH | HamMessenger v1.0 | Printed circuit board for HamMessenger | https://oshpark.com/shared_projects/he3ZcWVj 
