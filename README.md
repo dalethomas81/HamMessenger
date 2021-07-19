@@ -60,17 +60,14 @@ Find BOM information on parts [here](/Documentation/Parts/BOMs)
 Find Drawing information on parts [here](/Documentation/Parts/Drawings)  
 Find Vendor information on parts [here](/Documentation/Parts/Vendors)  
 
+### Specs ###
 Arduino:  
-https://www.arduino.cc/en/pmwiki.php?n=Main/ArduinoBoardProMini  
-https://store.arduino.cc/usa/mega-2560-r3  
 https://gallery.autodesk.com/fusion360/projects/arduino-mega-2560-r3  
 
 Keyboard:  
 https://github.com/m5stack/M5-ProductExampleCodes/tree/master/Unit/CARDKB  
-https://www.ebay.com/itm/124774337790?hash=item1d0d214cfe:g:kEkAAOSwEZlg0302  
 
-OLED Display:   
-https://www.ebay.com/itm/391731053045  
+OLED Display:    
 https://grabcad.com/library/0-96-oled-display-4-pin-1  
 https://grabcad.com/library/ecran-oled-1-3-1
 
@@ -81,22 +78,12 @@ https://github.com/markqvist/MicroAPRS/blob/master/documentation/Hardware%20Sche
 https://unsigned.io/shop  
 https://unsigned.io/product/micromodem-r23b  
 
-GPS:   
-https://www.ebay.com/sch/i.html?_id=221791352715&_nkw=Ublox+NEO-6M+GPS+Module+Aircraft+Flight+Controller+For+Arduino+MWC+IMU+APM2  
+GPS:    
 https://grabcad.com/library/gps-module-ublox_neo6mv2-1  
-https://grabcad.com/library/ecran-oled-1-3-1
-
-Case:  
-https://www.duinocases.com/store/arduino-enclosures/duinocase-mega-arduino-mega-2560  
-
-Radio Cable:  
-https://www.amazon.com/dp/B08HT277B4?psc=1&smid=AZRLOQSTLHOAO&ref_=chk_typ_imgToDp  
+https://grabcad.com/library/ecran-oled-1-3-1  
 
 Grove Connector:  
 https://grabcad.com/library/grove-connectors-stand-and-flat-male-plugs-1/details?folder_id=2820551  
-
-Battery Assembly:  
-https://www.amazon.com/gp/product/B07SZKNST4/ref=ox_sc_act_title_1?smid=A3F3CVCOVVNP2J&psc=1  
 
 Battery:  
 Panasonic 18650 - don't have a link but you can get them on eBay or Amazon  
