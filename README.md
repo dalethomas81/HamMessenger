@@ -1,4 +1,5 @@
 # HamMessenger # 
+!!!PLEASE READ UPDATES BEFORE BUILDING!!!  
 Click [here](https://github.com/dalethomas81/HamMessenger#updates) for updates.
 
 HamMessenger is a portable, battery powered device that runs on a microcontroller and interfaces with an inexpensive ham radio to send and receive text messages and provide position updates using the [APRS](http://www.aprs.org/doc/APRS101.PDF) protocol. Messages and position updates sent via HamMessenger can be viewed on sites such as [aprs.fi](https://aprs.fi). HamMessenger messages are NOT encrypted!  
@@ -95,6 +96,17 @@ Battery:
 Panasonic 18650 - don't have a link but you can get them on eBay or Amazon  
 
 ## Updates ##
+
+20-JUL-2021: Bad news on the boards :( Lots of problems. I will begin immediately working on a revision. Here is a list of the issues:
+
+1. SD Card missing ground
+2. Line leveler missing OE connection.
+3. I2C connections are reversed.
+4. GPS is pointing to wrong serial ports (can fix with code but might as well make it right).
+5. GPS pins do not match board. (worked around this by shifting pins)
+6. Cannot not receive (don't know why at this point).
+7. SD card hits Arduino USB. Will move it and the Grove connector to make room.
+8. Arduino periodically locks up. Seemingly due to RF? Had this issue with prototype board but fixed it with ferrites.
 
 18-JUL-2021: The printed circuit boards from OSH will be arriving tomorrow! I have added all of the parts needed to build HamMessenger [here](/Documentation/Parts/BOMs).
 
