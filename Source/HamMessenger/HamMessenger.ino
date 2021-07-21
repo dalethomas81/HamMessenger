@@ -715,9 +715,9 @@ const char version[] = __DATE__ " " __TIME__;
 
   void readGPS(){
  
-  while (Serial2.available() > 0)
+  while (Serial3.available() > 0)
 
-  gps.encode(Serial2.read());
+  gps.encode(Serial3.read());
       
   if ( millis() - gps_report_timer > SETTINGS_GPS_UPDATE_FREQUENCY){
       // reset timer
@@ -3451,7 +3451,7 @@ void setup(){
 
   Serial.begin(115200);
   Serial1.begin(9600); // modem
-  Serial2.begin(9600); // gps
+  Serial3.begin(9600); // gps
   while (!Serial1) // wait for modem
 
   Serial.println();
