@@ -97,7 +97,25 @@ Panasonic 18650 - don't have a link but you can get them on eBay or Amazon
 
 ## Updates ##
 
-20-JUL-2021: Bad news on the boards :( Lots of problems. I will begin immediately working on a revision. Here is a list of the issues:
+### 21-JUL-2021: Made revisons to the board resolving and improving the following:
+
+1. add ground to SD card
+2. add OE connection to line leveler
+3. reverse I2C connections
+4. change GPS I/O to correct serial
+5. purchase correct GPS (added new link in BOM)
+6. move SD card away from USB.
+7. move keyboard grove to bottom of board and out of way
+8. move 4 pin terminal for cable such that it is out of the way of larger OLED
+9. ground plane improvements.  
+
+still left to do:
+
+1. board does not receive (soldering issues?)  
+2. board some times locks up during transmit (ground plane issues?)  
+
+
+### 20-JUL-2021: Bad news on the boards :( Lots of problems. I will begin immediately working on a revision. Here is a list of the issues:
 
 1. SD Card missing ground
 2. Line leveler missing OE connection.
@@ -108,6 +126,7 @@ Panasonic 18650 - don't have a link but you can get them on eBay or Amazon
 7. SD card hits Arduino USB. Will move it and the Grove connector to make room.
 8. Arduino periodically locks up. Seemingly due to RF? Had this issue with prototype board but fixed it with ferrites.
 
-18-JUL-2021: The printed circuit boards from OSH will be arriving tomorrow! I have added all of the parts needed to build HamMessenger [here](/Documentation/Parts/BOMs).
+
+### 18-JUL-2021: The printed circuit boards from OSH will be arriving tomorrow! I have added all of the parts needed to build HamMessenger [here](/Documentation/Parts/BOMs).
 
 04-JUL-2021: Version 1 of the pcb for HamMessenger has be sent for fabrication. The estimated delivery date is the 22nd of July. In the meantime I will be ordering the components to populate the board. As I do that I will make sure to get the links for the components and add them to the BOM in the Eagle folder.  

@@ -19,7 +19,7 @@
 | SD | 1 | 3M | 2908-05WB-MG | Memory Card Connectors MICROSD 8P P/P SMT POLARIZED | https://www.mouser.com/ProductDetail/517-2908-05WB-MG
 | U2 | 1 | Texas Instruments | TXB0104PWR | Translation - Voltage Levels 4-Bit Bi-directional V-Level Translator | https://www.mouser.com/ProductDetail/595-TXB0104PWR
 | VR1 | 1 | Bourns | 3313J-2-104E | Trimmer Resistors - SMD 3MM TRIM POT 100K SM D SEALED | https://www.mouser.com/ProductDetail/652-3313J-2-104E
-| GPS | 1 | Various | NEO-6M | GPS Reciever | https://www.amazon.com/gp/product/B08HLX899Q/ref=ppx_yo_dt_b_asin_title_o05_s01?ie=UTF8&psc=1
+| GPS | 1 | Various | gyneo6mv2 | GPS Reciever | https://www.amazon.com/ACROBOTIC-Breakout-Arduino-Raspberry-GY-NEO6MV2/dp/B07FZ6YMW5/ref=sr_1_4?dchild=1&keywords=gyneo6mv2&qid=1626923269&sr=8-4
 | OLED | 1 | Adafruit | ssh1106 | Oled Display 128x64 I2C sh1106 | https://www.amazon.com/gp/product/B08LYL7QFQ/ref=ppx_yo_dt_b_asin_title_o05_s00?ie=UTF8&psc=1
 | M1 | 1 | Arduino | Ardunio Mega 2560 R3 | Arduino Mega 2560 Dev Board | https://www.amazon.com/gp/product/B01H4ZLZLQ/ref=ppx_yo_dt_b_asin_title_o05_s01?ie=UTF8&psc=1
 | M2 | 1 | Arduino | Arduino Pro Mini | Arduino Pro Mini Dev Board | https://www.amazon.com/gp/product/B07X2JGS69/ref=ppx_yo_dt_b_asin_title_o05_s01?ie=UTF8&psc=1

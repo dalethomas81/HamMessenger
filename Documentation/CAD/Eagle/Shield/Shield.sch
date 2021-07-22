@@ -13181,6 +13181,9 @@ Details see: &lt;a href="https://katalog.we-online.com/en/em/TBL_2_54_2109_HORIZ
 <wire x1="378.46" y1="119.38" x2="378.46" y2="116.84" width="0.1524" layer="91"/>
 <junction x="378.46" y="116.84"/>
 <label x="370.84" y="119.38" size="1.778" layer="95"/>
+<pinref part="SD" gate="G$1" pin="VSS"/>
+<wire x1="383.54" y1="124.46" x2="378.46" y2="124.46" width="0.1524" layer="91"/>
+<wire x1="378.46" y1="124.46" x2="378.46" y2="116.84" width="0.1524" layer="91"/>
 </segment>
 <segment>
 <pinref part="GND12" gate="1" pin="GND"/>
@@ -13231,9 +13234,9 @@ Details see: &lt;a href="https://katalog.we-online.com/en/em/TBL_2_54_2109_HORIZ
 <label x="157.48" y="154.94" size="1.778" layer="95" rot="R90"/>
 </segment>
 <segment>
-<pinref part="M1" gate="G$1" pin="(SCL/INT0)PD0"/>
-<wire x1="289.56" y1="78.74" x2="304.8" y2="78.74" width="0.1524" layer="91"/>
-<label x="304.8" y="78.74" size="1.778" layer="95" rot="R180"/>
+<pinref part="M1" gate="G$1" pin="(SDA/INT1)PD1"/>
+<wire x1="289.56" y1="76.2" x2="304.8" y2="76.2" width="0.1524" layer="91"/>
+<label x="304.8" y="76.2" size="1.778" layer="95" rot="R180"/>
 </segment>
 </net>
 <net name="SCL" class="0">
@@ -13249,9 +13252,9 @@ Details see: &lt;a href="https://katalog.we-online.com/en/em/TBL_2_54_2109_HORIZ
 <label x="154.94" y="154.94" size="1.778" layer="95" rot="R90"/>
 </segment>
 <segment>
-<pinref part="M1" gate="G$1" pin="(SDA/INT1)PD1"/>
-<wire x1="289.56" y1="76.2" x2="304.8" y2="76.2" width="0.1524" layer="91"/>
-<label x="304.8" y="76.2" size="1.778" layer="95" rot="R180"/>
+<pinref part="M1" gate="G$1" pin="(SCL/INT0)PD0"/>
+<wire x1="289.56" y1="78.74" x2="304.8" y2="78.74" width="0.1524" layer="91"/>
+<label x="304.8" y="78.74" size="1.778" layer="95" rot="R180"/>
 </segment>
 </net>
 <net name="+5V" class="0">
@@ -13322,6 +13325,11 @@ Details see: &lt;a href="https://katalog.we-online.com/en/em/TBL_2_54_2109_HORIZ
 <pinref part="+3V4" gate="G$1" pin="+3V3"/>
 <wire x1="383.54" y1="127" x2="370.84" y2="127" width="0.1524" layer="91"/>
 <wire x1="370.84" y1="127" x2="370.84" y2="132.08" width="0.1524" layer="91"/>
+</segment>
+<segment>
+<pinref part="U2" gate="G$1" pin="OE"/>
+<wire x1="353.06" y1="147.32" x2="360.68" y2="147.32" width="0.1524" layer="91"/>
+<label x="360.68" y="147.32" size="1.778" layer="95"/>
 </segment>
 </net>
 <net name="N$3" class="0">
@@ -13411,26 +13419,26 @@ Details see: &lt;a href="https://katalog.we-online.com/en/em/TBL_2_54_2109_HORIZ
 </net>
 <net name="TX_GPS" class="0">
 <segment>
-<pinref part="M1" gate="G$1" pin="PJ1(TXD3/PCINT10)"/>
-<wire x1="223.52" y1="88.9" x2="208.28" y2="88.9" width="0.1524" layer="91"/>
-<label x="208.28" y="88.9" size="1.778" layer="95"/>
-</segment>
-<segment>
 <pinref part="GPS" gate="G$1" pin="RXD"/>
 <wire x1="25.4" y1="121.92" x2="15.24" y2="121.92" width="0.1524" layer="91"/>
 <label x="15.24" y="121.92" size="1.778" layer="95"/>
 </segment>
+<segment>
+<pinref part="M1" gate="G$1" pin="PH1(TXD2)"/>
+<wire x1="223.52" y1="81.28" x2="213.36" y2="81.28" width="0.1524" layer="91"/>
+<label x="213.36" y="81.28" size="1.778" layer="95"/>
+</segment>
 </net>
 <net name="RX_GPS" class="0">
-<segment>
-<pinref part="M1" gate="G$1" pin="PJ0(RXD3/PCINT9)"/>
-<wire x1="223.52" y1="91.44" x2="208.28" y2="91.44" width="0.1524" layer="91"/>
-<label x="208.28" y="91.44" size="1.778" layer="95"/>
-</segment>
 <segment>
 <pinref part="GPS" gate="G$1" pin="TXD"/>
 <wire x1="25.4" y1="124.46" x2="15.24" y2="124.46" width="0.1524" layer="91"/>
 <label x="15.24" y="124.46" size="1.778" layer="95"/>
+</segment>
+<segment>
+<pinref part="M1" gate="G$1" pin="PH0(RXD2)"/>
+<wire x1="223.52" y1="83.82" x2="213.36" y2="83.82" width="0.1524" layer="91"/>
+<label x="213.36" y="83.82" size="1.778" layer="95"/>
 </segment>
 </net>
 <net name="PTT_V+" class="0">
@@ -13547,6 +13555,7 @@ Details see: &lt;a href="https://katalog.we-online.com/en/em/TBL_2_54_2109_HORIZ
 </sheet>
 </sheets>
 <errors>
+<approved hash="102,1,383.54,124.46,VSS,GND,,,,"/>
 <approved hash="102,1,383.54,127,VDD,+3V3,,,,"/>
 <approved hash="102,1,383.54,119.38,GND1,GND,,,,"/>
 <approved hash="204,1,25.4,119.38,GPS,PPS,,,,"/>
@@ -13556,7 +13565,6 @@ Details see: &lt;a href="https://katalog.we-online.com/en/em/TBL_2_54_2109_HORIZ
 <approved hash="104,1,355.6,55.88,M2,GND.1,GND,,,"/>
 <approved hash="104,1,391.16,63.5,M2,RAW,VCC,,,"/>
 <approved hash="104,1,391.16,60.96,M2,GND.2,GND,,,"/>
-<approved hash="117,1,383.54,124.46,VSS,,,,,"/>
 <approved hash="113,1,256.54,91.44,M1,,,,,"/>
 <approved hash="113,1,124.563,89.5515,J3,,,,,"/>
 <approved hash="113,1,337.82,140.97,U2,,,,,"/>
