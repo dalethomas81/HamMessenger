@@ -13,11 +13,11 @@ At the core of the the project is the [MicroAPRS](https://github.com/markqvist/M
 I will add some videos and pictures of the device in action asap. Please feel free to contribute to the project. I am very busy outside of this project so any help is greatly appreciated :)  
 
 
-![Illustration](/Media/Illustration-Dark.jpeg)
+![Illustration](/Media/Illustration-Dark.jpeg)  
 
-![Isometric](/Media/CAD/Isometric.png)
+![Isometric](/Media/CAD/Isometric.png)  
 
-![Prototype](Media/Prototype-Table-Single.jpeg)
+![all-together-layout](/Media/Board-v1/all-together-layout.jpeg)  
 
 ## Operation ##
 
@@ -96,6 +96,10 @@ Battery:
 Panasonic 18650 - don't have a link but you can get them on eBay or Amazon  
 
 ## Updates ##
+
+### 22-JUL-2021: Put together some information on the board for your review.
+
+[Here](/Media/Board-v1/analysis.md) is an in-depth analysis of the problems with version 1.0 of the board. Also, does any body know how to add correct shielding for the board? I am having issues with the Arduino locking up on transmit sometimes.
 
 ### 21-JUL-2021: Made revisons to the board resolving and improving the following:
 
