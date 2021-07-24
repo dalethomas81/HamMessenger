@@ -3,7 +3,7 @@
 <eagle version="9.6.2">
 <drawing>
 <settings>
-<setting alwaysvectorfont="yes"/>
+<setting alwaysvectorfont="no"/>
 <setting verticaltext="up"/>
 </settings>
 <grid distance="0.1" unitdist="mm" unit="mm" style="lines" multiple="1" display="yes" altdistance="5" altunitdist="mil" altunit="mil"/>
@@ -2304,9 +2304,6 @@ design rules under a new name.</description>
 <wire x1="83.66125" y1="13.81125" x2="83.66125" y2="17.93875" width="0.1524" layer="1"/>
 <wire x1="81.28" y1="19.6723" x2="81.9277" y2="19.6723" width="0.1524" layer="1"/>
 <wire x1="83.66125" y1="17.93875" x2="81.9277" y2="19.6723" width="0.1524" layer="1"/>
-<wire x1="76.2602" y1="27.07338125" x2="76.2602" y2="28.80661875" width="0.1524" layer="1"/>
-<wire x1="75.8495" y1="26.66268125" x2="76.2602" y2="27.07338125" width="0.1524" layer="1"/>
-<wire x1="75.8495" y1="24.384" x2="75.8495" y2="26.66268125" width="0.1524" layer="1"/>
 <wire x1="75.8495" y1="24.384" x2="75.946" y2="24.4805" width="0.1524" layer="1"/>
 <wire x1="77.47" y1="24.4805" x2="78.74" y2="25.7505" width="0.1524" layer="1"/>
 <wire x1="77.47" y1="24.4805" x2="75.946" y2="24.4805" width="0.1524" layer="1"/>
