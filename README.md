@@ -97,6 +97,12 @@ Panasonic 18650 - don't have a link but you can get them on eBay or Amazon
 
 ## Updates ##
 
+### 24-JUL-2021: Rev v1.1 is being fabbed!!
+
+I was able to work through all of the issues with the first version. I placed an order with jlcpcb this time (osh park was great but too expensive). I ordered 20 boards this time and if they work well I will give some away.  
+
+I'll update later with how I resolved the issues. For now, going to have a beer :)
+
 ### 22-JUL-2021: Put together some information on the board for your review.
 
 [Here](/Media/Board-v1/analysis.md) is an in-depth analysis of the problems with version 1.0 of the board. Also, does any body know how to add correct shielding for the board? I am having issues with the Arduino locking up on transmit sometimes.
