@@ -178,6 +178,9 @@ const char version[] = __DATE__ " " __TIME__;
   #define SETTINGS_EDIT_TYPE_STRING2      7
   #define SETTINGS_EDIT_TYPE_STRING7      8
   #define SETTINGS_EDIT_TYPE_STRING100    9
+  #define SETTINGS_EDIT_TYPE_ALT1         21
+  #define SETTINGS_EDIT_TYPE_ALT2         22
+  #define SETTINGS_EDIT_TYPE_ALT3         23
                           
   const char *MenuItems_Settings[] = {"APRS","GPS","Display"};
   const char *MenuItems_Settings_APRS[] = {"Beacon Frequency","Raw Packet","Comment","Message","Recipient Callsign","Recipient SSID", "My Callsign","Callsign SSID", 
@@ -188,7 +191,7 @@ const char version[] = __DATE__ " " __TIME__;
 
   unsigned char Settings_Type_APRS[] = {SETTINGS_EDIT_TYPE_ULONG,SETTINGS_EDIT_TYPE_STRING100,SETTINGS_EDIT_TYPE_STRING100,SETTINGS_EDIT_TYPE_STRING100,SETTINGS_EDIT_TYPE_STRING7,SETTINGS_EDIT_TYPE_STRING2,SETTINGS_EDIT_TYPE_STRING7,SETTINGS_EDIT_TYPE_STRING2,
                               SETTINGS_EDIT_TYPE_STRING7,SETTINGS_EDIT_TYPE_STRING2,SETTINGS_EDIT_TYPE_STRING7,SETTINGS_EDIT_TYPE_STRING2,SETTINGS_EDIT_TYPE_STRING7,SETTINGS_EDIT_TYPE_STRING2,
-                              SETTINGS_EDIT_TYPE_STRING2,SETTINGS_EDIT_TYPE_STRING2,SETTINGS_EDIT_TYPE_BOOLEAN,SETTINGS_EDIT_TYPE_UINT,SETTINGS_EDIT_TYPE_UINT,SETTINGS_EDIT_TYPE_UINT,SETTINGS_EDIT_TYPE_UINT};
+                              SETTINGS_EDIT_TYPE_STRING2,SETTINGS_EDIT_TYPE_ALT1,SETTINGS_EDIT_TYPE_BOOLEAN,SETTINGS_EDIT_TYPE_UINT,SETTINGS_EDIT_TYPE_UINT,SETTINGS_EDIT_TYPE_UINT,SETTINGS_EDIT_TYPE_UINT};
   unsigned char Settings_Type_GPS[] = {SETTINGS_EDIT_TYPE_ULONG,SETTINGS_EDIT_TYPE_FLOAT,SETTINGS_EDIT_TYPE_FLOAT,SETTINGS_EDIT_TYPE_FLOAT};
   unsigned char Settings_Type_Display[] = {SETTINGS_EDIT_TYPE_ULONG, SETTINGS_EDIT_TYPE_UINT, SETTINGS_EDIT_TYPE_BOOLEAN, SETTINGS_EDIT_TYPE_BOOLEAN, SETTINGS_EDIT_TYPE_UINT, SETTINGS_EDIT_TYPE_BOOLEAN};
   unsigned char Settings_TypeIndex_APRS[] = {0,0,1,2,0,0,1,1,2,2,3,3,4,4,5,6,2,1,2,4,5}; // this is the index in the array of the data arrays below
@@ -983,6 +986,15 @@ const char version[] = __DATE__ " " __TIME__;
       }
     }
     switch (SettingsEditType) {
+      case SETTINGS_EDIT_TYPE_ALT1:
+        if (keyboardInputChar == KEYBOARD_DOWN_KEY) {
+          if (Settings_TempDispCharArr[0] == 'S' || Settings_TempDispCharArr[0] == 's') {
+            strcpy(Settings_TempDispCharArr, "Alternate");
+          } else {
+            strcpy(Settings_TempDispCharArr, "Standard");
+          }
+        }
+        break;
       case SETTINGS_EDIT_TYPE_BOOLEAN:
         if (keyboardInputChar == KEYBOARD_DOWN_KEY) {
           if (Settings_TempDispCharArr[0] == 'T' || Settings_TempDispCharArr[0] == 't' || Settings_TempDispCharArr[0] == '1') {
@@ -1039,7 +1051,6 @@ const char version[] = __DATE__ " " __TIME__;
           }
         break;
       case SETTINGS_EDIT_TYPE_FLOAT:
-          // TODO this is not validated because we have no settings of type float in aprs settings
           if (characterDelete) {
             if (cursorPosition_X >= 0) {
               Settings_TempDispCharArr[cursorPosition_X] = '\0';
@@ -1089,6 +1100,14 @@ const char version[] = __DATE__ " " __TIME__;
     cursorPosition_X = 0;
     // apply edited values
     switch (SettingsType) {
+      case SETTINGS_EDIT_TYPE_ALT1:
+        if (Settings_TempDispCharArr[0] == 'S' || Settings_TempDispCharArr[0] == 's') {
+          Settings_TypeString2[SettingsTypeIndex][0] = 's';
+        } else {
+          Settings_TypeString2[SettingsTypeIndex][0] = 'a';
+        }
+        Settings_TypeString2[SettingsTypeIndex][1] = '\0';
+        break;
       case SETTINGS_EDIT_TYPE_BOOLEAN:
         if (Settings_TempDispCharArr[0] == 'T' || Settings_TempDispCharArr[0] == 't' || Settings_TempDispCharArr[0] == '1') {
           Settings_TypeBool[SettingsTypeIndex] = 1;
@@ -1138,6 +1157,13 @@ const char version[] = __DATE__ " " __TIME__;
     }
     // copy data to temp variable
     switch (SettingsType) {
+      case SETTINGS_EDIT_TYPE_ALT1:
+        if (Settings_TypeString2[SettingsTypeIndex][0] == 'S' || Settings_TypeString2[SettingsTypeIndex][0] == 's') {
+          strcpy(Settings_TempDispCharArr, "Standard");
+        } else {
+          strcpy(Settings_TempDispCharArr, "Alternate");
+        }
+        break;
       case SETTINGS_EDIT_TYPE_BOOLEAN:
         if (Settings_TypeBool[SettingsTypeIndex]) {
           strcpy(Settings_TempDispCharArr, "True");
@@ -1183,6 +1209,14 @@ const char version[] = __DATE__ " " __TIME__;
 
   void handleDisplay_PrintValStoredInMem(int SettingsType, int SettingsTypeIndex){
     switch (SettingsType) {
+      case SETTINGS_EDIT_TYPE_ALT1:
+        Settings_EditValueSize = 0;
+        if (Settings_TypeString2[SettingsTypeIndex][0] == 'S' || Settings_TypeString2[SettingsTypeIndex][0] == 's') {
+          display.print(F("Standard"));
+        } else {
+          display.print(F("Alternate"));
+        }
+        break;
       case SETTINGS_EDIT_TYPE_BOOLEAN:
         Settings_EditValueSize = 0;
         if (Settings_TypeBool[SettingsTypeIndex]) {
@@ -2653,11 +2687,15 @@ const char version[] = __DATE__ " " __TIME__;
     const char chrString2[] = {":<Alpha numeric up to 1 character max>"};
     const char chrString7[] = {":<Alpha numeric up to 6 characters max>"};
     const char chrString100[] = {":<Alpha numeric up to 99 characters max>"};
+    const char chrAlt1[] = {":<Standard/Alternate>"};
     
     switch (dataType) {
-      case (int)SETTINGS_EDIT_TYPE_NONE: {
+      case (int)SETTINGS_EDIT_TYPE_ALT1:
+        for (int i=0;i<ARRAY_SIZE(chrAlt1);i++) outExample[i] = chrAlt1[i];
+        break;
+      case (int)SETTINGS_EDIT_TYPE_NONE:
         for (int i=0;i<ARRAY_SIZE(chrNone);i++) outExample[i] = chrNone[i];
-        break;}
+        break;
       case (int)SETTINGS_EDIT_TYPE_BOOLEAN:
         for (int i=0;i<ARRAY_SIZE(chrBool);i++) outExample[i] = chrBool[i];
         break;
