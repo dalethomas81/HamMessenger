@@ -3144,9 +3144,22 @@ const char version[] = __DATE__ " " __TIME__;
             i++; j_s_GPS++;
           }
           i++; // i should be sitting at the ':'. go ahead and skip that.
-          if (strstr(Setting, "Update Frequency") != NULL) {
-            //
-          } else if (strstr(Setting, "Position Tolerance") != NULL) {
+          if (strstr(Setting, MenuItems_Settings_GPS[0]) != NULL) { // Update Frequency
+            // SETTINGS_GPS_UPDATE_FREQUENCY 
+            while (inData[i] != '\n' && inData[i] != '\0') {
+              if (k>9) { // unsigned long would be no longer than 10 digits
+                Serial.print(InvalidData_UnsignedLong);Serial.println(inData_Value);
+                return;
+              }
+              if (!isDigit(inData[i])) {
+                Serial.print(InvalidData_UnsignedLong);Serial.println(inData[i]);
+                return;
+              }
+              inData_Value[k] = inData[i];
+              i++; k++;
+            }
+            SETTINGS_GPS_UPDATE_FREQUENCY = atol(inData_Value);
+          } else if (strstr(Setting, MenuItems_Settings_GPS[1]) != NULL) { // Position Tolerance"
             while (inData[i] != '\n' && inData[i] != '\0') {
               if (k>40) { // float would be no longer than 40 digits (this is ridiculous)
                 Serial.print(InvalidData_Float);Serial.println(inData_Value);
@@ -3159,11 +3172,38 @@ const char version[] = __DATE__ " " __TIME__;
               inData_Value[k] = inData[i];
               i++; k++;
             }
-            SETTINGS_GPS_POSITION_TOLERANCE = strtod(inData_Value,NULL);
-          } else if (strstr(Setting, "Destination Latitude") != NULL) {
-            //
-          } else if (strstr(Setting, "Destination Longitude") != NULL) {
-            //
+            //SETTINGS_GPS_POSITION_TOLERANCE = strtod(inData_Value,NULL); // should we use strtod or atof? which is best?
+            SETTINGS_GPS_POSITION_TOLERANCE = atof(inData_Value);
+          } else if (strstr(Setting, MenuItems_Settings_GPS[2]) != NULL) { // Destination Latitude
+            while (inData[i] != '\n' && inData[i] != '\0') {
+              if (k>40) { // float would be no longer than 40 digits (this is ridiculous)
+                Serial.print(InvalidData_Float);Serial.println(inData_Value);
+                return;
+              }
+              if (!isDigit(inData[i]) && !'.') {
+                Serial.print(InvalidData_Float);Serial.println(inData[i]);
+                return;
+              }
+              inData_Value[k] = inData[i];
+              i++; k++;
+            }
+            //SETTINGS_GPS_DESTINATION_LATITUDE = strtod(inData_Value,NULL); // should we use strtod or atof? which is best?
+            SETTINGS_GPS_DESTINATION_LATITUDE = atof(inData_Value);
+          } else if (strstr(Setting, MenuItems_Settings_GPS[3]) != NULL) { // Destination Longitude
+            while (inData[i] != '\n' && inData[i] != '\0') {
+              if (k>40) { // float would be no longer than 40 digits (this is ridiculous)
+                Serial.print(InvalidData_Float);Serial.println(inData_Value);
+                return;
+              }
+              if (!isDigit(inData[i]) && !'.') {
+                Serial.print(InvalidData_Float);Serial.println(inData[i]);
+                return;
+              }
+              inData_Value[k] = inData[i];
+              i++; k++;
+            }
+            //SETTINGS_GPS_DESTINATION_LONGITUDE = strtod(inData_Value,NULL); // should we use strtod or atof? which is best?
+            SETTINGS_GPS_DESTINATION_LONGITUDE = atof(inData_Value);
           } else {
             Serial.println(InvalidCommand);
           }
@@ -3261,7 +3301,7 @@ const char version[] = __DATE__ " " __TIME__;
           saveModemSettings=true;
           printOutSettings();
           
-        } else if (strstr(SettingGroup, "Print") != NULL) { //CMD:Settings:Print:
+        } else if (strstr(SettingGroup, "Print") != NULL) { // CMD:Settings:Print:
           printOutSettings();
           
         } else {
