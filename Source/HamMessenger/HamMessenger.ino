@@ -290,7 +290,7 @@ const char version[] = __DATE__ " " __TIME__;
   void applyDefaultsToSettings(){
     Serial.println(F("Applying defaults to settings..."));
 
-    SETTINGS_APRS_BEACON_FREQUENCY = 120000;
+    SETTINGS_APRS_BEACON_FREQUENCY = 60000;
 
     char strTemp1[] = {"HamMessenger!"};
     for (int i=0; i<sizeof(strTemp1);i++) {
@@ -357,9 +357,9 @@ const char version[] = __DATE__ " " __TIME__;
     SETTINGS_APRS_RETRY_INTERVAL = 10000;
     
     // London  LAT:51.508131     LNG:-0.128002
-    SETTINGS_GPS_UPDATE_FREQUENCY = 10000;
+    SETTINGS_GPS_UPDATE_FREQUENCY = 5000; // how often we care about updates from the GPS unit
 
-    SETTINGS_GPS_POSITION_TOLERANCE = 1.0;
+    SETTINGS_GPS_POSITION_TOLERANCE = 0.01;  // unit is in degrees
 
     SETTINGS_GPS_DESTINATION_LATITUDE = 51.508131;
 
@@ -715,9 +715,9 @@ const char version[] = __DATE__ " " __TIME__;
 
   void readGPS(){
  
-  while (Serial3.available() > 0)
+  while (Serial2.available() > 0)
 
-  gps.encode(Serial3.read());
+  gps.encode(Serial2.read());
       
   if ( millis() - gps_report_timer > SETTINGS_GPS_UPDATE_FREQUENCY){
       // reset timer
@@ -750,7 +750,8 @@ const char version[] = __DATE__ " " __TIME__;
         for (byte i = 0; i < sizeof(currentLat) - 1; i++) {
           if (currentLat[i] == ' ') currentLat[i] = '0';
         }
-        if (currentLatDeg > lastLatDeg + lastLatDeg*(SETTINGS_GPS_POSITION_TOLERANCE/100)  || currentLatDeg < lastLatDeg - lastLatDeg*(SETTINGS_GPS_POSITION_TOLERANCE/100)) {
+        if (currentLatDeg > lastLatDeg + SETTINGS_GPS_POSITION_TOLERANCE  ||
+              currentLatDeg < lastLatDeg - SETTINGS_GPS_POSITION_TOLERANCE) {
           modemCmdFlag_Lat=true;
           lastLatDeg = currentLatDeg;
         }
@@ -762,7 +763,8 @@ const char version[] = __DATE__ " " __TIME__;
         for (byte i = 0; i < sizeof(currentLng) - 1; i++) {
           if (currentLng[i] == ' ') currentLng[i] = '0';
         }
-        if (currentLngDeg > lastLngDeg + lastLngDeg*(SETTINGS_GPS_POSITION_TOLERANCE/100) || currentLngDeg < lastLngDeg - lastLngDeg*(SETTINGS_GPS_POSITION_TOLERANCE/100)) {
+        if (currentLngDeg > lastLngDeg + SETTINGS_GPS_POSITION_TOLERANCE ||
+              currentLngDeg < lastLngDeg - SETTINGS_GPS_POSITION_TOLERANCE) {
           modemCmdFlag_Lng=true;
           lastLngDeg = currentLngDeg;
         }
@@ -2677,6 +2679,7 @@ const char version[] = __DATE__ " " __TIME__;
   const char DataEntered[] = {"Data entered="};
   const char InvalidCommand[] = {"Invalid command."};
   const char InvalidData_UnsignedInt[] = {"Invalid data. Expected unsigned integer 0-65535 instead got "};
+  const char InvalidData_Float[] = {"Invalid data. Expected float -3.4028235E+38-3.4028235E+38 instead got "};
   const char InvalidData_UnsignedLong[] = {"Invalid data. Expected unsigned long 0-4294967295 instead got "};
   const char InvalidData_TrueFalse[] = {"Invalid data. Expected True/False or 1/0"};
 
@@ -3142,13 +3145,25 @@ const char version[] = __DATE__ " " __TIME__;
           }
           i++; // i should be sitting at the ':'. go ahead and skip that.
           if (strstr(Setting, "Update Frequency") != NULL) {
-            
+            //
           } else if (strstr(Setting, "Position Tolerance") != NULL) {
-            
+            while (inData[i] != '\n' && inData[i] != '\0') {
+              if (k>40) { // float would be no longer than 40 digits (this is ridiculous)
+                Serial.print(InvalidData_Float);Serial.println(inData_Value);
+                return;
+              }
+              if (!isDigit(inData[i]) && !'.') {
+                Serial.print(InvalidData_Float);Serial.println(inData[i]);
+                return;
+              }
+              inData_Value[k] = inData[i];
+              i++; k++;
+            }
+            SETTINGS_GPS_POSITION_TOLERANCE = strtod(inData_Value,NULL);
           } else if (strstr(Setting, "Destination Latitude") != NULL) {
-            
+            //
           } else if (strstr(Setting, "Destination Longitude") != NULL) {
-            
+            //
           } else {
             Serial.println(InvalidCommand);
           }
@@ -3451,7 +3466,7 @@ void setup(){
 
   Serial.begin(115200);
   Serial1.begin(9600); // modem
-  Serial3.begin(9600); // gps
+  Serial2.begin(9600); // gps
   while (!Serial1) // wait for modem
 
   Serial.println();
