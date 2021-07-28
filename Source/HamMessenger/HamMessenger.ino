@@ -503,48 +503,6 @@ const char version[] = __DATE__ " " __TIME__;
     }
   }
 
-  void printOutSettings(){
-    Serial.println();
-    Serial.println(F("////////  Current Settings  ////////"));
-    Serial.println(F("APRS:"));
-    Serial.print(MenuItems_Settings_APRS[0]); Serial.print("= "); Serial.println(SETTINGS_APRS_BEACON_FREQUENCY);
-    Serial.print(MenuItems_Settings_APRS[1]); Serial.print("= "); Serial.println(SETTINGS_APRS_RAW_PACKET);
-    Serial.print(MenuItems_Settings_APRS[2]); Serial.print("= "); Serial.println(SETTINGS_APRS_COMMENT);
-    Serial.print(MenuItems_Settings_APRS[3]); Serial.print("= "); Serial.println(SETTINGS_APRS_MESSAGE);
-    Serial.print(MenuItems_Settings_APRS[4]); Serial.print("= "); Serial.println(SETTINGS_APRS_RECIPIENT_CALL);
-    Serial.print(MenuItems_Settings_APRS[5]); Serial.print("= "); Serial.println(SETTINGS_APRS_RECIPIENT_SSID);
-    Serial.print(MenuItems_Settings_APRS[6]); Serial.print("= "); Serial.println(SETTINGS_APRS_CALLSIGN);
-    Serial.print(MenuItems_Settings_APRS[7]); Serial.print("= "); Serial.println(SETTINGS_APRS_CALLSIGN_SSID);
-    Serial.print(MenuItems_Settings_APRS[8]); Serial.print("= "); Serial.println(SETTINGS_APRS_DESTINATION_CALL);
-    Serial.print(MenuItems_Settings_APRS[9]); Serial.print("= "); Serial.println(SETTINGS_APRS_DESTINATION_SSID);
-    Serial.print(MenuItems_Settings_APRS[10]); Serial.print("= "); Serial.println(SETTINGS_APRS_PATH1_CALL);
-    Serial.print(MenuItems_Settings_APRS[11]); Serial.print("= "); Serial.println(SETTINGS_APRS_PATH1_SSID);
-    Serial.print(MenuItems_Settings_APRS[12]); Serial.print("= "); Serial.println(SETTINGS_APRS_PATH2_CALL);
-    Serial.print(MenuItems_Settings_APRS[13]); Serial.print("= "); Serial.println(SETTINGS_APRS_PATH2_SSID);
-    Serial.print(MenuItems_Settings_APRS[14]); Serial.print("= "); Serial.println(SETTINGS_APRS_SYMBOL);
-    Serial.print(MenuItems_Settings_APRS[15]); Serial.print("= "); Serial.println(SETTINGS_APRS_SYMBOL_TABLE);
-    Serial.print(MenuItems_Settings_APRS[16]); Serial.print("= "); Serial.println(SETTINGS_APRS_AUTOMATIC_ACK);
-    Serial.print(MenuItems_Settings_APRS[17]); Serial.print("= "); Serial.println(SETTINGS_APRS_PREAMBLE);
-    Serial.print(MenuItems_Settings_APRS[18]); Serial.print("= "); Serial.println(SETTINGS_APRS_TAIL);
-    Serial.print(MenuItems_Settings_APRS[19]); Serial.print("= "); Serial.println(SETTINGS_APRS_RETRY_COUNT);
-    Serial.print(MenuItems_Settings_APRS[20]); Serial.print("= "); Serial.println(SETTINGS_APRS_RETRY_INTERVAL);
-    Serial.println(F("GPS:"));
-    Serial.print(MenuItems_Settings_GPS[0]); Serial.print("= "); Serial.println(SETTINGS_GPS_UPDATE_FREQUENCY);
-    Serial.print(MenuItems_Settings_GPS[1]); Serial.print("= "); Serial.println(SETTINGS_GPS_POSITION_TOLERANCE, 6);
-    Serial.print(MenuItems_Settings_GPS[2]); Serial.print("= "); Serial.println(SETTINGS_GPS_DESTINATION_LATITUDE, 6);
-    Serial.print(MenuItems_Settings_GPS[3]); Serial.print("= "); Serial.println(SETTINGS_GPS_DESTINATION_LONGITUDE, 6);
-    Serial.println(F("Display:"));
-    Serial.print(MenuItems_Settings_Display[0]); Serial.print("= "); Serial.println(SETTINGS_DISPLAY_TIMEOUT);
-    Serial.print(MenuItems_Settings_Display[1]); Serial.print("= "); Serial.println(SETTINGS_DISPLAY_BRIGHTNESS);
-    Serial.print(MenuItems_Settings_Display[2]); Serial.print("= "); Serial.println(SETTINGS_DISPLAY_SHOW_POSITION);
-    Serial.print(MenuItems_Settings_Display[3]); Serial.print("= "); Serial.println(SETTINGS_DISPLAY_SCROLL_MESSAGES);
-    Serial.print(MenuItems_Settings_Display[4]); Serial.print("= "); Serial.println(SETTINGS_DISPLAY_SCROLL_SPEED);
-    Serial.print(MenuItems_Settings_Display[5]); Serial.print("= "); Serial.println(SETTINGS_DISPLAY_INVERT);
-    Serial.println();
-    Serial.print(F("Version=")); Serial.println(version);
-    Serial.println();
-  }
-
   void handleSettings(){  
     if (applySettings){
       applySettings=false;
@@ -2778,6 +2736,48 @@ const char version[] = __DATE__ " " __TIME__;
     }
   }
 
+  void printOutSettings(){
+    Serial.println();
+    Serial.println(F("Current Settings"));
+    Serial.println(F("APRS:"));
+    Serial.print(MenuItems_Settings_APRS[0]); Serial.print("="); Serial.println(SETTINGS_APRS_BEACON_FREQUENCY);
+    Serial.print(MenuItems_Settings_APRS[1]); Serial.print("="); Serial.println(SETTINGS_APRS_RAW_PACKET);
+    Serial.print(MenuItems_Settings_APRS[2]); Serial.print("="); Serial.println(SETTINGS_APRS_COMMENT);
+    Serial.print(MenuItems_Settings_APRS[3]); Serial.print("="); Serial.println(SETTINGS_APRS_MESSAGE);
+    Serial.print(MenuItems_Settings_APRS[4]); Serial.print("="); Serial.println(SETTINGS_APRS_RECIPIENT_CALL);
+    Serial.print(MenuItems_Settings_APRS[5]); Serial.print("="); Serial.println(SETTINGS_APRS_RECIPIENT_SSID);
+    Serial.print(MenuItems_Settings_APRS[6]); Serial.print("="); Serial.println(SETTINGS_APRS_CALLSIGN);
+    Serial.print(MenuItems_Settings_APRS[7]); Serial.print("="); Serial.println(SETTINGS_APRS_CALLSIGN_SSID);
+    Serial.print(MenuItems_Settings_APRS[8]); Serial.print("="); Serial.println(SETTINGS_APRS_DESTINATION_CALL);
+    Serial.print(MenuItems_Settings_APRS[9]); Serial.print("="); Serial.println(SETTINGS_APRS_DESTINATION_SSID);
+    Serial.print(MenuItems_Settings_APRS[10]); Serial.print("="); Serial.println(SETTINGS_APRS_PATH1_CALL);
+    Serial.print(MenuItems_Settings_APRS[11]); Serial.print("="); Serial.println(SETTINGS_APRS_PATH1_SSID);
+    Serial.print(MenuItems_Settings_APRS[12]); Serial.print("="); Serial.println(SETTINGS_APRS_PATH2_CALL);
+    Serial.print(MenuItems_Settings_APRS[13]); Serial.print("="); Serial.println(SETTINGS_APRS_PATH2_SSID);
+    Serial.print(MenuItems_Settings_APRS[14]); Serial.print("="); Serial.println(SETTINGS_APRS_SYMBOL);
+    Serial.print(MenuItems_Settings_APRS[15]); Serial.print("="); Serial.println(SETTINGS_APRS_SYMBOL_TABLE);
+    Serial.print(MenuItems_Settings_APRS[16]); Serial.print("="); Serial.println(SETTINGS_APRS_AUTOMATIC_ACK);
+    Serial.print(MenuItems_Settings_APRS[17]); Serial.print("="); Serial.println(SETTINGS_APRS_PREAMBLE);
+    Serial.print(MenuItems_Settings_APRS[18]); Serial.print("="); Serial.println(SETTINGS_APRS_TAIL);
+    Serial.print(MenuItems_Settings_APRS[19]); Serial.print("="); Serial.println(SETTINGS_APRS_RETRY_COUNT);
+    Serial.print(MenuItems_Settings_APRS[20]); Serial.print("="); Serial.println(SETTINGS_APRS_RETRY_INTERVAL);
+    Serial.println(F("GPS:"));
+    Serial.print(MenuItems_Settings_GPS[0]); Serial.print("="); Serial.println(SETTINGS_GPS_UPDATE_FREQUENCY);
+    Serial.print(MenuItems_Settings_GPS[1]); Serial.print("="); Serial.println(SETTINGS_GPS_POSITION_TOLERANCE, 2);
+    Serial.print(MenuItems_Settings_GPS[2]); Serial.print("="); Serial.println(SETTINGS_GPS_DESTINATION_LATITUDE, 6);
+    Serial.print(MenuItems_Settings_GPS[3]); Serial.print("="); Serial.println(SETTINGS_GPS_DESTINATION_LONGITUDE, 6);
+    Serial.println(F("Display:"));
+    Serial.print(MenuItems_Settings_Display[0]); Serial.print("="); Serial.println(SETTINGS_DISPLAY_TIMEOUT);
+    Serial.print(MenuItems_Settings_Display[1]); Serial.print("="); Serial.println(SETTINGS_DISPLAY_BRIGHTNESS);
+    Serial.print(MenuItems_Settings_Display[2]); Serial.print("="); Serial.println(SETTINGS_DISPLAY_SHOW_POSITION);
+    Serial.print(MenuItems_Settings_Display[3]); Serial.print("="); Serial.println(SETTINGS_DISPLAY_SCROLL_MESSAGES);
+    Serial.print(MenuItems_Settings_Display[4]); Serial.print("="); Serial.println(SETTINGS_DISPLAY_SCROLL_SPEED);
+    Serial.print(MenuItems_Settings_Display[5]); Serial.print("="); Serial.println(SETTINGS_DISPLAY_INVERT);
+    Serial.println();
+    Serial.print(F("Version=")); Serial.println(version);
+    Serial.println();
+  }
+
   void handleSerial(){
     // the gps module continuously prints to the cpu
     readGPS();
@@ -3165,7 +3165,7 @@ const char version[] = __DATE__ " " __TIME__;
                 Serial.print(InvalidData_Float);Serial.println(inData_Value);
                 return;
               }
-              if (!isDigit(inData[i]) && !'.') {
+              if (!isDigit(inData[i]) && !'.' && !'-') {
                 Serial.print(InvalidData_Float);Serial.println(inData[i]);
                 return;
               }
@@ -3180,7 +3180,7 @@ const char version[] = __DATE__ " " __TIME__;
                 Serial.print(InvalidData_Float);Serial.println(inData_Value);
                 return;
               }
-              if (!isDigit(inData[i]) && !'.') {
+              if (!isDigit(inData[i]) && !'.' && !'-') {
                 Serial.print(InvalidData_Float);Serial.println(inData[i]);
                 return;
               }
@@ -3195,7 +3195,7 @@ const char version[] = __DATE__ " " __TIME__;
                 Serial.print(InvalidData_Float);Serial.println(inData_Value);
                 return;
               }
-              if (!isDigit(inData[i]) && !'.') {
+              if (!isDigit(inData[i]) && !'.' && !'-') {
                 Serial.print(InvalidData_Float);Serial.println(inData[i]);
                 return;
               }
