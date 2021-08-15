@@ -1,5 +1,5 @@
 # HamMessenger # 
-!!!PLEASE READ UPDATES BEFORE BUILDING!!!  
+
 Click [here](https://github.com/dalethomas81/HamMessenger#updates) for updates.
 
 HamMessenger is a portable, battery powered device that runs on a microcontroller and interfaces with an inexpensive ham radio to send and receive text messages and provide position updates using the [APRS](http://www.aprs.org/doc/APRS101.PDF) protocol. Messages and position updates sent via HamMessenger can be viewed on sites such as [aprs.fi](https://aprs.fi). HamMessenger messages are NOT encrypted!  
@@ -96,6 +96,10 @@ Battery:
 Panasonic 18650 - don't have a link but you can get them on eBay or Amazon  
 
 ## Updates ##
+
+### 14-AUG-2021: Rev v1.1 has arrived and it works!
+
+Ok, great news. Revision v1.1 of the HamMessenger board came in from PCBWay and they are great. I built 2 units and was able to encode and decode messages well. I will add some more information later but [Here](/Media/Board-v1/) is a few pictures for now.
 
 ### 24-JUL-2021: Rev v1.1 is being fabbed!!
 
