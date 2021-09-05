@@ -19,6 +19,8 @@ I will add some videos and pictures of the device in action asap. Please feel fr
 
 ![all-together-layout](/Media/Board-v1/all-together-layout.jpeg)  
 
+![front](/Media/Unibody-Frame-v1/front.jpeg/)  
+
 ## Operation ##
 
 Full instructions on how to operate HamMessenger will go here. For now, just a couple notes :)  
