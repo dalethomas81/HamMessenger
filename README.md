@@ -101,14 +101,14 @@ Panasonic 18650 - don't have a link but you can get them on eBay or Amazon
 
 ### 05-SEP-2021: First version of the enclosure
 
-So I started learning 3D modeling so that I can create an enclosure for HamMessenger. Its been a bit of a learning curve but I'm getting the hang of it. I decided that for the first iteration I would go with an open unibody frame style. I chose this style for the first version because it is easy and I'd like to have something working while I learn more about modeling.
+So I started learning 3D modeling so that I can create an enclosure for HamMessenger. Its been a bit of a learning curve but I'm getting the hang of it. I decided that for the first iteration I would go with an open unibody frame. I chose this style for the first version because it is easy and I'd like to have something working while I learn more about 3D modeling.
 
 You can find the Fusion 360 archive file and the stl [here](/Documentation/CAD/Fusion-360/). It needs to be printed on its side like [this](/Media/Unibody-Frame-v1/cura.png/) to minimize the amount of support needed during printing. I used 0.2mm layers with 20% infill as well as 5% support infill. The print took about 6.5 hours.
 
 A few pics.
-[Front](/Media/Unibody-Frame-v1/front.jpeg/)
-[Side](/Media/Unibody-Frame-v1/side.jpeg/)
-[Back](/Media/Unibody-Frame-v1/back.jpeg/)
+[Front](/Media/Unibody-Frame-v1/front.jpeg/)  
+[Side](/Media/Unibody-Frame-v1/side.jpeg/)  
+[Back](/Media/Unibody-Frame-v1/back.jpeg/)  
 
 ### 14-AUG-2021: Rev v1.1 has arrived and it works!
 
