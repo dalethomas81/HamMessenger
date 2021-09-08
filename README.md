@@ -105,7 +105,7 @@ So I started learning 3D modeling so that I can create an enclosure for HamMesse
 
 You can find the Fusion 360 archive file and the stl [here](/Documentation/CAD/Fusion-360/). It needs to be printed on its side like [this](/Media/Unibody-Frame-v1/cura.png/) to minimize the amount of support needed during printing. I used 0.2mm layers with 20% infill as well as 5% support infill. The print took about 6.5 hours.
 
-A few pics.
+A few pics:  
 [Front](/Media/Unibody-Frame-v1/front.jpeg/)  
 [Side](/Media/Unibody-Frame-v1/side.jpeg/)  
 [Back](/Media/Unibody-Frame-v1/back.jpeg/)  
