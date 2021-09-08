@@ -1,9 +1,11 @@
 {
     "C_Cpp.intelliSenseEngineFallback": "Enabled",
     "arduino.path": "/Applications/Arduino.app", 
+    "arduino.commandPath": "/Contents/MacOS/Arduino", 
     "arduino.additionalUrls": "", 
     "arduino.logLevel": "info", 
-    "arduino.enableUSBDetection": true, 
+    "arduino.enableUSBDetection": false, 
+    "arduino.useArduinoCli": false,
     "C_Cpp.intelliSenseEngine": "Tag Parser",
     "files.associations": {
         "queue": "cpp",
