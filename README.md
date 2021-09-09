@@ -99,6 +99,10 @@ Panasonic 18650 - don't have a link but you can get them on eBay or Amazon
 
 ## Updates ##
 
+### 08-SEP-2021: Troubleshooting freezing
+
+There is an issue where during transmit the unit will freeze or restart. I did some experimenting and found out that its the cable that connects to the radio. It is not shielded at all. I thought the small ferrites would be enough to combat this but obviously not. I did some experimenting and found that if I use larger ferrites and wrap them once that the issue goes away. [Here](/Media/Install/large-ferrites.jpeg/) is a picture of the installation. I will now look at sourcing a shielded cable for this application.
+
 ### 05-SEP-2021: First version of the enclosure
 
 So I started learning 3D modeling so that I can create an enclosure for HamMessenger. Its been a bit of a learning curve but I'm getting the hang of it. I decided that for the first iteration I would go with an open unibody frame. I chose this style for the first version because it is easy and I'd like to have something working while I learn more about 3D modeling.
