@@ -1,7 +1,7 @@
 {
-    "C_Cpp.intelliSenseEngineFallback": "Enabled",
-    "arduino.path": "/Applications/Arduino.app", 
-    "arduino.commandPath": "/Contents/MacOS/Arduino", 
+    "C_Cpp.intelliSenseEngineFallback": "enabled",
+    "arduino.path": "/usr/bin/", 
+    "arduino.commandPath": "arduino", 
     "arduino.additionalUrls": "", 
     "arduino.logLevel": "info", 
     "arduino.enableUSBDetection": false, 

@@ -950,8 +950,7 @@ const char version[] = __DATE__ " " __TIME__;
   #define rxPin A5 // using analog input pins
   #define txPin A6
 
-  template <typename T>
-  T numberOfDigits(T number){
+  template <typename T> T numberOfDigits(T number){
     // https://studyfied.com/program/cpp-basic/count-number-of-digits-in-a-given-integer/
     // https://stackoverflow.com/questions/8627625/is-it-possible-to-make-function-that-will-accept-multiple-data-types-for-given-a/8627646
 
