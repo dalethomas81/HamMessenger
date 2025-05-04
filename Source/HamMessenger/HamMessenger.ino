@@ -3328,6 +3328,20 @@ const char version[] = __DATE__ " " __TIME__;
             }
             //Serial.print(DataEntered);Serial.println(inData_Value);
             SETTINGS_DISPLAY_SCROLL_SPEED = atoi(inData_Value);
+          } else if (strstr(Setting, MenuItems_Settings_Display[2]) != NULL) { // "Invert"
+            while (inData[i] != '\n' && inData[i] != '\0') {
+              inData_Value[k] = inData[i];
+              i++; k++;
+            }
+            //Serial.print(DataEntered);Serial.println(inData_Value); 
+            if (inData_Value[0]=='1' || inData_Value[0]=='T' || inData_Value[0]=='t'){
+              SETTINGS_DISPLAY_INVERT = true;
+            } else if (inData_Value[0]=='0' || inData_Value[0]=='F' || inData_Value[0]=='f'){
+              SETTINGS_DISPLAY_INVERT = false;
+            } else {
+              Serial.println(InvalidData_TrueFalse);
+            }
+            
           } else {
             Serial.println(InvalidCommand);
           }
