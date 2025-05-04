@@ -190,7 +190,7 @@ def send_serial(custom_message=None):
         line = f"[{timestamp}] → {message}\n"
         log_entries.append({"text": line, "type": "Sent", "tag": "sent"})
         log_to_file(line)
-        ser.write((message + '\r').encode('utf-8'))
+        ser.write((message + '\n').encode('utf-8'))
         if not custom_message:
             if message not in history:
                 history.append(message)
