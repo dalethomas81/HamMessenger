@@ -3328,7 +3328,7 @@ const char version[] = __DATE__ " " __TIME__;
             }
             //Serial.print(DataEntered);Serial.println(inData_Value);
             SETTINGS_DISPLAY_SCROLL_SPEED = atoi(inData_Value);
-          } else if (strstr(Setting, MenuItems_Settings_Display[2]) != NULL) { // "Invert"
+          } else if (strstr(Setting, MenuItems_Settings_Display[5]) != NULL) { // "Invert"
             while (inData[i] != '\n' && inData[i] != '\0') {
               inData_Value[k] = inData[i];
               i++; k++;

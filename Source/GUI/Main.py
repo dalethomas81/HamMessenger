@@ -22,7 +22,8 @@ def read_serial():
             buffer += data
             while '\r' in buffer:
                 line, buffer = buffer.split('\r', 1)
-                log_box.insert(tk.END, line + '\n')
+                #log_box.insert(tk.END, line + '\n')
+                log_box.insert(tk.END, line)
                 log_box.see(tk.END)
 
 #
