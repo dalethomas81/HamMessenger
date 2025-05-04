@@ -2587,6 +2587,16 @@ const char version[] = __DATE__ " " __TIME__;
           i = sizeof(modemData); // setting i to size of modem data will make loop exit sooner
         }
       }
+
+      //
+      Serial.print("APRS:");
+      Serial.print("src:");Serial.print(Format_Raw_In.src);
+      Serial.print("dst:");Serial.print(Format_Raw_In.dst);
+      Serial.print("path:");Serial.print(Format_Raw_In.path);
+      Serial.print("data:");Serial.print(Format_Raw_In.data);
+      Serial.print("DateInt:");Serial.print(Format_Raw_In.DateInt);
+      Serial.print("TimeInt:");Serial.print(Format_Raw_In.TimeInt);
+      Serial.println();
       
       // check if message here
       // Radio 2: SRC: [NOCALL-3] DST: [APRS-0] PATH: [WIDE1-1] [WIDE2-2] DATA: :NOCALL-3 :Hi!{006

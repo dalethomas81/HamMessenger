@@ -1,9 +1,3 @@
-# Final polished version of Main.py with:
-# - Fully themed dark/light toggle (including labels and buttons)
-# - Config/log file paths fixed
-# - Clean styling across all UI elements
-# - Note: Title bar theme is OS-controlled (see comments)
-
 import tkinter as tk
 from tkinter import scrolledtext, ttk, simpledialog, messagebox, filedialog
 import serial
@@ -13,6 +7,7 @@ import time
 import os
 import json
 from datetime import datetime
+from tkinter.ttk import Style
 
 # ---------- Path Setup ----------
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
@@ -81,16 +76,13 @@ def load_config():
         with open(config_file, "r") as f:
             config.update(json.load(f))
 
-
 def save_config():
     with open(config_file, "w") as f:
         json.dump(config, f, indent=2)
 
-
 # ---------- Serial Functions ----------
 def list_serial_ports():
     return [port.device for port in serial.tools.list_ports.comports()]
-
 
 def refresh_ports():
     ports = list_serial_ports()
@@ -102,7 +94,6 @@ def refresh_ports():
             port_var.set(ports[0])
     else:
         port_var.set("")
-
 
 def connect_serial():
     global ser, connected
@@ -121,7 +112,6 @@ def connect_serial():
         status_label.config(text=f"Connection failed: {e}", fg="red")
         connected = False
 
-
 def monitor_connection():
     global connected
     while True:
@@ -131,7 +121,6 @@ def monitor_connection():
             try_reconnect()
             break
         time.sleep(2)
-
 
 def try_reconnect():
     for attempt in range(1, 6):
@@ -151,11 +140,9 @@ def get_log_filename():
         os.makedirs(log_dir)
     return os.path.join(log_dir, datetime.now().strftime("%Y-%m-%d") + ".txt")
 
-
 def log_to_file(text):
     with open(get_log_filename(), "a", encoding="utf-8") as f:
         f.write(text)
-
 
 def open_log_file():
     file_path = filedialog.askopenfilename(initialdir=log_dir, title="Open Log File",
@@ -168,8 +155,16 @@ def open_log_file():
             log_box.config(state=tk.DISABLED)
             log_box.see(tk.END)
 
+def clear_log():
+    global log_entries
+    log_entries = []
+    update_log_display()
 
 def update_log_display():
+    global log_entries
+    max_entries = 1000
+    if len(log_entries) > max_entries:
+        log_entries = log_entries[-max_entries:]
     log_box.config(state=tk.NORMAL)
     log_box.delete(1.0, tk.END)
     for entry in log_entries:
@@ -197,7 +192,6 @@ def send_serial(custom_message=None):
             history_index = len(history)
             entry.delete(0, tk.END)
         update_log_display()
-
 
 def read_serial():
     buffer = ""
@@ -261,10 +255,10 @@ def apply_theme():
                 child.configure(bg=bg, fg=fg)
 
     for btn in [refresh_btn, connect_btn, open_log_btn, theme_toggle_btn,
-                send_quick_btn, add_quick_btn, send_btn, auto_scroll_btn]:
+                send_quick_btn, add_quick_btn, send_btn, auto_scroll_btn, clear_log_btn]:
         btn.configure(bg=bg, fg=fg, activebackground="#444444", activeforeground="#ffffff")
 
-    style = ttk.Style()
+    style = Style()
     style.theme_use("clam")
     style.configure("TCombobox",
                     fieldbackground=textbox_bg,
@@ -276,13 +270,11 @@ def apply_theme():
 
     theme_toggle_btn.configure(text="Theme: Light" if dark_mode else "Theme: Dark")
 
-
 # ---------- Filtering ----------
 def toggle_autoscroll():
     global auto_scroll_enabled
     auto_scroll_enabled = not auto_scroll_enabled
     auto_scroll_btn.config(text=f"Auto-Scroll: {'On' if auto_scroll_enabled else 'Off'}")
-
 
 def change_filter_mode(*args):
     global filter_mode
@@ -341,7 +333,6 @@ quick_menu.pack(side=tk.LEFT, padx=(5, 0))
 send_quick_btn = tk.Button(quick_frame, text="Send", command=lambda: send_serial(quick_cmd_var.get()))
 send_quick_btn.pack(side=tk.LEFT, padx=(5, 0))
 
-
 def add_quick_command():
     new_cmd = simpledialog.askstring("New Quick Command", "Enter the command to add:")
     if new_cmd:
@@ -349,7 +340,6 @@ def add_quick_command():
         save_config()
         quick_menu['values'] = config["quick_commands"]
         quick_cmd_var.set(new_cmd)
-
 
 add_quick_btn = tk.Button(quick_frame, text="Add", command=add_quick_command)
 add_quick_btn.pack(side=tk.LEFT, padx=(5, 0))
@@ -381,6 +371,9 @@ filter_menu = ttk.Combobox(log_control_frame, textvariable=filter_var,
 filter_menu.pack(side=tk.LEFT)
 filter_menu.bind("<<ComboboxSelected>>", change_filter_mode)
 
+clear_log_btn = tk.Button(log_control_frame, text="Clear Log", command=clear_log)
+clear_log_btn.pack(side=tk.LEFT, padx=(10, 0))
+
 # Log Viewer
 log_box = scrolledtext.ScrolledText(root, wrap=tk.WORD, state=tk.DISABLED)
 log_box.grid(row=5, column=0, sticky="nsew", padx=10, pady=(0, 10))
@@ -391,6 +384,5 @@ log_box.tag_config("received", foreground="green")
 refresh_ports()
 if config.get("port"):
     port_var.set(config["port"])
-
 apply_theme()
 root.mainloop()
