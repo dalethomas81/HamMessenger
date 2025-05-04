@@ -1,45 +1,396 @@
+# Final polished version of Main.py with:
+# - Fully themed dark/light toggle (including labels and buttons)
+# - Config/log file paths fixed
+# - Clean styling across all UI elements
+# - Note: Title bar theme is OS-controlled (see comments)
+
 import tkinter as tk
-from tkinter import scrolledtext
+from tkinter import scrolledtext, ttk, simpledialog, messagebox, filedialog
 import serial
+import serial.tools.list_ports
 import threading
+import time
+import os
+import json
+from datetime import datetime
 
-SERIAL_PORT = 'COM4'
-BAUDRATE = 115200
+# ---------- Path Setup ----------
+BASE_DIR = os.path.dirname(os.path.abspath(__file__))
+config_file = os.path.join(BASE_DIR, "ham_gui_config.json")
+log_dir = os.path.join(BASE_DIR, "logs")
 
-ser = serial.Serial(SERIAL_PORT, BAUDRATE, timeout=0.5)
+# ---------- Globals ----------
+ser = None
+connected = False
+default_quick_commands = ["?"
+                          ,"CMD:Settings:Print:"
+                          ,"CMD:Settings:Save:"
+                          ,"CMD:SD:Raw:Print:"
+                          ,"CMD:SD:Raw:Delete:"
+                          ,"CMD:SD:Msg:Print:"
+                          ,"CMD:SD:Msg:Delete:"
+                          ,"CMD:Modem:<command>"
+                          ,"CMD:Settings:APRS:Beacon Frequency:<0 to 4,294,967,295>"
+                          ,"CMD:Settings:APRS:Raw Packet:<alphanumeric 99 char max>"
+                          ,"CMD:Settings:APRS:Comment:<alphanumeric 99 char max>"
+                          ,"CMD:Settings:APRS:Message:<alphanumeric 99 char max>"
+                          ,"CMD:Settings:APRS:Recipient Callsign:<alphanumeric 6 char max>"
+                          ,"CMD:Settings:APRS:Recipient SSID:<alphanumeric 1 char max>"
+                          ,"CMD:Settings:APRS:My Callsign:<alphanumeric 6 char max>"
+                          ,"CMD:Settings:APRS:Callsign SSID:<alphanumeric 1 char max>"
+                          ,"CMD:Settings:APRS:Dest Callsign:<alphanumeric 6 char max>"
+                          ,"CMD:Settings:APRS:Dest SSID:<alphanumeric 1 char max>"
+                          ,"CMD:Settings:APRS:PATH1 Callsign:<alphanumeric 6 char max>"
+                          ,"CMD:Settings:APRS:PATH1 SSID:<alphanumeric 1 char max>"
+                          ,"CMD:Settings:APRS:PATH2 Callsign:<alphanumeric 6 char max>"
+                          ,"CMD:Settings:APRS:PATH2 SSID:<alphanumeric 1 char max>"
+                          ,"CMD:Settings:APRS:Symbol:<alphanumeric 1 char max>"
+                          ,"CMD:Settings:APRS:Table:<alphanumeric 1 char max>"
+                          ,"CMD:Settings:APRS:Automatic ACK:<True/False>"
+                          ,"CMD:Settings:APRS:Preamble:<0 to 65,535>"
+                          ,"CMD:Settings:APRS:Tail:<0 to 65,535>"
+                          ,"CMD:Settings:APRS:Retry Count:<0 to 65,535>"
+                          ,"CMD:Settings:APRS:Retry Interval:<0 to 65,535>"
+                          ,"CMD:Settings:GPS:Update Freq:<0 to 4,294,967,295>"
+                          ,"CMD:Settings:GPS:Pos Tolerance:<0-100%>"
+                          ,"CMD:Settings:GPS:Dest Latitude:<-3.4028235E+38 to 3.4028235E+38>"
+                          ,"CMD:Settings:GPS:Dest Longitude:<-3.4028235E+38 to 3.4028235E+38>"
+                          ,"CMD:Settings:Display:Timeout:<0 to 4,294,967,295>"
+                          ,"CMD:Settings:Display:Brightness:<0 to 100>"
+                          ,"CMD:Settings:Display:Show Position:<True/False>"
+                          ,"CMD:Settings:Display:Scroll Messages:<True/False>"
+                          ,"CMD:Settings:Display:Scroll Speed:<0 to 65,535>"
+                          ,"CMD:Settings:Display:Invert:<True/False>"]
+config = {
+    "port": "",
+    "baud": "115200",
+    "quick_commands": default_quick_commands,
+    "dark_mode": False
+}
+history = []
+history_index = -1
+log_entries = []
+auto_scroll_enabled = True
+filter_mode = "All"
+dark_mode = False
 
-def send_serial():
-    message = entry.get()
+# ---------- Config Functions ----------
+def load_config():
+    global config
+    if os.path.exists(config_file):
+        with open(config_file, "r") as f:
+            config.update(json.load(f))
+
+
+def save_config():
+    with open(config_file, "w") as f:
+        json.dump(config, f, indent=2)
+
+
+# ---------- Serial Functions ----------
+def list_serial_ports():
+    return [port.device for port in serial.tools.list_ports.comports()]
+
+
+def refresh_ports():
+    ports = list_serial_ports()
+    port_menu['values'] = ports
+    if ports:
+        if config.get("port") in ports:
+            port_var.set(config["port"])
+        else:
+            port_var.set(ports[0])
+    else:
+        port_var.set("")
+
+
+def connect_serial():
+    global ser, connected
+    port = port_var.get()
+    baud = int(baud_var.get())
+    try:
+        ser = serial.Serial(port, baud, timeout=0.5)
+        connected = True
+        config["port"] = port
+        config["baud"] = str(baud)
+        save_config()
+        status_label.config(text=f"Connected to {port} @ {baud} baud", fg="green")
+        threading.Thread(target=read_serial, daemon=True).start()
+        threading.Thread(target=monitor_connection, daemon=True).start()
+    except Exception as e:
+        status_label.config(text=f"Connection failed: {e}", fg="red")
+        connected = False
+
+
+def monitor_connection():
+    global connected
+    while True:
+        if ser and not ser.is_open:
+            connected = False
+            status_label.config(text="Disconnected", fg="red")
+            try_reconnect()
+            break
+        time.sleep(2)
+
+
+def try_reconnect():
+    for attempt in range(1, 6):
+        status_label.config(text=f"Reconnecting... (attempt {attempt})", fg="orange")
+        time.sleep(2)
+        try:
+            connect_serial()
+            if connected:
+                return
+        except:
+            continue
+    status_label.config(text="Reconnection failed", fg="red")
+
+# ---------- Logging Functions ----------
+def get_log_filename():
+    if not os.path.exists(log_dir):
+        os.makedirs(log_dir)
+    return os.path.join(log_dir, datetime.now().strftime("%Y-%m-%d") + ".txt")
+
+
+def log_to_file(text):
+    with open(get_log_filename(), "a", encoding="utf-8") as f:
+        f.write(text)
+
+
+def open_log_file():
+    file_path = filedialog.askopenfilename(initialdir=log_dir, title="Open Log File",
+                                           filetypes=[("Text files", "*.txt")])
+    if file_path:
+        with open(file_path, "r", encoding="utf-8") as f:
+            log_box.config(state=tk.NORMAL)
+            log_box.delete(1.0, tk.END)
+            log_box.insert(tk.END, f.read())
+            log_box.config(state=tk.DISABLED)
+            log_box.see(tk.END)
+
+
+def update_log_display():
+    log_box.config(state=tk.NORMAL)
+    log_box.delete(1.0, tk.END)
+    for entry in log_entries:
+        if filter_mode == "All" or entry["type"] == filter_mode:
+            log_box.insert(tk.END, entry["text"], entry["tag"])
+    if auto_scroll_enabled:
+        log_box.see(tk.END)
+    log_box.config(state=tk.DISABLED)
+
+# ---------- Serial I/O ----------
+def send_serial(custom_message=None):
+    global history, history_index
+    if not connected:
+        return
+    message = custom_message if custom_message else entry.get()
     if message:
-        ser.write((message + '\r\n').encode('utf-8'))
-        entry.delete(0, tk.END)
+        timestamp = time.strftime("%H:%M:%S")
+        line = f"[{timestamp}] → {message}\n"
+        log_entries.append({"text": line, "type": "Sent", "tag": "sent"})
+        log_to_file(line)
+        ser.write((message + '\r').encode('utf-8'))
+        if not custom_message:
+            if message not in history:
+                history.append(message)
+            history_index = len(history)
+            entry.delete(0, tk.END)
+        update_log_display()
+
 
 def read_serial():
     buffer = ""
-    while True:
-        if ser.in_waiting > 0:
-            data = ser.read(ser.in_waiting).decode('utf-8', errors='ignore')
-            buffer += data
-            while '\r' in buffer:
-                line, buffer = buffer.split('\r', 1)
-                #log_box.insert(tk.END, line + '\n')
-                log_box.insert(tk.END, line)
-                log_box.see(tk.END)
+    while connected:
+        try:
+            if ser.in_waiting > 0:
+                data = ser.read(ser.in_waiting).decode('utf-8', errors='ignore')
+                buffer += data
+                while '\r' in buffer:
+                    line, buffer = buffer.split('\r', 1)
+                    line = line.strip()
+                    timestamp = time.strftime("%H:%M:%S")
+                    log_entry = f"[{timestamp}] ← {line}\n"
+                    log_entries.append({"text": log_entry, "type": "Received", "tag": "received"})
+                    log_to_file(log_entry)
+                    update_log_display()
+        except:
+            break
 
-#
+# ---------- History ----------
+def handle_history(event):
+    global history_index
+    if event.keysym == "Up":
+        if history and history_index > 0:
+            history_index -= 1
+            entry.delete(0, tk.END)
+            entry.insert(0, history[history_index])
+    elif event.keysym == "Down":
+        if history:
+            if history_index < len(history) - 1:
+                history_index += 1
+                entry.delete(0, tk.END)
+                entry.insert(0, history[history_index])
+            else:
+                entry.delete(0, tk.END)
+                history_index = len(history)
+
+# ---------- Theme ----------
+def toggle_theme():
+    global dark_mode
+    dark_mode = not dark_mode
+    config["dark_mode"] = dark_mode
+    save_config()
+    apply_theme()
+
+def apply_theme():
+    bg = "#2e2e2e" if dark_mode else "#ffffff"
+    fg = "#ffffff" if dark_mode else "#000000"
+    textbox_bg = "#1e1e1e" if dark_mode else "#ffffff"
+
+    root.configure(bg=bg)
+    for frame in [control_frame, quick_frame, entry_frame, log_control_frame]:
+        frame.configure(bg=bg)
+
+    entry.configure(bg=textbox_bg, fg=fg, insertbackground=fg)
+    log_box.configure(bg=textbox_bg, fg=fg, insertbackground=fg)
+
+    for widget in root.winfo_children():
+        for child in widget.winfo_children():
+            if isinstance(child, tk.Label):
+                child.configure(bg=bg, fg=fg)
+
+    for btn in [refresh_btn, connect_btn, open_log_btn, theme_toggle_btn,
+                send_quick_btn, add_quick_btn, send_btn, auto_scroll_btn]:
+        btn.configure(bg=bg, fg=fg, activebackground="#444444", activeforeground="#ffffff")
+
+    style = ttk.Style()
+    style.theme_use("clam")
+    style.configure("TCombobox",
+                    fieldbackground=textbox_bg,
+                    background=textbox_bg,
+                    foreground=fg)
+    style.map("TCombobox", fieldbackground=[("readonly", textbox_bg)],
+              background=[("readonly", textbox_bg)],
+              foreground=[("readonly", fg)])
+
+    theme_toggle_btn.configure(text="Theme: Light" if dark_mode else "Theme: Dark")
+
+
+# ---------- Filtering ----------
+def toggle_autoscroll():
+    global auto_scroll_enabled
+    auto_scroll_enabled = not auto_scroll_enabled
+    auto_scroll_btn.config(text=f"Auto-Scroll: {'On' if auto_scroll_enabled else 'Off'}")
+
+
+def change_filter_mode(*args):
+    global filter_mode
+    filter_mode = filter_var.get()
+    update_log_display()
+
+# ---------- GUI ----------
 root = tk.Tk()
+root.iconbitmap("ham_messenger_icon.ico")
 root.title("HamMessenger Serial GUI")
+root.geometry("950x620")
+root.rowconfigure(5, weight=1)
+root.columnconfigure(0, weight=1)
 
-entry = tk.Entry(root, width=50)
-entry.pack(padx=10, pady=5)
+load_config()
+dark_mode = config.get("dark_mode", False)
 
-send_btn = tk.Button(root, text="Send", command=send_serial)
-send_btn.pack(pady=5)
+# Control Bar
+control_frame = tk.Frame(root)
+control_frame.grid(row=0, column=0, sticky="ew", padx=10, pady=5)
 
-log_box = scrolledtext.ScrolledText(root, width=60, height=20)
-log_box.pack(padx=10, pady=5)
+tk.Label(control_frame, text="Port:").grid(row=0, column=0)
+port_var = tk.StringVar()
+port_menu = ttk.Combobox(control_frame, textvariable=port_var, width=12)
+port_menu.grid(row=0, column=1, sticky="w")
 
-# Background thread to read serial
-threading.Thread(target=read_serial, daemon=True).start()
+refresh_btn = tk.Button(control_frame, text="Refresh", command=refresh_ports)
+refresh_btn.grid(row=0, column=2, padx=(5, 10))
 
+tk.Label(control_frame, text="Baud:").grid(row=0, column=3)
+baud_var = tk.StringVar(value=config.get("baud", "115200"))
+baud_menu = ttk.Combobox(control_frame, textvariable=baud_var,
+                         values=["9600", "19200", "38400", "57600", "115200"], width=10)
+baud_menu.grid(row=0, column=4)
+
+connect_btn = tk.Button(control_frame, text="Connect", command=connect_serial)
+connect_btn.grid(row=0, column=5, padx=(10, 0))
+
+status_label = tk.Label(control_frame, text="Not connected", fg="red")
+status_label.grid(row=0, column=6, padx=(10, 0))
+
+open_log_btn = tk.Button(control_frame, text="Open Log", command=open_log_file)
+open_log_btn.grid(row=0, column=7, padx=(10, 0))
+
+theme_toggle_btn = tk.Button(control_frame, text="Theme: Dark", command=toggle_theme)
+theme_toggle_btn.grid(row=0, column=8, padx=(10, 0))
+
+# Quick Commands
+quick_frame = tk.Frame(root)
+quick_frame.grid(row=1, column=0, sticky="ew", padx=10, pady=(0, 5))
+tk.Label(quick_frame, text="Quick Commands:").pack(side=tk.LEFT)
+quick_cmd_var = tk.StringVar()
+quick_menu = ttk.Combobox(quick_frame, textvariable=quick_cmd_var,
+                          values=config["quick_commands"], width=100)
+quick_menu.pack(side=tk.LEFT, padx=(5, 0))
+send_quick_btn = tk.Button(quick_frame, text="Send", command=lambda: send_serial(quick_cmd_var.get()))
+send_quick_btn.pack(side=tk.LEFT, padx=(5, 0))
+
+
+def add_quick_command():
+    new_cmd = simpledialog.askstring("New Quick Command", "Enter the command to add:")
+    if new_cmd:
+        config["quick_commands"].append(new_cmd)
+        save_config()
+        quick_menu['values'] = config["quick_commands"]
+        quick_cmd_var.set(new_cmd)
+
+
+add_quick_btn = tk.Button(quick_frame, text="Add", command=add_quick_command)
+add_quick_btn.pack(side=tk.LEFT, padx=(5, 0))
+
+# Entry
+entry_frame = tk.Frame(root)
+entry_frame.grid(row=2, column=0, sticky="ew", padx=10)
+entry_frame.columnconfigure(0, weight=1)
+
+entry = tk.Entry(entry_frame)
+entry.grid(row=0, column=0, sticky="ew")
+entry.bind("<Up>", handle_history)
+entry.bind("<Down>", handle_history)
+
+send_btn = tk.Button(entry_frame, text="Send", command=send_serial)
+send_btn.grid(row=0, column=1, padx=(5, 0))
+
+# Log Controls
+log_control_frame = tk.Frame(root)
+log_control_frame.grid(row=3, column=0, sticky="ew", padx=10)
+
+auto_scroll_btn = tk.Button(log_control_frame, text="Auto-Scroll: On", command=toggle_autoscroll)
+auto_scroll_btn.pack(side=tk.LEFT)
+
+tk.Label(log_control_frame, text="  Filter:").pack(side=tk.LEFT)
+filter_var = tk.StringVar(value="All")
+filter_menu = ttk.Combobox(log_control_frame, textvariable=filter_var,
+                           values=["All", "Sent", "Received"], width=10)
+filter_menu.pack(side=tk.LEFT)
+filter_menu.bind("<<ComboboxSelected>>", change_filter_mode)
+
+# Log Viewer
+log_box = scrolledtext.ScrolledText(root, wrap=tk.WORD, state=tk.DISABLED)
+log_box.grid(row=5, column=0, sticky="nsew", padx=10, pady=(0, 10))
+log_box.tag_config("sent", foreground="blue")
+log_box.tag_config("received", foreground="green")
+
+# Startup
+refresh_ports()
+if config.get("port"):
+    port_var.set(config["port"])
+
+apply_theme()
 root.mainloop()
