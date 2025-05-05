@@ -8,6 +8,7 @@ import os
 import json
 from datetime import datetime
 from tkinter.ttk import Style
+import re
 
 # ---------- Path Setup ----------
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
@@ -173,11 +174,19 @@ def update_log_display():
     log_box.config(state=tk.NORMAL)
     log_box.delete(1.0, tk.END)
     for entry in log_entries:
-        if filter_mode == "All" or entry["type"] == filter_mode:
+        if filter_mode == "All" or entry["tag"] == filter_mode:
             log_box.insert(tk.END, entry["text"], entry["tag"])
     if auto_scroll_enabled:
         log_box.see(tk.END)
     log_box.config(state=tk.DISABLED)
+
+def append_to_log(entry):
+    if filter_mode == "All" or entry["tag"] == filter_mode:
+        log_box.config(state=tk.NORMAL)
+        log_box.insert(tk.END, entry["text"], entry["tag"])
+        if auto_scroll_enabled:
+            log_box.see(tk.END)
+        log_box.config(state=tk.DISABLED)
 
 # ---------- Serial I/O ----------
 def send_serial(custom_message=None):
@@ -188,7 +197,7 @@ def send_serial(custom_message=None):
     if message:
         timestamp = time.strftime("%H:%M:%S")
         line = f"[{timestamp}] → {message}\n"
-        log_entries.append({"text": line, "type": "Sent", "tag": "sent"})
+        log_entries.append({"text": line, "type": "Sent", "tag": "Sent"})
         log_to_file(line)
         ser.write((message + '\n').encode('utf-8'))
         if not custom_message:
@@ -196,7 +205,8 @@ def send_serial(custom_message=None):
                 history.append(message)
             history_index = len(history)
             entry.delete(0, tk.END)
-        update_log_display()
+        #update_log_display()
+        append_to_log(log_entries[-1])
 
 def read_serial():
     buffer = ""
@@ -209,10 +219,15 @@ def read_serial():
                     line, buffer = buffer.split('\r', 1)
                     line = line.strip()
                     timestamp = time.strftime("%H:%M:%S")
+                    if re.search(r"^Raw Modem:", line, re.IGNORECASE):
+                        tag = "Modem"
+                    else:
+                        tag = "Received"
                     log_entry = f"[{timestamp}] ← {line}\n"
-                    log_entries.append({"text": log_entry, "type": "Received", "tag": "received"})
+                    log_entries.append({"text": log_entry, "type": "Received", "tag": tag})
                     log_to_file(log_entry)
-                    update_log_display()
+                    #update_log_display()
+                    append_to_log(log_entries[-1])
         except:
             break
 
@@ -288,7 +303,7 @@ def change_filter_mode(*args):
 
 # ---------- GUI ----------
 root = tk.Tk()
-root.iconbitmap("ham_messenger_icon.ico")
+#root.iconbitmap("ham_messenger_icon.ico")
 root.title("HamMessenger Serial GUI")
 root.geometry("950x620")
 root.rowconfigure(5, weight=1)
@@ -372,7 +387,7 @@ auto_scroll_btn.pack(side=tk.LEFT)
 tk.Label(log_control_frame, text="  Filter:").pack(side=tk.LEFT)
 filter_var = tk.StringVar(value="All")
 filter_menu = ttk.Combobox(log_control_frame, textvariable=filter_var,
-                           values=["All", "Sent", "Received"], width=10)
+                           values=["All", "Sent", "Received", "Modem"], width=10)
 filter_menu.pack(side=tk.LEFT)
 filter_menu.bind("<<ComboboxSelected>>", change_filter_mode)
 
@@ -382,8 +397,9 @@ clear_log_btn.pack(side=tk.LEFT, padx=(10, 0))
 # Log Viewer
 log_box = scrolledtext.ScrolledText(root, wrap=tk.WORD, state=tk.DISABLED)
 log_box.grid(row=5, column=0, sticky="nsew", padx=10, pady=(0, 10))
-log_box.tag_config("sent", foreground="blue")
-log_box.tag_config("received", foreground="green")
+log_box.tag_config("Sent", foreground="blue")
+log_box.tag_config("Received", foreground="green")
+log_box.tag_config("Modem", foreground="orange")
 
 # Startup
 refresh_ports()
