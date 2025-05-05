@@ -373,6 +373,7 @@ entry = tk.Entry(entry_frame)
 entry.grid(row=0, column=0, sticky="ew")
 entry.bind("<Up>", handle_history)
 entry.bind("<Down>", handle_history)
+entry.bind("<Return>", lambda event: send_serial())
 
 send_btn = tk.Button(entry_frame, text="Send", command=send_serial)
 send_btn.grid(row=0, column=1, padx=(5, 0))
