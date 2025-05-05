@@ -241,7 +241,7 @@ const char version[] = __DATE__ " " __TIME__;
   #define SETTINGS_DISPLAY_SHOW_POSITION        Settings_TypeBool[Settings_TypeIndex_Display[2]]         // show position
   #define SETTINGS_DISPLAY_SCROLL_MESSAGES      Settings_TypeBool[Settings_TypeIndex_Display[3]]         // scroll messages
   #define SETTINGS_DISPLAY_SCROLL_SPEED         Settings_TypeUInt[Settings_TypeIndex_Display[4]]         // scroll speed
-  #define SETTINGS_DISPLAY_INVERT               Settings_TypeBool[Settings_TypeIndex_Display[5]]         // scroll speed
+  #define SETTINGS_DISPLAY_INVERT               Settings_TypeBool[Settings_TypeIndex_Display[5]]         // invert
 
   bool applySettings=false, saveModemSettings=false;
   unsigned char applySettings_Seq=0;
@@ -2517,7 +2517,7 @@ const char version[] = __DATE__ " " __TIME__;
     if (Serial1.available()){
       memset(modemData,'\0',sizeof(modemData));
       Serial1.readBytesUntil('\n', modemData, sizeof(modemData));
-      Serial.print(modemData);
+      Serial.print("Raw Modem:");Serial.print(modemData);
       gotFormatRaw = true;
     }
 
@@ -2732,6 +2732,8 @@ const char version[] = __DATE__ " " __TIME__;
     Serial.println();
     Serial.println("CMD:Settings:Print:");  // prints all settings to terminal
     Serial.println("CMD:Settings:Save:");   // saves all settings to eeprom
+    Serial.println("CMD:Beacon:");          // immediatley sends a beacon per current settings
+    Serial.println("CMD:Message:<Recipient Callsign>:<Recipient SSID>:<Message>");   // sends a message to a recipient
     Serial.println("CMD:SD:Raw:Print:");    // prints all raw data to terminal
     Serial.println("CMD:SD:Raw:Delete:");   // deletes all raw data from sd
     Serial.println("CMD:SD:Msg:Print:");    // prints all messages to terminal
@@ -2829,6 +2831,7 @@ const char version[] = __DATE__ " " __TIME__;
       Serial.print(F("ECHO  "));Serial.println(inData);
       if (inData[0]=='C' && inData[1]=='M' && inData[2]=='D' && inData[3]==':') gotCMD=true;
       if (inData[0]=='?') printOutSerialCommands();
+      //if (inData[0]=='M' && inData[1]=='S' && inData[2]=='G' && inData[3]==':') sendMessage=true;
     }
     if (gotCMD){
       // get the command
@@ -2911,6 +2914,39 @@ const char version[] = __DATE__ " " __TIME__;
         } else {
           Serial.println(InvalidCommand);
         }
+      } else if (strstr(CMD, "Message") != NULL) {
+        // get the Recipient
+        memset(SETTINGS_APRS_RECIPIENT_CALL,'\0',sizeof(SETTINGS_APRS_RECIPIENT_CALL)); 
+        int j_r = 0;
+        while (inData[i] != ':') {
+          if (inData[i] == '\0' || inData[i] == '\n') return;
+          SETTINGS_APRS_RECIPIENT_CALL[j_r] = inData[i];
+          i++; j_r++;
+        }
+        i++; // i should be sitting at the ':'. go ahead and skip that.
+        // get the Recipient SSID
+        memset(SETTINGS_APRS_RECIPIENT_SSID,'\0',sizeof(SETTINGS_APRS_RECIPIENT_SSID)); 
+        int j_rs = 0;
+        while (inData[i] != ':') {
+          if (inData[i] == '\0' || inData[i] == '\n') return;
+          SETTINGS_APRS_RECIPIENT_SSID[j_rs] = inData[i];
+          i++; j_rs++;
+        }
+        i++; // i should be sitting at the ':'. go ahead and skip that.
+        // get the message
+        memset(SETTINGS_APRS_MESSAGE,'\0',sizeof(SETTINGS_APRS_MESSAGE)); 
+        int j_m = 0;
+        while (inData[i] != '\0') {
+          if (inData[i] == '\0' || inData[i] == '\n') return;
+          SETTINGS_APRS_MESSAGE[j_m] = inData[i];
+          i++; j_m++;
+        }
+        i++; // i should be sitting at the ':'. go ahead and skip that.
+        sendMessage=true;
+
+      } else if (strstr(CMD, "Beacon") != NULL) {
+        // send a beacon now
+        modemCmdFlag_Cmt=true;
       } else if (strstr(CMD, "Settings") != NULL) {
         // get the setting group
         char SettingGroup[30]={'\0'};
@@ -3168,7 +3204,36 @@ const char version[] = __DATE__ " " __TIME__;
             }
             //Serial.print(DataEntered);Serial.println(inData_Value);
             SETTINGS_APRS_TAIL = atoi(inData_Value);
-            
+          } else if (strstr(Setting, MenuItems_Settings_APRS[19]) != NULL) { // "Retry Count"
+            while (inData[i] != '\n' && inData[i] != '\0') {
+              if (k>4) { // unsigned int would be no longer than 5 digits
+                Serial.print(InvalidData_UnsignedInt);Serial.println(inData_Value);
+                return;
+              }
+              if (!isDigit(inData[i])) {
+                Serial.print(InvalidData_UnsignedInt);Serial.println(inData[i]);
+                return;
+              }
+              inData_Value[k] = inData[i];
+              i++; k++;
+            }
+            //Serial.print(DataEntered);Serial.println(inData_Value);
+            SETTINGS_APRS_RETRY_COUNT = atoi(inData_Value);
+          } else if (strstr(Setting, MenuItems_Settings_APRS[20]) != NULL) { // "Retry Interval"
+            while (inData[i] != '\n' && inData[i] != '\0') {
+              if (k>4) { // unsigned int would be no longer than 5 digits
+                Serial.print(InvalidData_UnsignedInt);Serial.println(inData_Value);
+                return;
+              }
+              if (!isDigit(inData[i])) {
+                Serial.print(InvalidData_UnsignedInt);Serial.println(inData[i]);
+                return;
+              }
+              inData_Value[k] = inData[i];
+              i++; k++;
+            }
+            //Serial.print(DataEntered);Serial.println(inData_Value);
+            SETTINGS_APRS_RETRY_INTERVAL = atoi(inData_Value);
           } else {
             Serial.println(InvalidCommand);
           }
@@ -3328,6 +3393,20 @@ const char version[] = __DATE__ " " __TIME__;
             }
             //Serial.print(DataEntered);Serial.println(inData_Value);
             SETTINGS_DISPLAY_SCROLL_SPEED = atoi(inData_Value);
+          } else if (strstr(Setting, MenuItems_Settings_Display[5]) != NULL) { // "Invert"
+            while (inData[i] != '\n' && inData[i] != '\0') {
+              inData_Value[k] = inData[i];
+              i++; k++;
+            }
+            //Serial.print(DataEntered);Serial.println(inData_Value); 
+            if (inData_Value[0]=='1' || inData_Value[0]=='T' || inData_Value[0]=='t'){
+              SETTINGS_DISPLAY_INVERT = true;
+            } else if (inData_Value[0]=='0' || inData_Value[0]=='F' || inData_Value[0]=='f'){
+              SETTINGS_DISPLAY_INVERT = false;
+            } else {
+              Serial.println(InvalidData_TrueFalse);
+            }
+            
           } else {
             Serial.println(InvalidCommand);
           }
