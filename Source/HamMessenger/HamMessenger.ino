@@ -2916,6 +2916,7 @@ const char version[] = __DATE__ " " __TIME__;
         }
       } else if (strstr(CMD, "Message") != NULL) {
         // get the Recipient
+        memset(SETTINGS_APRS_RECIPIENT_CALL,'\0',sizeof(SETTINGS_APRS_RECIPIENT_CALL)); 
         int j_r = 0;
         while (inData[i] != ':') {
           if (inData[i] == '\0' || inData[i] == '\n') return;
@@ -2924,6 +2925,7 @@ const char version[] = __DATE__ " " __TIME__;
         }
         i++; // i should be sitting at the ':'. go ahead and skip that.
         // get the Recipient SSID
+        memset(SETTINGS_APRS_RECIPIENT_SSID,'\0',sizeof(SETTINGS_APRS_RECIPIENT_SSID)); 
         int j_rs = 0;
         while (inData[i] != ':') {
           if (inData[i] == '\0' || inData[i] == '\n') return;
@@ -2932,6 +2934,7 @@ const char version[] = __DATE__ " " __TIME__;
         }
         i++; // i should be sitting at the ':'. go ahead and skip that.
         // get the message
+        memset(SETTINGS_APRS_MESSAGE,'\0',sizeof(SETTINGS_APRS_MESSAGE)); 
         int j_m = 0;
         while (inData[i] != '\0') {
           if (inData[i] == '\0' || inData[i] == '\n') return;
