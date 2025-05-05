@@ -24,6 +24,8 @@ I will add some videos and pictures of the device in action asap. Please feel fr
 
 ![all-together-layout](/Media/Board-v1/all-together-layout.jpeg)  
 
+![Illustration](/Media/Screenshots/GUI.png)  
+
 ![front](/Media/Unibody-Frame-v1/front.jpeg/)  
 
 ## Operation ##
