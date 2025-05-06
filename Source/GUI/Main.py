@@ -230,6 +230,7 @@ def read_serial():
                     append_to_log(log_entries[-1])
         except:
             break
+        time.sleep(2)
 
 # ---------- History ----------
 def handle_history(event):
