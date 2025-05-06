@@ -292,10 +292,10 @@ def read_serial():
                                     map_widget.set_marker(lat, lon, text=flds['SRC'])
                                     map_widget.set_position(lat, lon)  # optional: pan to marker
                                     marker = map_widget.set_marker(
-                                                            lat, lon,
-                                                            text=flds['SRC'],
-                                                            command=lambda m, raw=line: show_raw_data(raw, m)
-                                                        )
+                                        lat, lon,
+                                        text=flds['SRC'],
+                                        command=lambda m, raw=line: show_raw_data(raw, m)
+                                    )
                                     #marker.delete()  # removes it from the map
                                     #marker.set_position(new_lat, new_lon) # update position
                                     #marker.set_text("new label") # update label
@@ -503,25 +503,32 @@ map_widget.set_position(37.7749, -122.4194)  # Default to SF
 map_widget.set_zoom(5)
 
 def show_raw_data(raw: str, marker):
-    # marker.canvas_position is (x, y) in the map widget’s canvas
-    cx, cy = marker.canvas_position
-    # convert to screen coordinates
-    screen_x = map_widget.winfo_rootx() + int(cx)
-    screen_y = map_widget.winfo_rooty() + int(cy)
+    """
+    Pop up a little frameless window next to the given marker
+    showing the full raw‐modem line.
+    """
+    # Convert latitude and longitude to canvas pixel position
+    x, y = map_widget.convert_geo_to_canvas_coords(marker.position[0], marker.position[1])
 
+    # Get screen coordinates
+    screen_x = map_widget.canvas.winfo_rootx() + int(x)
+    screen_y = map_widget.canvas.winfo_rooty() + int(y)
+
+    # Create popup
     popup = tk.Toplevel(root)
     popup.wm_overrideredirect(True)
     popup.attributes("-topmost", True)
-    # position just to the right & down from the marker
-    popup.geometry(f"+{screen_x+10}+{screen_y+10}")
+    popup.geometry(f"+{screen_x + 10}+{screen_y + 10}")
 
-    lbl = tk.Label(popup,
-                   text=raw,
-                   justify="left",
-                   background="#ffffe0",
-                   relief="solid",
-                   borderwidth=1)
-    lbl.pack(padx=4, pady=2)
+    label = tk.Label(
+        popup,
+        text=raw,
+        justify="left",
+        background="#ffffe0",
+        relief="solid",
+        borderwidth=1
+    )
+    label.pack(padx=4, pady=2)
     popup.after(5000, popup.destroy)
 
 
