@@ -39,9 +39,7 @@ def parse_raw_modem_fields(line: str) -> dict:
         return {}
     fields = m.groupdict()
     fields['PATH'] = ",".join(re.findall(r'\[([^\]]+)\]', fields['PATH']))
-    # strip any stray spaces
-    #for k in fields:
-        #fields[k] = fields[k].strip()
+    
     return fields
 
 
@@ -51,6 +49,7 @@ def decode_aprs(line):
         # KN6ARG-9>SWQTWR,WIDE1-1:`2Z5lr|j/`"7I}146.520MHz_1
         message = fields['SRC'] + '>' + fields['DST'] + ',' + fields['PATH'] + ':' + fields['DATA']
         try:
+            print(message)
             packet = APRS.parse(message)
             return packet
         except:
@@ -66,3 +65,10 @@ print(decode_aprs('Raw Modem:SRC: [KN6ARG-9] DST: [SWQTWR] PATH: [WIDE1-1] DATA:
 print(decode_aprs('Raw Modem:SRC: [KN4UAH-7] DST: [APNU19-0] PATH: [WILLAM-0] DATA: `1TCmi7[/`"49}_3'))
 print(decode_aprs('Raw Modem:SRC: [CHAIX-0] DST: [APOT30-0] PATH: [SUMMIT-0] [FMTPK-0] DATA: !3850.09N/12034.62W# 13.2V'))
 
+print(decode_aprs("Raw Modem:SRC: [W6TST-1] DST: [S6TYPQ-0] PATH: [FMTPK-0] [WIDE2-1] DATA: '13)l -/]TST="))
+print(decode_aprs('Raw Modem:SRC: [K6TS-0] DST: [3VTYTV-0] PATH: [K6LY-3] [WIDE1-0] [FMTPK-0] DATA: `1GMl 2[/>"41}='))
+print(decode_aprs('Raw Modem:SRC: [WILLAM-0] DST: [APRS-0] PATH: [FMTPK-0] DATA: }DB1NTO-2>APPIC3,TCPIP,WILLAM*::KD7SWQ-7 :ack1'))
+print(decode_aprs('Raw Modem:SRC: [WILLAM-0] DST: [APRS-0] PATH: [FMTPK-0] DATA: }DB1NTO-2>APPIC3,TCPIP,WILLAM*::KD7SWQ-7 :Firmware update 022 available! Look at www.db1nto.de{460'))
+print(decode_aprs('Raw Modem:SRC: [AC6EE-3] DST: [APN391-0] PATH: [WILLAM-0] [FMTPK-0] DATA: !3509.83NN11834.81W#PHG5905/A=006020/Bear Valley Springs Digi'))
+#print(decode_aprs("""Raw Modem:SRC: [N8MOR-7] DST: [DHEQUY-0] PATH: [W6SRR-3] [N6ZX-3] [WIDE2-0] DATA: `1HjlSLK\]"5W}="""))
+print(decode_aprs('Raw Modem:SRC: [N8QH-9] DST: [APOT30-0] PATH: [N8QH-9] [N6ZX-3] [WIDE2-0] DATA: T#199,523,263,247,168,195,00000000'))
