@@ -10,6 +10,12 @@ from datetime import datetime
 from tkinter.ttk import Style
 import re
 
+from tkinter import ttk as ttk_gui  # Avoid conflict with existing ttk
+from tkintermapview import TkinterMapView
+
+# pip install pyserial
+# pip install tkintermapview
+
 # ---------- Path Setup ----------
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
 config_file = os.path.join(BASE_DIR, "ham_gui_config.json")
@@ -188,6 +194,60 @@ def append_to_log(entry):
             log_box.see(tk.END)
         log_box.config(state=tk.DISABLED)
 
+#
+def parse_aprs_position(data_str):
+    """
+    Extract latitude and longitude from an APRS packet DATA field.
+    Supports uncompressed and timestamped formats.
+    Handles cases with malformed extra characters like 'NS' or 'EW'.
+    """
+    # Pattern A — Uncompressed position
+    match = re.search(
+        r'([0-9]{2})([0-9]{2}\.[0-9]+)([NS])[^0-9]*([0-9]{3})([0-9]{2}\.[0-9]+)([EW])',
+        data_str
+    )
+    if match:
+        lat = int(match.group(1)) + float(match.group(2)) / 60.0
+        if match.group(3) == 'S': lat *= -1
+        lon = int(match.group(4)) + float(match.group(5)) / 60.0
+        if match.group(6) == 'W': lon *= -1
+        return lat, lon
+
+    # Pattern B — Timestamped uncompressed position (e.g. @060021z3633.21N12155.60W)
+    match = re.search(
+        r'(?:@\d{6}z)?([0-9]{2})([0-9]{2}\.[0-9]+)([NS])[^0-9]*([0-9]{3})([0-9]{2}\.[0-9]+)([EW])',
+        data_str
+    )
+    if match:
+        lat = int(match.group(1)) + float(match.group(2)) / 60.0
+        if match.group(3) == 'S': lat *= -1
+        lon = int(match.group(4)) + float(match.group(5)) / 60.0
+        if match.group(6) == 'W': lon *= -1
+        return lat, lon
+
+    return None
+
+def parse_raw_modem_fields(line: str) -> dict:
+    """
+    Parses lines of the form (allowing both “Raw Modem:” and “Raw Modem:” without
+    a space), multiple PATH brackets, etc. Returns a dict with SRC, DST, PATH, DATA.
+    """
+    pattern = (
+        r'Raw Modem:?\s*'                              # allow “Raw Modem:” or “Raw Modem:”
+        r'SRC:\s*\[(?P<SRC>[^\]]+)\]\s*'               # SRC:[…]
+        r'DST:\s*\[(?P<DST>[^\]]+)\]\s*'               # DST:[…]
+        r'PATH:\s*(?P<PATH>(?:\[[^\]]+\]\s*)+)\s*'     # one or more PATH:[…] groups
+        r'DATA:\s*(?P<DATA>.*)'                        # everything after DATA:
+    )
+    m = re.match(pattern, line, re.IGNORECASE)
+    if not m:
+        return {}
+    fields = m.groupdict()
+    # strip any stray spaces
+    for k in fields:
+        fields[k] = fields[k].strip()
+    return fields
+
 # ---------- Serial I/O ----------
 def send_serial(custom_message=None):
     global history, history_index
@@ -221,6 +281,25 @@ def read_serial():
                     timestamp = time.strftime("%H:%M:%S")
                     if re.search(r"^Raw Modem:", line, re.IGNORECASE):
                         tag = "Modem"
+                        if re.search(r"^Raw Modem:SRC:", line, re.IGNORECASE):
+                            flds = parse_raw_modem_fields(line)
+                            if flds:
+                                #print(flds)
+                                latlon = parse_aprs_position(flds['DATA'])
+                                if latlon:
+                                    #print(latlon)
+                                    lat, lon = latlon
+                                    map_widget.set_marker(lat, lon, text=flds['SRC'])
+                                    map_widget.set_position(lat, lon)  # optional: pan to marker
+                                    marker = map_widget.set_marker(
+                                                            lat, lon,
+                                                            text=flds['SRC'],
+                                                            command=lambda m, raw=line: show_raw_data(raw, m)
+                                                        )
+                                    #marker.delete()  # removes it from the map
+                                    #marker.set_position(new_lat, new_lon) # update position
+                                    #marker.set_text("new label") # update label
+                                    #marker.raw_data = full_raw_line # stash data for later
                     else:
                         tag = "Received"
                     log_entry = f"[{timestamp}] ← {line}\n"
@@ -228,6 +307,7 @@ def read_serial():
                     log_to_file(log_entry)
                     #update_log_display()
                     append_to_log(log_entries[-1])
+
         except:
             break
         time.sleep(2)
@@ -309,6 +389,19 @@ root.title("HamMessenger Serial GUI")
 root.geometry("950x620")
 root.rowconfigure(5, weight=1)
 root.columnconfigure(0, weight=1)
+
+root.rowconfigure(6, weight=8)
+tabs = ttk_gui.Notebook(root)
+tabs.grid(row=6, column=0, sticky="nsew", padx=10, pady=(0, 10))
+
+log_tab = tk.Frame(tabs)
+map_tab = tk.Frame(tabs)
+log_tab.rowconfigure(0, weight=1)
+log_tab.columnconfigure(0, weight=1)
+
+tabs.add(log_tab, text="Log")
+tabs.add(map_tab, text="Map")
+
 
 load_config()
 dark_mode = config.get("dark_mode", False)
@@ -397,11 +490,40 @@ clear_log_btn = tk.Button(log_control_frame, text="Clear Log", command=clear_log
 clear_log_btn.pack(side=tk.LEFT, padx=(10, 0))
 
 # Log Viewer
-log_box = scrolledtext.ScrolledText(root, wrap=tk.WORD, state=tk.DISABLED)
-log_box.grid(row=5, column=0, sticky="nsew", padx=10, pady=(0, 10))
+log_box = scrolledtext.ScrolledText(log_tab, wrap=tk.WORD, state=tk.DISABLED)
+log_box.grid(row=0, column=0, sticky="nsew", padx=10, pady=10, in_=log_tab)
 log_box.tag_config("Sent", foreground="blue")
 log_box.tag_config("Received", foreground="green")
 log_box.tag_config("Modem", foreground="orange")
+
+# Map Viewer
+map_widget = TkinterMapView(map_tab, width=900, height=500)
+map_widget.pack(fill="both", expand=True)
+map_widget.set_position(37.7749, -122.4194)  # Default to SF
+map_widget.set_zoom(5)
+
+def show_raw_data(raw: str, marker):
+    # marker.canvas_position is (x, y) in the map widget’s canvas
+    cx, cy = marker.canvas_position
+    # convert to screen coordinates
+    screen_x = map_widget.winfo_rootx() + int(cx)
+    screen_y = map_widget.winfo_rooty() + int(cy)
+
+    popup = tk.Toplevel(root)
+    popup.wm_overrideredirect(True)
+    popup.attributes("-topmost", True)
+    # position just to the right & down from the marker
+    popup.geometry(f"+{screen_x+10}+{screen_y+10}")
+
+    lbl = tk.Label(popup,
+                   text=raw,
+                   justify="left",
+                   background="#ffffe0",
+                   relief="solid",
+                   borderwidth=1)
+    lbl.pack(padx=4, pady=2)
+    popup.after(5000, popup.destroy)
+
 
 # Startup
 refresh_ports()
