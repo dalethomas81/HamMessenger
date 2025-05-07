@@ -72,3 +72,25 @@ print(decode_aprs('Raw Modem:SRC: [WILLAM-0] DST: [APRS-0] PATH: [FMTPK-0] DATA:
 print(decode_aprs('Raw Modem:SRC: [AC6EE-3] DST: [APN391-0] PATH: [WILLAM-0] [FMTPK-0] DATA: !3509.83NN11834.81W#PHG5905/A=006020/Bear Valley Springs Digi'))
 #print(decode_aprs("""Raw Modem:SRC: [N8MOR-7] DST: [DHEQUY-0] PATH: [W6SRR-3] [N6ZX-3] [WIDE2-0] DATA: `1HjlSLK\]"5W}="""))
 print(decode_aprs('Raw Modem:SRC: [N8QH-9] DST: [APOT30-0] PATH: [N8QH-9] [N6ZX-3] [WIDE2-0] DATA: T#199,523,263,247,168,195,00000000'))
+
+
+'''
+import base64
+
+with open("blank.png", "wb") as f:
+    f.write(base64.b64decode(
+        "iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mP8/x8AAusB9YdDdVwAAAAASUVORK5CYII="
+    ))
+'''
+
+'''from PIL import Image
+
+img = Image.new("RGBA", (24, 24), (0, 0, 0, 0))  # Fully transparent
+img.save("icons/blank.png")
+
+try:
+    img = Image.open("Source/GUI/icons/blank.png")
+    img.verify()  # Checks integrity
+    print("Image is valid")
+except Exception as e:
+    print(f"Invalid image: {e}")'''

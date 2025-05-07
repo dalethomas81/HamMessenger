@@ -4,6 +4,7 @@ import serial
 import serial.tools.list_ports
 import threading
 import time
+import sys
 import os
 import json
 from datetime import datetime
@@ -13,6 +14,8 @@ from aprspy import APRS
 
 from tkinter import ttk as ttk_gui  # Avoid conflict with existing ttk
 from tkintermapview import TkinterMapView
+
+#from PIL import Image, ImageTk
 
 # Shared Queue for incoming complete messages
 from queue import Queue
@@ -25,6 +28,14 @@ message_queue = Queue()
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
 config_file = os.path.join(BASE_DIR, "ham_gui_config.json")
 log_dir = os.path.join(BASE_DIR, "logs")
+
+def resource_path(relative_path):
+    try:
+        base_path = sys._MEIPASS
+    except Exception:
+        base_path = os.path.dirname(os.path.abspath(__file__))
+
+    return os.path.join(base_path, relative_path)
 
 # ---------- Globals ----------
 ser = None
@@ -85,6 +96,262 @@ log_entries = []
 auto_scroll_enabled = True
 filter_mode = "All"
 dark_mode = False
+
+symbol_map = {
+    # Primary Table ('/')
+    "/!": "Emergency",
+    "/\"": "Reserved (not used)",
+    "/#": "Digipeater",
+    "/$": "Phone",
+    "/%": "DX Cluster",
+    "/&": "HF Gateway",
+    "/'": "Small Aircraft",
+    "/(": "Mobile Satellite Station",
+    "/)": "Wheelchair",
+    "/*": "Snowmobile",
+    "/+": "Red Cross",
+    "/,": "Boy Scout",
+    "/-": "House (QTH)",
+    "/.": "X — Overlay position",
+    "/0": "Circle (Node)",
+    "/1": "ARC",
+    "/2": "Bicycle",
+    "/3": "Church",
+    "/4": "Campground",
+    "/5": "QTH with phone",
+    "/6": "iGate",
+    "/7": "Aircraft (large)",
+    "/8": "Boat",
+    "/9": "Motorcycle",
+    "/:": "Fire Dept",
+    "/;": "Police Station",
+    "/<": "Truck",
+    "/=": "RV",
+    "/>": "Car",
+    "/?": "Info Kiosk",
+    "@/": "JOTA (Scouts)",
+    "/A": "Ambulance",
+    "/B": "BBS",
+    "/C": "Computer",
+    "/D": "Delivery Truck",
+    "/E": "Eyeball (Meeting)",
+    "/F": "Satellite",
+    "/G": "GPS Receiver",
+    "/H": "Hospital",
+    "/I": "TNC",
+    "/J": "Jeep",
+    "/K": "School",
+    "/L": "Laptop",
+    "/M": "Mic/Echolink",
+    "/N": "NTS Traffic",
+    "/O": "Balloon",
+    "/P": "Parking",
+    "/Q": "ATV",
+    "/R": "Repeater",
+    "/S": "Ship",
+    "/T": "Truck Stop",
+    "/U": "Bus",
+    "/V": "Van",
+    "/W": "Water Station",
+    "/X": "Helicopter",
+    "/Y": "Yacht",
+    "/Z": "Winlink",
+    
+    # Alternate Table ('\\')
+    "\\!": "Police Car",
+    "\\\"": "Reserved",
+    "\\#": "Smoke Detector",
+    "\\$": "Cash Register",
+    "\\%": "Power Plant",
+    "\\&": "Topo Map",
+    "\\'": "Crash Site",
+    "\\(": "Cloudy",
+    "\\)": "Rain",
+    "\\*": "Snow",
+    "\\+": "Church (alt)",
+    "\\,": "Girl Scout",
+    "\\-": "QSL Card",
+    "\\.": "Ambulance (alt)",
+    "\\0": "Circle+overlay",
+    "\\1": "Power Outage",
+    "\\2": "Tornado",
+    "\\3": "Flood",
+    "\\4": "Solar Power",
+    "\\5": "Tsunami",
+    "\\6": "Civil Defense",
+    "\\7": "Hazard",
+    "\\8": "Radiation",
+    "\\9": "Biohazard",
+    "\\:": "Fog",
+    "\\;": "Snowstorm",
+    "\\<": "Hurricane",
+    "\\=": "Volcano",
+    "\\>": "Lightning",
+    "\\?": "Dust",
+    "\\A": "Box/Package",
+    "\\B": "Blowing Snow",
+    "\\C": "Coastal Flood",
+    "\\D": "Drizzle",
+    "\\E": "Freezing Rain",
+    "\\F": "Funnel Cloud",
+    "\\G": "Gale",
+    "\\H": "Hail",
+    "\\I": "Icy Roads",
+    "\\J": "Jackknife",
+    "\\K": "Blizzard",
+    "\\L": "Low Visibility",
+    "\\M": "Moon",
+    "\\N": "News Station",
+    "\\O": "Balloon (alt)",
+    "\\P": "Pick-up Truck",
+    "\\Q": "Quake",
+    "\\R": "Rocket",
+    "\\S": "Sleet",
+    "\\T": "Thunderstorm",
+    "\\U": "Sun",
+    "\\V": "VHF Station",
+    "\\W": "Flooding",
+    "\\X": "X-ray",
+    "\\Y": "Yagi Antenna",
+    "\\Z": "Zombie (!)"
+}
+emoji_map = {
+    # Primary Symbol Table ('/')
+    "/!": "🚨",  # Emergency
+    "/#": "📶",  # Digipeater
+    "/$": "📞",  # Phone
+    "/%": "🗼",  # DX Cluster
+    "/&": "🌐",  # HF Gateway
+    "/'": "🛩️",  # Small aircraft
+    "/(": "🛰️",  # Mobile satellite
+    "/)": "♿",  # Wheelchair
+    "/*": "🏂",  # Snowmobile
+    "/+": "➕",  # Red Cross
+    "/,": "🏕️",  # Boy Scout
+    "/-": "🏠",  # Home / QTH
+    "/.": "❌",  # Overlay position
+    "/0": "⭕",  # Circle (Node)
+    "/1": "🏢",  # Icon (generic)
+    "/2": "🚴",  # Bicycle
+    "/3": "⛪",  # Church
+    "/4": "⛺",  # Campground
+    "/5": "📱",  # QTH with phone
+    "/6": "📡",  # iGate
+    "/7": "✈️",  # Large aircraft
+    "/8": "⛵",  # Boat
+    "/9": "🏍️",  # Motorcycle
+    "/:": "🚒",  # Fire Dept
+    "/;": "🚓",  # Police Station
+    "/<": "🚚",  # Truck
+    "/=": "🚐",  # RV
+    "/>": "🚗",  # Car
+    "/?": "ℹ️",  # Info Kiosk
+    "/A": "🚑",  # Ambulance
+    "/B": "📦",  # BBS
+    "/C": "🖥️",  # Computer
+    "/D": "📦",  # Delivery Truck
+    "/E": "👀",  # Eyeball / Event
+    "/F": "🛰️",  # Satellite
+    "/G": "📍",  # GPS Receiver
+    "/H": "🏥",  # Hospital
+    "/I": "📡",  # TNC
+    "/J": "🚙",  # Jeep
+    "/K": "🏫",  # School
+    "/L": "💻",  # Laptop
+    "/M": "🎙️",  # Mic / EchoLink
+    "/N": "📨",  # NTS Traffic
+    "/O": "🎈",  # Balloon
+    "/P": "🅿️",  # Parking
+    "/Q": "📺",  # ATV (TV)
+    "/R": "📡",  # Repeater
+    "/S": "🚢",  # Ship
+    "/T": "⛽",  # Truck Stop
+    "/U": "🚌",  # Bus
+    "/V": "🚐",  # Van
+    "/W": "🚰",  # Water Station
+    "/X": "🚁",  # Helicopter
+    "/Y": "🛥️",  # Yacht
+    "/Z": "📬",  # Winlink
+
+    # 
+    "/[": "🚶",  # Walking person
+    "/]": "🏃",  # Running person
+    "/{": "🎒",  # Hiking
+    "/}": "🎿",  # Skier
+    "/|": "🗼",  # Tower
+    "/\\": "💻",  # PC station
+    "/^": "📻",  # Ham shack
+    "/_": "🛶",  # Watercraft
+    "/`": "🌦️",  # Alt weather
+    "/~": "🏠",  # House alt
+    "/b": "🚴",  # Bicycle
+
+    # Alternate Symbol Table ('\\')
+    "\\!": "🚓",  # Police car
+    "\\#": "🔥",  # Smoke detector
+    "\\$": "💵",  # Cash register
+    "\\%": "🏭",  # Power Plant
+    "\\&": "🗺️",  # Topo Map
+    "\\'": "💥",  # Crash Site
+    "\\(": "☁️",  # Cloudy
+    "\\)": "🌧️",  # Rain
+    "\\*": "❄️",  # Snow
+    "\\+": "✝️",  # Church (alt)
+    "\\,": "👧",  # Girl Scout
+    "\\-": "📮",  # QSL Card
+    "\\0": "⭘",  # Overlay circle
+    "\\1": "💡",  # Power outage
+    "\\2": "🌪️",  # Tornado
+    "\\3": "🌊",  # Flood
+    "\\4": "🔋",  # Solar Power
+    "\\5": "🌊",  # Tsunami
+    "\\6": "🏛️",  # Civil Defense
+    "\\7": "☢️",  # Hazard
+    "\\8": "☢️",  # Radiation
+    "\\9": "☣️",  # Biohazard
+    "\\:": "🌫️",  # Fog
+    "\\;": "🌨️",  # Snowstorm
+    "\\<": "🌀",  # Hurricane
+    "\\=": "🌋",  # Volcano
+    "\\>": "🌩️",  # Lightning
+    "\\?": "💨",  # Dust
+    "\\A": "📦",  # Box/Package
+    "\\B": "🌬️",  # Blowing snow
+    "\\C": "🌊",  # Coastal Flood
+    "\\D": "🌦️",  # Drizzle
+    "\\E": "🌧️",  # Freezing Rain
+    "\\F": "🌪️",  # Funnel Cloud
+    "\\G": "🌬️",  # Gale
+    "\\H": "🌨️",  # Hail
+    "\\I": "🧊",  # Icy Roads
+    "\\J": "🚛",  # Jackknife
+    "\\K": "🌨️",  # Blizzard
+    "\\L": "🌁",  # Low Visibility
+    "\\M": "🌕",  # Moon
+    "\\N": "📰",  # News Station
+    "\\O": "🎈",  # Balloon (alt)
+    "\\P": "🛻",  # Pickup Truck
+    "\\Q": "🌎",  # Earthquake
+    "\\R": "🚀",  # Rocket
+    "\\S": "🌨️",  # Sleet
+    "\\T": "⛈️",  # Thunderstorm
+    "\\U": "☀️",  # Sun
+    "\\V": "📡",  # VHF Station
+    "\\W": "🌊",  # Flooding
+    "\\X": "☢️",  # X-ray (symbol)
+    "\\Y": "📡",  # Yagi antenna
+    "\\Z": "🧟",  # Zombie
+
+    # General fallbacks
+    "/#": "📶",  # Digipeater
+    "/G": "📍",  # GPS Receiver
+    "/I": "📡",  # TNC
+    "/?": "ℹ️",  # Info Kiosk
+
+    # Catch-all fallback
+    "default": "📍",
+}
+
 
 # ---------- Config Functions ----------
 def load_config():
@@ -304,6 +571,7 @@ def process_messages():
         time.sleep(0.050) # milliseconds
 
 markers_by_source = {}
+#icon_cache = {}
 def handle_line(line):
     try:
         timestamp = time.strftime("%H:%M:%S")
@@ -318,33 +586,44 @@ def handle_line(line):
                         source_key = packet.source.strip().upper() # normalize key
                         if source_key in markers_by_source:
                             try:
-                                print(f"deleting: {source_key}")
                                 old_marker = markers_by_source[source_key]
-                                #old_marker.delete()
-                                map_widget.delete(old_marker)  # ← use this instead
-                                print(f"deleted: {source_key}")
+                                map_widget.delete(old_marker)
                             except Exception as e:
-                                print(f"Error: {e}")
+                                #print(f"Error: {e}")
+                                pass
 
                         #
+                        #blank_image = Image.new("RGBA", (1, 1), (0, 0, 0, 0))
+                        #blank_icon = ImageTk.PhotoImage(blank_image)
+                        #blank_icon_path = resource_path("icons/blank.png")
+                        #blank_icon = ImageTk.PhotoImage(Image.open(blank_icon_path))
+                        #global icon_cache
+                        #icon_cache["blank"] = blank_icon  # Prevent garbage collection
+
+                        #
+                        global symbol_map
+                        #symbol_description = symbol_map.get(f'{packet.symbol_table}{packet.symbol_id}', 'Unknown')
+                        symbol_code = f"{packet.symbol_table}{packet.symbol_id}"
+                        emoji = emoji_map.get(symbol_code, "📍")  # default pin if unknown  
                         marker = map_widget.set_marker(
                             packet.latitude, packet.longitude,
-                            text=packet.source,
-                            command=lambda m, raw=line: show_raw_data(raw, m)
+                            #text=f"{packet.source}\n{symbol_description}",
+                            text = f"{emoji} {packet.source}",
+                            #image=blank_icon,
+                            command=lambda m, raw='[' + timestamp + '] ' + line: show_raw_data(raw, m)
                         )
                         map_widget.set_position(packet.latitude, packet.longitude)  # optional: pan to marker
 
                         #
-                        print(f"adding: {source_key}")
                         markers_by_source[source_key] = marker
-                        print(f"added: {source_key}")
 
                         # examples
                         #marker.delete()  # removes it from the map
                         #marker.set_position(new_lat, new_lon) # update position
                         #marker.set_text("new label") # update label
                         #marker.raw_data = full_raw_line # stash data for later
-                    except:
+                    except Exception as e:
+                        print(f"Error: {e}")
                         pass
         else:
             tag = "Received"

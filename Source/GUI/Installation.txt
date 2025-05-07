@@ -9,4 +9,4 @@ pip freeze > requirements.txt
 
 // build
 1) pip install pyinstaller
-2) pyinstaller --noconfirm --windowed --onefile Main.py
+2) pyinstaller --noconfirm --windowed --onefile Main.py --add-data "icons;icons"
