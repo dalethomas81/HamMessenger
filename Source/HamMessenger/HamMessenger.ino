@@ -670,6 +670,7 @@ const char version[] = __DATE__ " " __TIME__;
   char currentLng[10] = {'0','0','0','0','0','.','0','0','N','\0'};
   bool modemCmdFlag_Lat=false, modemCmdFlag_Lng=false;
   unsigned long gps_report_timer, destination_report_timer;
+  bool gpsInitialized = false; // we can set this when we get our first coordinate
 
   // London                                 LAT:51.508131     LNG:-0.128002
   //double DESTINATION_LAT = 51.508131, DESTINATION_LON = -0.128002;
@@ -685,6 +686,7 @@ const char version[] = __DATE__ " " __TIME__;
       gps_report_timer = millis();
       if (gps.location.isUpdated())
       {
+        gpsInitialized = true;
         //Serial.print(F("LOCATION   Fix Age="));
         //Serial.print(gps.location.age());
         //Serial.print(F("ms Raw Lat="));
@@ -2322,7 +2324,8 @@ const char version[] = __DATE__ " " __TIME__;
         return;
       }
       // send location
-      if (modemCmdFlag_Cmt==true){
+      // dont send if we dont have valid coordinates (modemCmdFlag_Cmt will remain true so we send when we get coordinates)
+      if (modemCmdFlag_Cmt==true && gpsInitialized==true){
         if (sendModemCommand("@", 1, SETTINGS_APRS_COMMENT, strlen(SETTINGS_APRS_COMMENT)) == -1){
           modemCmdFlag_Cmt=false;
         }

@@ -9,9 +9,14 @@ import json
 from datetime import datetime
 from tkinter.ttk import Style
 import re
+from aprspy import APRS
 
 from tkinter import ttk as ttk_gui  # Avoid conflict with existing ttk
 from tkintermapview import TkinterMapView
+
+# Shared Queue for incoming complete messages
+from queue import Queue
+message_queue = Queue()
 
 # pip install pyserial
 # pip install tkintermapview
@@ -119,6 +124,7 @@ def connect_serial():
         save_config()
         status_label.config(text=f"Connected to {port} @ {baud} baud", fg="green")
         threading.Thread(target=read_serial, daemon=True).start()
+        threading.Thread(target=process_messages, daemon=True).start()
         threading.Thread(target=monitor_connection, daemon=True).start()
     except Exception as e:
         status_label.config(text=f"Connection failed: {e}", fg="red")
@@ -228,10 +234,6 @@ def parse_aprs_position(data_str):
     return None
 
 def parse_raw_modem_fields(line: str) -> dict:
-    """
-    Parses lines of the form (allowing both “Raw Modem:” and “Raw Modem:” without
-    a space), multiple PATH brackets, etc. Returns a dict with SRC, DST, PATH, DATA.
-    """
     pattern = (
         r'Raw Modem:?\s*'                              # allow “Raw Modem:” or “Raw Modem:”
         r'SRC:\s*\[(?P<SRC>[^\]]+)\]\s*'               # SRC:[…]
@@ -243,10 +245,22 @@ def parse_raw_modem_fields(line: str) -> dict:
     if not m:
         return {}
     fields = m.groupdict()
-    # strip any stray spaces
-    for k in fields:
-        fields[k] = fields[k].strip()
+    fields['PATH'] = ",".join(re.findall(r'\[([^\]]+)\]', fields['PATH']))
+    
     return fields
+
+def decode_aprs(line):
+    fields = parse_raw_modem_fields(line)
+    if fields:
+        # KN6ARG-9>SWQTWR,WIDE1-1:`2Z5lr|j/`"7I}146.520MHz_1
+        message = fields['SRC'] + '>' + fields['DST'] + ',' + fields['PATH'] + ':' + fields['DATA']
+        try:
+            packet = APRS.parse(message)
+            return packet
+        except:
+            pass
+
+    return None
 
 # ---------- Serial I/O ----------
 def send_serial(custom_message=None):
@@ -271,46 +285,56 @@ def send_serial(custom_message=None):
 def read_serial():
     buffer = ""
     while connected:
-        try:
-            if ser.in_waiting > 0:
-                data = ser.read(ser.in_waiting).decode('utf-8', errors='ignore')
-                buffer += data
-                while '\r' in buffer:
-                    line, buffer = buffer.split('\r', 1)
-                    line = line.strip()
-                    timestamp = time.strftime("%H:%M:%S")
-                    if re.search(r"^Raw Modem:", line, re.IGNORECASE):
-                        tag = "Modem"
-                        if re.search(r"^Raw Modem:SRC:", line, re.IGNORECASE):
-                            flds = parse_raw_modem_fields(line)
-                            if flds:
-                                #print(flds)
-                                latlon = parse_aprs_position(flds['DATA'])
-                                if latlon:
-                                    #print(latlon)
-                                    lat, lon = latlon
-                                    map_widget.set_marker(lat, lon, text=flds['SRC'])
-                                    map_widget.set_position(lat, lon)  # optional: pan to marker
-                                    marker = map_widget.set_marker(
-                                        lat, lon,
-                                        text=flds['SRC'],
-                                        command=lambda m, raw=line: show_raw_data(raw, m)
-                                    )
-                                    #marker.delete()  # removes it from the map
-                                    #marker.set_position(new_lat, new_lon) # update position
-                                    #marker.set_text("new label") # update label
-                                    #marker.raw_data = full_raw_line # stash data for later
-                    else:
-                        tag = "Received"
-                    log_entry = f"[{timestamp}] ← {line}\n"
-                    log_entries.append({"text": log_entry, "type": "Received", "tag": tag})
-                    log_to_file(log_entry)
-                    #update_log_display()
-                    append_to_log(log_entries[-1])
+        if ser.in_waiting > 0:
+            data = ser.read(ser.in_waiting).decode('utf-8', errors='ignore')
+            buffer += data
 
-        except:
-            break
-        time.sleep(2)
+            while '\r' in buffer:
+                line, buffer = buffer.split('\r', 1)
+                message_queue.put(line.strip())  # Push line to queue
+
+def process_messages():
+    while True:
+        line = message_queue.get()
+        if line is None:
+            break  # Exit signal
+
+        handle_line(line)
+        message_queue.task_done()
+        time.sleep(0.050) # milliseconds
+
+def handle_line(line):
+    try:
+        timestamp = time.strftime("%H:%M:%S")
+        if re.search(r"^Raw Modem:", line, re.IGNORECASE):
+            tag = "Modem"
+            if re.search(r"^Raw Modem:SRC:", line, re.IGNORECASE):
+                packet = decode_aprs(line)
+                if packet is not None:
+                    try:
+                        map_widget.set_marker(packet.latitude, packet.longitude, text=packet.source)
+                        map_widget.set_position(packet.latitude, packet.longitude)  # optional: pan to marker
+                        marker = map_widget.set_marker(
+                            packet.latitude, packet.longitude,
+                            text=packet.source,
+                            command=lambda m, raw=line: show_raw_data(raw, m)
+                        )
+                        #marker.delete()  # removes it from the map
+                        #marker.set_position(new_lat, new_lon) # update position
+                        #marker.set_text("new label") # update label
+                        #marker.raw_data = full_raw_line # stash data for later
+                    except:
+                        pass
+        else:
+            tag = "Received"
+
+        log_entry = f"[{timestamp}] ← {line}\n"
+        log_entries.append({"text": log_entry, "type": "Received", "tag": tag})
+        log_to_file(log_entry)
+        append_to_log(log_entries[-1])
+
+    except:
+        pass
 
 # ---------- History ----------
 def handle_history(event):
@@ -508,11 +532,13 @@ def show_raw_data(raw: str, marker):
     showing the full raw‐modem line.
     """
     # Convert latitude and longitude to canvas pixel position
-    x, y = map_widget.convert_geo_to_canvas_coords(marker.position[0], marker.position[1])
+    #x, y = map_widget.convert_geo_to_canvas_coords(marker.position[0], marker.position[1])
 
     # Get screen coordinates
-    screen_x = map_widget.canvas.winfo_rootx() + int(x)
-    screen_y = map_widget.canvas.winfo_rooty() + int(y)
+    #screen_x = map_widget.canvas.winfo_rootx() + int(x)
+    #screen_y = map_widget.canvas.winfo_rooty() + int(y)
+    screen_x = root.winfo_pointerx()
+    screen_y = root.winfo_pointery()    
 
     # Create popup
     popup = tk.Toplevel(root)
