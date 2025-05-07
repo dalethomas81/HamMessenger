@@ -5,3 +5,4 @@ Source/GUI/logs/*
 Source/GUI/ham_gui_config.json
 Source/GUI/build/*
 Source/GUI/Main.spec
+Source/GUI/dist/*
