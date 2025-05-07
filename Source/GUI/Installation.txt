@@ -1,0 +1,12 @@
+// devs
+pip freeze > requirements.txt
+
+// cross-platform
+1) python -m venv venv
+2) source venv/bin/activate  # macOS/Linux or venv\\Scripts\\activate on Windows
+3) pip install -r requirements.txt
+4) python Main.py
+
+// build
+1) pip install pyinstaller
+2) pyinstaller --noconfirm --windowed --onefile Main.py
