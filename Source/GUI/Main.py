@@ -303,6 +303,7 @@ def process_messages():
         message_queue.task_done()
         time.sleep(0.050) # milliseconds
 
+markers_by_source = {}
 def handle_line(line):
     try:
         timestamp = time.strftime("%H:%M:%S")
@@ -312,13 +313,33 @@ def handle_line(line):
                 packet = decode_aprs(line)
                 if packet is not None:
                     try:
-                        map_widget.set_marker(packet.latitude, packet.longitude, text=packet.source)
-                        map_widget.set_position(packet.latitude, packet.longitude)  # optional: pan to marker
+                        #
+                        global markers_by_source
+                        source_key = packet.source.strip().upper() # normalize key
+                        if source_key in markers_by_source:
+                            try:
+                                print(f"deleting: {source_key}")
+                                old_marker = markers_by_source[source_key]
+                                #old_marker.delete()
+                                map_widget.delete(old_marker)  # ← use this instead
+                                print(f"deleted: {source_key}")
+                            except Exception as e:
+                                print(f"Error: {e}")
+
+                        #
                         marker = map_widget.set_marker(
                             packet.latitude, packet.longitude,
                             text=packet.source,
                             command=lambda m, raw=line: show_raw_data(raw, m)
                         )
+                        map_widget.set_position(packet.latitude, packet.longitude)  # optional: pan to marker
+
+                        #
+                        print(f"adding: {source_key}")
+                        markers_by_source[source_key] = marker
+                        print(f"added: {source_key}")
+
+                        # examples
                         #marker.delete()  # removes it from the map
                         #marker.set_position(new_lat, new_lon) # update position
                         #marker.set_text("new label") # update label
@@ -531,12 +552,8 @@ def show_raw_data(raw: str, marker):
     Pop up a little frameless window next to the given marker
     showing the full raw‐modem line.
     """
-    # Convert latitude and longitude to canvas pixel position
-    #x, y = map_widget.convert_geo_to_canvas_coords(marker.position[0], marker.position[1])
 
     # Get screen coordinates
-    #screen_x = map_widget.canvas.winfo_rootx() + int(x)
-    #screen_y = map_widget.canvas.winfo_rooty() + int(y)
     screen_x = root.winfo_pointerx()
     screen_y = root.winfo_pointery()    
 
@@ -555,7 +572,7 @@ def show_raw_data(raw: str, marker):
         borderwidth=1
     )
     label.pack(padx=4, pady=2)
-    popup.after(5000, popup.destroy)
+    popup.after(3000, popup.destroy)
 
 
 # Startup
