@@ -2519,8 +2519,9 @@ const char version[] = __DATE__ " " __TIME__;
     char modemData[256]; // what is max APRS message length?
     if (Serial1.available()){
       memset(modemData,'\0',sizeof(modemData));
-      Serial1.readBytesUntil('\n', modemData, sizeof(modemData));
-      Serial.print("Modem Raw:");Serial.print(modemData);
+      int len = Serial1.readBytesUntil('\n', modemData, sizeof(modemData));
+      modemData[len] = '\0';  // Null-terminate manually
+      Serial.print("Modem Raw:");Serial.println(modemData);
       gotFormatRaw = true;
     }
 
@@ -2539,8 +2540,8 @@ const char version[] = __DATE__ " " __TIME__;
             iSrc++;
           }
           Format_Raw_In.src[iSrc+1] = '\0';
-          Serial.println();
-          Serial.print(F("SRC=")); Serial.println(Format_Raw_In.src);
+          //Serial.println();
+          //Serial.print(F("SRC=")); Serial.println(Format_Raw_In.src);
         }
         if (modemData[i] == 'D' && modemData[i+1] == 'S' && modemData[i+2] == 'T' && modemData[i+3] == ':' && modemData[i+4] == ' '){
           foundDst=true;
@@ -2552,7 +2553,7 @@ const char version[] = __DATE__ " " __TIME__;
             iDst++;
           }
           Format_Raw_In.dst[iDst+1] = '\0';
-          Serial.print(F("DST=")); Serial.println(Format_Raw_In.dst);
+          //Serial.print(F("DST=")); Serial.println(Format_Raw_In.dst);
         }
         if (modemData[i] == 'P' && modemData[i+1] == 'A' && modemData[i+2] == 'T' && modemData[i+3] == 'H' && modemData[i+4] == ':' && modemData[i+5] == ' '){
           foundPath=true;
@@ -2564,7 +2565,7 @@ const char version[] = __DATE__ " " __TIME__;
             iPath++;
           }
           Format_Raw_In.path[iPath+1] = '\0';
-          Serial.print(F("PATH=")); Serial.println(Format_Raw_In.path);
+          //Serial.print(F("PATH=")); Serial.println(Format_Raw_In.path);
         }
         if (modemData[i] == 'D' && modemData[i+1] == 'A' && modemData[i+2] == 'T' && modemData[i+3] == 'A' && modemData[i+4] == ':' && modemData[i+5] == ' '){
           foundData=true;
@@ -2576,11 +2577,11 @@ const char version[] = __DATE__ " " __TIME__;
             iData++;
           }
           Format_Raw_In.data[iData+1] = '\0';
-          Serial.print(F("DATA=")); Serial.println(Format_Raw_In.data);
+          //Serial.print(F("DATA=")); Serial.println(Format_Raw_In.data);
         }
         if (!foundSrc && !foundDst && !foundPath && !foundData) {
           //Serial.println(F("    !APRS"));
-          Serial.println();
+          //Serial.println();
           i = sizeof(modemData); // setting i to size of modem data will make loop exit sooner
         }
         if (foundSrc && foundDst && foundPath && foundData) {
@@ -2594,7 +2595,7 @@ const char version[] = __DATE__ " " __TIME__;
       // check if message here
       // Radio 2: SRC: [NOCALL-3] DST: [APRS-0] PATH: [WIDE1-1] [WIDE2-2] DATA: :NOCALL-3 :Hi!{006
       // Radio 1: SRC: [NOCALL-3] DST: [APRS-0] PATH: [WIDE1-1] [WIDE2-2] DATA: :NOCALL-3 :ack006
-      if (Format_Raw_In.data[0] == ':') {
+      if (Format_Raw_In.data[0] == ':') { // TODO see if message is to user not just any message
         APRSFormat_Msg Format_Msg_In;
         // set the date and time
         Format_Msg_In.DateInt = Format_Raw_In.DateInt;
@@ -3446,6 +3447,9 @@ const char version[] = __DATE__ " " __TIME__;
   File MsgDataFile;
   const char RawDataFileName[] = {"raw.txt"};
   const char MsgDataFileName[] = {"msg.txt"};
+  bool readingSD = false;
+  APRSFormat_Raw rawData;
+  byte* buff = (byte*)&rawData; // to access RawData as bytes
 
   // Base64-encode any binary buffer into a caller-provided static buffer
   // Returns: number of characters written (not including null terminator)
@@ -3480,12 +3484,6 @@ const char version[] = __DATE__ " " __TIME__;
     
     RawDataFile.flush(); // will save data
   }
-
-  //
-  bool readingSD = false;
-
-  APRSFormat_Raw rawData;
-  byte* buff = (byte*)&rawData; // to access RawData as bytes
 
   void startReadingFromSd(uint32_t StartPosition) {
     RawDataFile.seek(StartPosition);
