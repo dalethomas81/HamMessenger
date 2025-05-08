@@ -502,7 +502,7 @@ def parse_aprs_position(data_str):
 
 def parse_raw_modem_fields(line: str) -> dict:
     pattern = (
-        r'Raw Modem:?\s*'                              # allow “Raw Modem:” or “Raw Modem:”
+        r'(?:Raw Modem:|SD:)\s*'                       # allow “Raw Modem:” or “SD:”
         r'SRC:\s*\[(?P<SRC>[^\]]+)\]\s*'               # SRC:[…]
         r'DST:\s*\[(?P<DST>[^\]]+)\]\s*'               # DST:[…]
         r'PATH:\s*(?P<PATH>(?:\[[^\]]+\]\s*)+)\s*'     # one or more PATH:[…] groups
@@ -560,6 +560,9 @@ def read_serial():
                 line, buffer = buffer.split('\r', 1)
                 message_queue.put(line.strip())  # Push line to queue
 
+        # adding just 1ms here drastically reduces CPU usage
+        time.sleep(0.001) # milliseconds
+
 def process_messages():
     while True:
         line = message_queue.get()
@@ -568,72 +571,75 @@ def process_messages():
 
         handle_line(line)
         message_queue.task_done()
-        time.sleep(0.050) # milliseconds
+
+        #
+        time.sleep(0.001) # milliseconds
 
 markers_by_source = {}
-#icon_cache = {}
 def handle_line(line):
     try:
+        #
         timestamp = time.strftime("%H:%M:%S")
-        if re.search(r"^Raw Modem:", line, re.IGNORECASE):
+
+        #
+        if re.search(r"^Raw Modem:SRC:", line, re.IGNORECASE) \
+            or re.search(r"^SD:SRC:", line, re.IGNORECASE):
+
+            packet = decode_aprs(line)
+            if packet is not None:
+                try:
+                    # search markers for duplicate and delete
+                    global markers_by_source
+                    source_key = packet.source.strip().upper() # normalize key
+                    if source_key in markers_by_source:
+                        try:
+                            old_marker = markers_by_source[source_key]
+                            map_widget.delete(old_marker)
+                        except Exception as e:
+                            print(f"Error: {e}")
+                            pass
+
+                    # add marker to map
+                    global symbol_map
+                    symbol_description = symbol_map.get(f'{packet.symbol_table}{packet.symbol_id}', 'Unknown')
+                    symbol_code = f"{packet.symbol_table}{packet.symbol_id}"
+                    emoji = emoji_map.get(symbol_code, "📍")  # default pin if unknown  
+                    marker = map_widget.set_marker(
+                        packet.latitude, packet.longitude,
+                        text = f"{emoji} {packet.source}\n{symbol_description}",
+                        command=lambda m, raw='[' + timestamp + '] ' + line: show_raw_data(raw, m)
+                    )
+                    map_widget.set_position(packet.latitude, packet.longitude)  # optional: pan to marker
+
+                    # keep marker for reference
+                    markers_by_source[source_key] = marker
+
+                    # marker examples
+                    #marker.delete()  # removes it from the map
+                    #marker.set_position(new_lat, new_lon) # update position
+                    #marker.set_text("new label") # update label
+                    #marker.raw_data = full_raw_line # stash data for later
+
+                except Exception as e:
+                    print(f"Error: {e}")
+                    pass
+
+        #
+        if re.search(r"^SD:", line, re.IGNORECASE):
+            tag = "SD"
+        elif re.search(r"^Raw Modem:", line, re.IGNORECASE):
             tag = "Modem"
-            if re.search(r"^Raw Modem:SRC:", line, re.IGNORECASE):
-                packet = decode_aprs(line)
-                if packet is not None:
-                    try:
-                        #
-                        global markers_by_source
-                        source_key = packet.source.strip().upper() # normalize key
-                        if source_key in markers_by_source:
-                            try:
-                                old_marker = markers_by_source[source_key]
-                                map_widget.delete(old_marker)
-                            except Exception as e:
-                                #print(f"Error: {e}")
-                                pass
-
-                        #
-                        #blank_image = Image.new("RGBA", (1, 1), (0, 0, 0, 0))
-                        #blank_icon = ImageTk.PhotoImage(blank_image)
-                        #blank_icon_path = resource_path("icons/blank.png")
-                        #blank_icon = ImageTk.PhotoImage(Image.open(blank_icon_path))
-                        #global icon_cache
-                        #icon_cache["blank"] = blank_icon  # Prevent garbage collection
-
-                        #
-                        global symbol_map
-                        #symbol_description = symbol_map.get(f'{packet.symbol_table}{packet.symbol_id}', 'Unknown')
-                        symbol_code = f"{packet.symbol_table}{packet.symbol_id}"
-                        emoji = emoji_map.get(symbol_code, "📍")  # default pin if unknown  
-                        marker = map_widget.set_marker(
-                            packet.latitude, packet.longitude,
-                            #text=f"{packet.source}\n{symbol_description}",
-                            text = f"{emoji} {packet.source}",
-                            #image=blank_icon,
-                            command=lambda m, raw='[' + timestamp + '] ' + line: show_raw_data(raw, m)
-                        )
-                        map_widget.set_position(packet.latitude, packet.longitude)  # optional: pan to marker
-
-                        #
-                        markers_by_source[source_key] = marker
-
-                        # examples
-                        #marker.delete()  # removes it from the map
-                        #marker.set_position(new_lat, new_lon) # update position
-                        #marker.set_text("new label") # update label
-                        #marker.raw_data = full_raw_line # stash data for later
-                    except Exception as e:
-                        print(f"Error: {e}")
-                        pass
         else:
             tag = "Received"
 
+        #
         log_entry = f"[{timestamp}] ← {line}\n"
         log_entries.append({"text": log_entry, "type": "Received", "tag": tag})
         log_to_file(log_entry)
         append_to_log(log_entries[-1])
 
-    except:
+    except Exception as e:
+        print(f"Error: {e}")
         pass
 
 # ---------- History ----------
@@ -806,7 +812,7 @@ auto_scroll_btn.pack(side=tk.LEFT)
 tk.Label(log_control_frame, text="  Filter:").pack(side=tk.LEFT)
 filter_var = tk.StringVar(value="All")
 filter_menu = ttk.Combobox(log_control_frame, textvariable=filter_var,
-                           values=["All", "Sent", "Received", "Modem"], width=10)
+                           values=["All", "Sent", "Received", "Modem", "SD"], width=10)
 filter_menu.pack(side=tk.LEFT)
 filter_menu.bind("<<ComboboxSelected>>", change_filter_mode)
 
@@ -819,6 +825,7 @@ log_box.grid(row=0, column=0, sticky="nsew", padx=10, pady=10, in_=log_tab)
 log_box.tag_config("Sent", foreground="blue")
 log_box.tag_config("Received", foreground="green")
 log_box.tag_config("Modem", foreground="orange")
+log_box.tag_config("SD", foreground="red")
 
 # Map Viewer
 map_widget = TkinterMapView(map_tab, width=900, height=500)

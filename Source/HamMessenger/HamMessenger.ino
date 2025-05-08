@@ -3473,6 +3473,15 @@ const char version[] = __DATE__ " " __TIME__;
             *(buff+count) = RawDataFile.read();
           }
         }
+        // match the format of the raw modem packets
+        Serial.print("SD:SRC: ");Serial.print(RawData.src);
+        Serial.print(" DST: ");Serial.print(RawData.dst);
+        Serial.print(" PATH: ");Serial.print(RawData.path);
+        Serial.print(" DATA: ");Serial.print(RawData.data);
+        Serial.println(); 
+        RawDataFile.read();// take care of the '\n' (maybe not write this in future)
+
+        /*
         Serial.print("src:"); Serial.print(RawData.src);
         Serial.print("\tdst:"); Serial.print(RawData.dst);
         Serial.print("\tpath:"); Serial.print(RawData.path);
@@ -3480,6 +3489,7 @@ const char version[] = __DATE__ " " __TIME__;
         Serial.print("\tdate:"); Serial.print(RawData.DateInt);
         Serial.print("\ttime:"); Serial.print(RawData.TimeInt);
         Serial.println(RawDataFile.read()); // take care of the '\n' (maybe not write this in future)
+        */
       }
     } else {
       // if the file didn't open, print an error:
