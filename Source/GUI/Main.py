@@ -11,6 +11,7 @@ from datetime import datetime
 from tkinter.ttk import Style
 import re
 from aprspy import APRS
+import base64
 
 from tkinter import ttk as ttk_gui  # Avoid conflict with existing ttk
 from tkintermapview import TkinterMapView
@@ -583,7 +584,23 @@ def handle_line(line):
 
         #
         if re.search(r"^Raw Modem:SRC:", line, re.IGNORECASE) \
-            or re.search(r"^SD:SRC:", line, re.IGNORECASE):
+            or re.search(r"^SD:", line, re.IGNORECASE):
+
+            if re.search(r"^SD:", line, re.IGNORECASE):
+                b64 = line[3:].strip()
+                try:
+                    data = base64.b64decode(b64)
+                    if len(data) != 173:
+                        print(f"Unexpected packet size: {len(data)}")
+                        return
+                    src  = data[0:15].decode('ascii', errors='ignore').strip('\x00')
+                    dst  = data[15:30].decode('ascii', errors='ignore').strip('\x00')
+                    path = data[30:40].decode('ascii', errors='ignore').strip('\x00')
+                    msg  = data[40:165].decode('ascii', errors='ignore').strip('\x00')
+                    line = f"SD:SRC:{src} DST:{dst} PATH:{path} DATA:{msg}"
+                    
+                except:
+                    pass
 
             packet = decode_aprs(line)
             if packet is not None:

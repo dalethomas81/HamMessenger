@@ -3435,7 +3435,7 @@ const char version[] = __DATE__ " " __TIME__;
 #pragma endregion
 
 #pragma region "SD"
-
+  #include <Base64.h> //  Base64 library by Xander Electronics
   #include <SPI.h>
   #include <SD.h>
 
@@ -3444,13 +3444,33 @@ const char version[] = __DATE__ " " __TIME__;
   const char RawDataFileName[] = {"raw.txt"};
   const char MsgDataFileName[] = {"msg.txt"};
 
+// Base64-encode any binary buffer into a caller-provided static buffer
+// Returns: number of characters written (not including null terminator)
+int encodeBase64(char* output, size_t outputSize, const void* input, size_t inputSize) {
+  // Calculate required encoded length
+  size_t requiredSize = Base64.encodedLength(inputSize) + 1;  // +1 for null terminator
+
+  if (outputSize < requiredSize) {
+    // Not enough space in output buffer
+    return -1;
+  }
+
+  // Perform Base64 encoding
+  int actualLen = Base64.encode(output, (const char*)input, inputSize);
+  output[actualLen] = '\0';  // Ensure null-termination
+
+  return actualLen;
+}
+
+
   void writeRawDataToSd(APRSFormat_Raw RawData){
     byte *buff = (byte *) &RawData; // to access RawData as bytes
 
     // if the file opened okay, write to it:
     if (RawDataFile) {
       RawDataFile.seek(RawDataFile.size()); // go to end of file first
-      RawDataFile.write(buff, sizeof(APRSFormat_Raw)); RawDataFile.write('\n');
+      RawDataFile.write(buff, sizeof(APRSFormat_Raw)); 
+      RawDataFile.write('\n'); // add a \n to make raw.txt more human readable
     } else {
       // if the file didn't open, print an error:
       Serial.println("error opening raw.txt");
@@ -3464,23 +3484,36 @@ const char version[] = __DATE__ " " __TIME__;
     byte *buff = (byte *) &RawData; // to access RawData as bytes
     RawDataFile.seek(StartPosition);
 
-    // if the file opened okay, write to it:
+    // if the file opened okay, read from it:
     if (RawDataFile) {
       Serial.println("Reading from raw.txt...");
+
       while (RawDataFile.available()) {
-        for (int count=0;count<sizeof(APRSFormat_Raw); count++) { 
-          if (RawDataFile.available()) {
-            *(buff+count) = RawDataFile.read();
-          }
+        //
+        for (int count = 0; count < sizeof(APRSFormat_Raw); ) {
+          byte nextByte = RawDataFile.read();
+          *(buff + count) = nextByte;
+          count++;
         }
+        byte nextByte = RawDataFile.read(); // trim the \n TODO stop adding the \n!
+
+        // encode the data in case there are special chars like \n and \r
+        char encodedBuffer[((sizeof(APRSFormat_Raw) + 2) / 3) * 4 + 1];  // Safe buffer size
+        int len = encodeBase64(encodedBuffer, sizeof(encodedBuffer), buff, sizeof(APRSFormat_Raw));
+        
+        //
+        Serial.print("SD:");
+        Serial.println(encodedBuffer);
+        //Serial.print('\r'); // python gui is looking for \r
+
         // match the format of the raw modem packets
-        Serial.print("SD:SRC: ");Serial.print(RawData.src);
+        /*Serial.print("SD:SRC: ");Serial.print(RawData.src);
         Serial.print(" DST: ");Serial.print(RawData.dst);
         Serial.print(" PATH: ");Serial.print(RawData.path);
         Serial.print(" DATA: ");Serial.print(RawData.data);
         Serial.println(); 
         RawDataFile.read();// take care of the '\n' (maybe not write this in future)
-
+        */
         /*
         Serial.print("src:"); Serial.print(RawData.src);
         Serial.print("\tdst:"); Serial.print(RawData.dst);
