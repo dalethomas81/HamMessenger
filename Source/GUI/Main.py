@@ -503,7 +503,7 @@ def parse_aprs_position(data_str):
 
 def parse_raw_modem_fields(line: str) -> dict:
     pattern = (
-        r'(?:Raw Modem:|SD:)\s*'                       # allow “Raw Modem:” or “SD:”
+        r'(?:Modem Raw:|SD Raw:)\s*'                   # allow “Modem Raw:” or “SD Raw:”
         r'SRC:\s*\[(?P<SRC>[^\]]+)\]\s*'               # SRC:[…]
         r'DST:\s*\[(?P<DST>[^\]]+)\]\s*'               # DST:[…]
         r'PATH:\s*(?P<PATH>(?:\[[^\]]+\]\s*)+)\s*'     # one or more PATH:[…] groups
@@ -583,11 +583,11 @@ def handle_line(line):
         timestamp = time.strftime("%H:%M:%S")
 
         #
-        if re.search(r"^Raw Modem:SRC:", line, re.IGNORECASE) \
-            or re.search(r"^SD:", line, re.IGNORECASE):
+        if re.search(r"^Modem Raw:SRC:", line, re.IGNORECASE) \
+            or re.search(r"^SD Raw:", line, re.IGNORECASE):
 
-            if re.search(r"^SD:", line, re.IGNORECASE):
-                b64 = line[3:].strip()
+            if re.search(r"^SD Raw:", line, re.IGNORECASE):
+                b64 = line[7:].strip() # remove 'SD Raw:'
                 try:
                     data = base64.b64decode(b64)
                     if len(data) != 173:
@@ -597,7 +597,7 @@ def handle_line(line):
                     dst  = data[15:30].decode('ascii', errors='ignore').strip('\x00')
                     path = data[30:40].decode('ascii', errors='ignore').strip('\x00')
                     msg  = data[40:165].decode('ascii', errors='ignore').strip('\x00')
-                    line = f"SD:SRC:{src} DST:{dst} PATH:{path} DATA:{msg}"
+                    line = f"SD Raw:SRC:{src} DST:{dst} PATH:{path} DATA:{msg}"
                     
                 except:
                     pass
@@ -642,9 +642,9 @@ def handle_line(line):
                     pass
 
         #
-        if re.search(r"^SD:", line, re.IGNORECASE):
+        if re.search(r"^SD Raw:", line, re.IGNORECASE):
             tag = "SD"
-        elif re.search(r"^Raw Modem:", line, re.IGNORECASE):
+        elif re.search(r"^Modem Raw:", line, re.IGNORECASE):
             tag = "Modem"
         else:
             tag = "Received"
