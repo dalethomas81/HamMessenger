@@ -670,6 +670,7 @@ const char version[] = __DATE__ " " __TIME__;
   char currentLng[10] = {'0','0','0','0','0','.','0','0','N','\0'};
   bool modemCmdFlag_Lat=false, modemCmdFlag_Lng=false;
   unsigned long gps_report_timer, destination_report_timer;
+  bool gpsInitialized = false; // we can set this when we get our first coordinate
 
   // London                                 LAT:51.508131     LNG:-0.128002
   //double DESTINATION_LAT = 51.508131, DESTINATION_LON = -0.128002;
@@ -685,6 +686,7 @@ const char version[] = __DATE__ " " __TIME__;
       gps_report_timer = millis();
       if (gps.location.isUpdated())
       {
+        gpsInitialized = true;
         //Serial.print(F("LOCATION   Fix Age="));
         //Serial.print(gps.location.age());
         //Serial.print(F("ms Raw Lat="));
@@ -2322,7 +2324,8 @@ const char version[] = __DATE__ " " __TIME__;
         return;
       }
       // send location
-      if (modemCmdFlag_Cmt==true){
+      // dont send if we dont have valid coordinates (modemCmdFlag_Cmt will remain true so we send when we get coordinates)
+      if (modemCmdFlag_Cmt==true && gpsInitialized==true){
         if (sendModemCommand("@", 1, SETTINGS_APRS_COMMENT, strlen(SETTINGS_APRS_COMMENT)) == -1){
           modemCmdFlag_Cmt=false;
         }
@@ -2516,8 +2519,9 @@ const char version[] = __DATE__ " " __TIME__;
     char modemData[256]; // what is max APRS message length?
     if (Serial1.available()){
       memset(modemData,'\0',sizeof(modemData));
-      Serial1.readBytesUntil('\n', modemData, sizeof(modemData));
-      Serial.print("Raw Modem:");Serial.print(modemData);
+      int len = Serial1.readBytesUntil('\n', modemData, sizeof(modemData));
+      modemData[len] = '\0';  // Null-terminate manually
+      Serial.print("Modem Raw:");Serial.println(modemData);
       gotFormatRaw = true;
     }
 
@@ -2536,8 +2540,8 @@ const char version[] = __DATE__ " " __TIME__;
             iSrc++;
           }
           Format_Raw_In.src[iSrc+1] = '\0';
-          Serial.println();
-          Serial.print(F("SRC=")); Serial.println(Format_Raw_In.src);
+          //Serial.println();
+          //Serial.print(F("SRC=")); Serial.println(Format_Raw_In.src);
         }
         if (modemData[i] == 'D' && modemData[i+1] == 'S' && modemData[i+2] == 'T' && modemData[i+3] == ':' && modemData[i+4] == ' '){
           foundDst=true;
@@ -2549,7 +2553,7 @@ const char version[] = __DATE__ " " __TIME__;
             iDst++;
           }
           Format_Raw_In.dst[iDst+1] = '\0';
-          Serial.print(F("DST=")); Serial.println(Format_Raw_In.dst);
+          //Serial.print(F("DST=")); Serial.println(Format_Raw_In.dst);
         }
         if (modemData[i] == 'P' && modemData[i+1] == 'A' && modemData[i+2] == 'T' && modemData[i+3] == 'H' && modemData[i+4] == ':' && modemData[i+5] == ' '){
           foundPath=true;
@@ -2561,7 +2565,7 @@ const char version[] = __DATE__ " " __TIME__;
             iPath++;
           }
           Format_Raw_In.path[iPath+1] = '\0';
-          Serial.print(F("PATH=")); Serial.println(Format_Raw_In.path);
+          //Serial.print(F("PATH=")); Serial.println(Format_Raw_In.path);
         }
         if (modemData[i] == 'D' && modemData[i+1] == 'A' && modemData[i+2] == 'T' && modemData[i+3] == 'A' && modemData[i+4] == ':' && modemData[i+5] == ' '){
           foundData=true;
@@ -2573,11 +2577,11 @@ const char version[] = __DATE__ " " __TIME__;
             iData++;
           }
           Format_Raw_In.data[iData+1] = '\0';
-          Serial.print(F("DATA=")); Serial.println(Format_Raw_In.data);
+          //Serial.print(F("DATA=")); Serial.println(Format_Raw_In.data);
         }
         if (!foundSrc && !foundDst && !foundPath && !foundData) {
           //Serial.println(F("    !APRS"));
-          Serial.println();
+          //Serial.println();
           i = sizeof(modemData); // setting i to size of modem data will make loop exit sooner
         }
         if (foundSrc && foundDst && foundPath && foundData) {
@@ -2591,7 +2595,7 @@ const char version[] = __DATE__ " " __TIME__;
       // check if message here
       // Radio 2: SRC: [NOCALL-3] DST: [APRS-0] PATH: [WIDE1-1] [WIDE2-2] DATA: :NOCALL-3 :Hi!{006
       // Radio 1: SRC: [NOCALL-3] DST: [APRS-0] PATH: [WIDE1-1] [WIDE2-2] DATA: :NOCALL-3 :ack006
-      if (Format_Raw_In.data[0] == ':') {
+      if (Format_Raw_In.data[0] == ':') { // TODO see if message is to user not just any message
         APRSFormat_Msg Format_Msg_In;
         // set the date and time
         Format_Msg_In.DateInt = Format_Raw_In.DateInt;
@@ -2870,7 +2874,8 @@ const char version[] = __DATE__ " " __TIME__;
           if (strstr(SD_cmd, "Delete") != NULL) {
             deleteAllRawData();
           } else if (strstr(SD_cmd, "Print") != NULL) {
-            printRawDataFromSd(0);
+            //printRawDataFromSd(0);
+            startReadingFromSd(0);
           } else if (strstr(SD_cmd, "Test") != NULL) {
             RawDataRecordCount = getRawDataRecord(1, RawData);
             Serial.print("Raw Data Record Count"); Serial.println(RawDataRecordCount);
@@ -3432,14 +3437,37 @@ const char version[] = __DATE__ " " __TIME__;
 #pragma endregion
 
 #pragma region "SD"
-
+  #include <Base64.h> //  Base64 library by Xander Electronics
   #include <SPI.h>
   #include <SD.h>
 
+  // these files are opened once on boot
+  // they are never closed but the data is saved via the .flush() method
   File RawDataFile;
   File MsgDataFile;
   const char RawDataFileName[] = {"raw.txt"};
   const char MsgDataFileName[] = {"msg.txt"};
+  bool readingSD = false;
+  APRSFormat_Raw rawData;
+  byte* buff = (byte*)&rawData; // to access RawData as bytes
+
+  // Base64-encode any binary buffer into a caller-provided static buffer
+  // Returns: number of characters written (not including null terminator)
+  int encodeBase64(char* output, size_t outputSize, const void* input, size_t inputSize) {
+    // Calculate required encoded length
+    size_t requiredSize = Base64.encodedLength(inputSize) + 1;  // +1 for null terminator
+
+    if (outputSize < requiredSize) {
+      // Not enough space in output buffer
+      return -1;
+    }
+
+    // Perform Base64 encoding
+    int actualLen = Base64.encode(output, (const char*)input, inputSize);
+    output[actualLen] = '\0';  // Ensure null-termination
+
+    return actualLen;
+  }
 
   void writeRawDataToSd(APRSFormat_Raw RawData){
     byte *buff = (byte *) &RawData; // to access RawData as bytes
@@ -3447,7 +3475,8 @@ const char version[] = __DATE__ " " __TIME__;
     // if the file opened okay, write to it:
     if (RawDataFile) {
       RawDataFile.seek(RawDataFile.size()); // go to end of file first
-      RawDataFile.write(buff, sizeof(APRSFormat_Raw)); RawDataFile.write('\n');
+      RawDataFile.write(buff, sizeof(APRSFormat_Raw)); 
+      RawDataFile.write('\n'); // add a \n to make raw.txt more human readable
     } else {
       // if the file didn't open, print an error:
       Serial.println("error opening raw.txt");
@@ -3456,27 +3485,63 @@ const char version[] = __DATE__ " " __TIME__;
     RawDataFile.flush(); // will save data
   }
 
+  void startReadingFromSd(uint32_t StartPosition) {
+    RawDataFile.seek(StartPosition);
+    readingSD = true;
+    Serial.println("Started reading new data from raw.txt...");
+  }
+
+  void printRawDataFromSd() {
+    // exit once the end of the file is reached
+    if (!readingSD || !RawDataFile.available()) {
+      readingSD = false;
+      return;
+    }
+
+    // read the size of the APRS structure into buffer
+    RawDataFile.read(buff, sizeof(APRSFormat_Raw));
+    // burn the \n
+    byte nextByte = RawDataFile.read(); 
+
+    // Allocate space for Base64-encoded output:
+    // Every 3 bytes of binary input becomes 4 ASCII characters in Base64.
+    // We add 2 to the input size to round up to the next multiple of 3.
+    // Then multiply by 4/3 (implemented as *4/3 here).
+    // +1 for the null terminator at the end.
+    char encodedBuffer[((sizeof(APRSFormat_Raw) + 2) / 3) * 4 + 1];
+    // Encode and print the record
+    int len = encodeBase64(encodedBuffer, sizeof(encodedBuffer), buff, sizeof(APRSFormat_Raw));
+
+    Serial.print("SD Raw:");
+    Serial.println(encodedBuffer);
+  }
+
+/*
   void printRawDataFromSd(uint32_t StartPosition){
     APRSFormat_Raw RawData;
     byte *buff = (byte *) &RawData; // to access RawData as bytes
     RawDataFile.seek(StartPosition);
 
-    // if the file opened okay, write to it:
+    // if the file opened okay, read from it:
     if (RawDataFile) {
       Serial.println("Reading from raw.txt...");
+
       while (RawDataFile.available()) {
-        for (int count=0;count<sizeof(APRSFormat_Raw); count++) { 
-          if (RawDataFile.available()) {
-            *(buff+count) = RawDataFile.read();
-          }
+        //
+        for (int count = 0; count < sizeof(APRSFormat_Raw); ) {
+          byte nextByte = RawDataFile.read();
+          *(buff + count) = nextByte;
+          count++;
         }
-        Serial.print("src:"); Serial.print(RawData.src);
-        Serial.print("\tdst:"); Serial.print(RawData.dst);
-        Serial.print("\tpath:"); Serial.print(RawData.path);
-        Serial.print("\tdata:"); Serial.print(RawData.data);
-        Serial.print("\tdate:"); Serial.print(RawData.DateInt);
-        Serial.print("\ttime:"); Serial.print(RawData.TimeInt);
-        Serial.println(RawDataFile.read()); // take care of the '\n' (maybe not write this in future)
+        byte nextByte = RawDataFile.read(); // trim the \n TODO stop adding the \n!
+
+        // encode the data in case there are special chars like \n and \r
+        char encodedBuffer[((sizeof(APRSFormat_Raw) + 2) / 3) * 4 + 1];  // Safe buffer size
+        int len = encodeBase64(encodedBuffer, sizeof(encodedBuffer), buff, sizeof(APRSFormat_Raw));
+        
+        //
+        Serial.print("SD Raw:");
+        Serial.println(encodedBuffer);
       }
     } else {
       // if the file didn't open, print an error:
@@ -3485,6 +3550,7 @@ const char version[] = __DATE__ " " __TIME__;
 
     RawDataFile.flush(); // will save data
   }
+*/
 
   void writeMsgDataToSd(APRSFormat_Msg MsgData){
     byte *buff = (byte *) &MsgData; // to access MsgData as bytes
@@ -3673,4 +3739,9 @@ void loop(){
   handleAprsBeacon();
   handleVoltage();
   handleStats();
+
+  // printing all contents from SD card is non-blocking
+  if (readingSD) {
+    printRawDataFromSd();
+  }
 }

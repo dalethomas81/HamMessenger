@@ -4,16 +4,39 @@ import serial
 import serial.tools.list_ports
 import threading
 import time
+import sys
 import os
 import json
 from datetime import datetime
 from tkinter.ttk import Style
 import re
+from aprspy import APRS
+import base64
+
+from tkinter import ttk as ttk_gui  # Avoid conflict with existing ttk
+from tkintermapview import TkinterMapView
+
+#from PIL import Image, ImageTk
+
+# Shared Queue for incoming complete messages
+from queue import Queue
+message_queue = Queue()
+
+# pip install pyserial
+# pip install tkintermapview
 
 # ---------- Path Setup ----------
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
 config_file = os.path.join(BASE_DIR, "ham_gui_config.json")
 log_dir = os.path.join(BASE_DIR, "logs")
+
+def resource_path(relative_path):
+    try:
+        base_path = sys._MEIPASS
+    except Exception:
+        base_path = os.path.dirname(os.path.abspath(__file__))
+
+    return os.path.join(base_path, relative_path)
 
 # ---------- Globals ----------
 ser = None
@@ -75,6 +98,262 @@ auto_scroll_enabled = True
 filter_mode = "All"
 dark_mode = False
 
+symbol_map = {
+    # Primary Table ('/')
+    "/!": "Emergency",
+    "/\"": "Reserved (not used)",
+    "/#": "Digipeater",
+    "/$": "Phone",
+    "/%": "DX Cluster",
+    "/&": "HF Gateway",
+    "/'": "Small Aircraft",
+    "/(": "Mobile Satellite Station",
+    "/)": "Wheelchair",
+    "/*": "Snowmobile",
+    "/+": "Red Cross",
+    "/,": "Boy Scout",
+    "/-": "House (QTH)",
+    "/.": "X — Overlay position",
+    "/0": "Circle (Node)",
+    "/1": "ARC",
+    "/2": "Bicycle",
+    "/3": "Church",
+    "/4": "Campground",
+    "/5": "QTH with phone",
+    "/6": "iGate",
+    "/7": "Aircraft (large)",
+    "/8": "Boat",
+    "/9": "Motorcycle",
+    "/:": "Fire Dept",
+    "/;": "Police Station",
+    "/<": "Truck",
+    "/=": "RV",
+    "/>": "Car",
+    "/?": "Info Kiosk",
+    "@/": "JOTA (Scouts)",
+    "/A": "Ambulance",
+    "/B": "BBS",
+    "/C": "Computer",
+    "/D": "Delivery Truck",
+    "/E": "Eyeball (Meeting)",
+    "/F": "Satellite",
+    "/G": "GPS Receiver",
+    "/H": "Hospital",
+    "/I": "TNC",
+    "/J": "Jeep",
+    "/K": "School",
+    "/L": "Laptop",
+    "/M": "Mic/Echolink",
+    "/N": "NTS Traffic",
+    "/O": "Balloon",
+    "/P": "Parking",
+    "/Q": "ATV",
+    "/R": "Repeater",
+    "/S": "Ship",
+    "/T": "Truck Stop",
+    "/U": "Bus",
+    "/V": "Van",
+    "/W": "Water Station",
+    "/X": "Helicopter",
+    "/Y": "Yacht",
+    "/Z": "Winlink",
+    
+    # Alternate Table ('\\')
+    "\\!": "Police Car",
+    "\\\"": "Reserved",
+    "\\#": "Smoke Detector",
+    "\\$": "Cash Register",
+    "\\%": "Power Plant",
+    "\\&": "Topo Map",
+    "\\'": "Crash Site",
+    "\\(": "Cloudy",
+    "\\)": "Rain",
+    "\\*": "Snow",
+    "\\+": "Church (alt)",
+    "\\,": "Girl Scout",
+    "\\-": "QSL Card",
+    "\\.": "Ambulance (alt)",
+    "\\0": "Circle+overlay",
+    "\\1": "Power Outage",
+    "\\2": "Tornado",
+    "\\3": "Flood",
+    "\\4": "Solar Power",
+    "\\5": "Tsunami",
+    "\\6": "Civil Defense",
+    "\\7": "Hazard",
+    "\\8": "Radiation",
+    "\\9": "Biohazard",
+    "\\:": "Fog",
+    "\\;": "Snowstorm",
+    "\\<": "Hurricane",
+    "\\=": "Volcano",
+    "\\>": "Lightning",
+    "\\?": "Dust",
+    "\\A": "Box/Package",
+    "\\B": "Blowing Snow",
+    "\\C": "Coastal Flood",
+    "\\D": "Drizzle",
+    "\\E": "Freezing Rain",
+    "\\F": "Funnel Cloud",
+    "\\G": "Gale",
+    "\\H": "Hail",
+    "\\I": "Icy Roads",
+    "\\J": "Jackknife",
+    "\\K": "Blizzard",
+    "\\L": "Low Visibility",
+    "\\M": "Moon",
+    "\\N": "News Station",
+    "\\O": "Balloon (alt)",
+    "\\P": "Pick-up Truck",
+    "\\Q": "Quake",
+    "\\R": "Rocket",
+    "\\S": "Sleet",
+    "\\T": "Thunderstorm",
+    "\\U": "Sun",
+    "\\V": "VHF Station",
+    "\\W": "Flooding",
+    "\\X": "X-ray",
+    "\\Y": "Yagi Antenna",
+    "\\Z": "Zombie (!)"
+}
+emoji_map = {
+    # Primary Symbol Table ('/')
+    "/!": "🚨",  # Emergency
+    "/#": "📶",  # Digipeater
+    "/$": "📞",  # Phone
+    "/%": "🗼",  # DX Cluster
+    "/&": "🌐",  # HF Gateway
+    "/'": "🛩️",  # Small aircraft
+    "/(": "🛰️",  # Mobile satellite
+    "/)": "♿",  # Wheelchair
+    "/*": "🏂",  # Snowmobile
+    "/+": "➕",  # Red Cross
+    "/,": "🏕️",  # Boy Scout
+    "/-": "🏠",  # Home / QTH
+    "/.": "❌",  # Overlay position
+    "/0": "⭕",  # Circle (Node)
+    "/1": "🏢",  # Icon (generic)
+    "/2": "🚴",  # Bicycle
+    "/3": "⛪",  # Church
+    "/4": "⛺",  # Campground
+    "/5": "📱",  # QTH with phone
+    "/6": "📡",  # iGate
+    "/7": "✈️",  # Large aircraft
+    "/8": "⛵",  # Boat
+    "/9": "🏍️",  # Motorcycle
+    "/:": "🚒",  # Fire Dept
+    "/;": "🚓",  # Police Station
+    "/<": "🚚",  # Truck
+    "/=": "🚐",  # RV
+    "/>": "🚗",  # Car
+    "/?": "ℹ️",  # Info Kiosk
+    "/A": "🚑",  # Ambulance
+    "/B": "📦",  # BBS
+    "/C": "🖥️",  # Computer
+    "/D": "📦",  # Delivery Truck
+    "/E": "👀",  # Eyeball / Event
+    "/F": "🛰️",  # Satellite
+    "/G": "📍",  # GPS Receiver
+    "/H": "🏥",  # Hospital
+    "/I": "📡",  # TNC
+    "/J": "🚙",  # Jeep
+    "/K": "🏫",  # School
+    "/L": "💻",  # Laptop
+    "/M": "🎙️",  # Mic / EchoLink
+    "/N": "📨",  # NTS Traffic
+    "/O": "🎈",  # Balloon
+    "/P": "🅿️",  # Parking
+    "/Q": "📺",  # ATV (TV)
+    "/R": "📡",  # Repeater
+    "/S": "🚢",  # Ship
+    "/T": "⛽",  # Truck Stop
+    "/U": "🚌",  # Bus
+    "/V": "🚐",  # Van
+    "/W": "🚰",  # Water Station
+    "/X": "🚁",  # Helicopter
+    "/Y": "🛥️",  # Yacht
+    "/Z": "📬",  # Winlink
+
+    # 
+    "/[": "🚶",  # Walking person
+    "/]": "🏃",  # Running person
+    "/{": "🎒",  # Hiking
+    "/}": "🎿",  # Skier
+    "/|": "🗼",  # Tower
+    "/\\": "💻",  # PC station
+    "/^": "📻",  # Ham shack
+    "/_": "🛶",  # Watercraft
+    "/`": "🌦️",  # Alt weather
+    "/~": "🏠",  # House alt
+    "/b": "🚴",  # Bicycle
+
+    # Alternate Symbol Table ('\\')
+    "\\!": "🚓",  # Police car
+    "\\#": "🔥",  # Smoke detector
+    "\\$": "💵",  # Cash register
+    "\\%": "🏭",  # Power Plant
+    "\\&": "🗺️",  # Topo Map
+    "\\'": "💥",  # Crash Site
+    "\\(": "☁️",  # Cloudy
+    "\\)": "🌧️",  # Rain
+    "\\*": "❄️",  # Snow
+    "\\+": "✝️",  # Church (alt)
+    "\\,": "👧",  # Girl Scout
+    "\\-": "📮",  # QSL Card
+    "\\0": "⭘",  # Overlay circle
+    "\\1": "💡",  # Power outage
+    "\\2": "🌪️",  # Tornado
+    "\\3": "🌊",  # Flood
+    "\\4": "🔋",  # Solar Power
+    "\\5": "🌊",  # Tsunami
+    "\\6": "🏛️",  # Civil Defense
+    "\\7": "☢️",  # Hazard
+    "\\8": "☢️",  # Radiation
+    "\\9": "☣️",  # Biohazard
+    "\\:": "🌫️",  # Fog
+    "\\;": "🌨️",  # Snowstorm
+    "\\<": "🌀",  # Hurricane
+    "\\=": "🌋",  # Volcano
+    "\\>": "🌩️",  # Lightning
+    "\\?": "💨",  # Dust
+    "\\A": "📦",  # Box/Package
+    "\\B": "🌬️",  # Blowing snow
+    "\\C": "🌊",  # Coastal Flood
+    "\\D": "🌦️",  # Drizzle
+    "\\E": "🌧️",  # Freezing Rain
+    "\\F": "🌪️",  # Funnel Cloud
+    "\\G": "🌬️",  # Gale
+    "\\H": "🌨️",  # Hail
+    "\\I": "🧊",  # Icy Roads
+    "\\J": "🚛",  # Jackknife
+    "\\K": "🌨️",  # Blizzard
+    "\\L": "🌁",  # Low Visibility
+    "\\M": "🌕",  # Moon
+    "\\N": "📰",  # News Station
+    "\\O": "🎈",  # Balloon (alt)
+    "\\P": "🛻",  # Pickup Truck
+    "\\Q": "🌎",  # Earthquake
+    "\\R": "🚀",  # Rocket
+    "\\S": "🌨️",  # Sleet
+    "\\T": "⛈️",  # Thunderstorm
+    "\\U": "☀️",  # Sun
+    "\\V": "📡",  # VHF Station
+    "\\W": "🌊",  # Flooding
+    "\\X": "☢️",  # X-ray (symbol)
+    "\\Y": "📡",  # Yagi antenna
+    "\\Z": "🧟",  # Zombie
+
+    # General fallbacks
+    "/#": "📶",  # Digipeater
+    "/G": "📍",  # GPS Receiver
+    "/I": "📡",  # TNC
+    "/?": "ℹ️",  # Info Kiosk
+
+    # Catch-all fallback
+    "default": "📍",
+}
+
+
 # ---------- Config Functions ----------
 def load_config():
     global config
@@ -113,6 +392,7 @@ def connect_serial():
         save_config()
         status_label.config(text=f"Connected to {port} @ {baud} baud", fg="green")
         threading.Thread(target=read_serial, daemon=True).start()
+        threading.Thread(target=process_messages, daemon=True).start()
         threading.Thread(target=monitor_connection, daemon=True).start()
     except Exception as e:
         status_label.config(text=f"Connection failed: {e}", fg="red")
@@ -188,6 +468,68 @@ def append_to_log(entry):
             log_box.see(tk.END)
         log_box.config(state=tk.DISABLED)
 
+#
+def parse_aprs_position(data_str):
+    """
+    Extract latitude and longitude from an APRS packet DATA field.
+    Supports uncompressed and timestamped formats.
+    Handles cases with malformed extra characters like 'NS' or 'EW'.
+    """
+    # Pattern A — Uncompressed position
+    match = re.search(
+        r'([0-9]{2})([0-9]{2}\.[0-9]+)([NS])[^0-9]*([0-9]{3})([0-9]{2}\.[0-9]+)([EW])',
+        data_str
+    )
+    if match:
+        lat = int(match.group(1)) + float(match.group(2)) / 60.0
+        if match.group(3) == 'S': lat *= -1
+        lon = int(match.group(4)) + float(match.group(5)) / 60.0
+        if match.group(6) == 'W': lon *= -1
+        return lat, lon
+
+    # Pattern B — Timestamped uncompressed position (e.g. @060021z3633.21N12155.60W)
+    match = re.search(
+        r'(?:@\d{6}z)?([0-9]{2})([0-9]{2}\.[0-9]+)([NS])[^0-9]*([0-9]{3})([0-9]{2}\.[0-9]+)([EW])',
+        data_str
+    )
+    if match:
+        lat = int(match.group(1)) + float(match.group(2)) / 60.0
+        if match.group(3) == 'S': lat *= -1
+        lon = int(match.group(4)) + float(match.group(5)) / 60.0
+        if match.group(6) == 'W': lon *= -1
+        return lat, lon
+
+    return None
+
+def parse_raw_modem_fields(line: str) -> dict:
+    pattern = (
+        r'(?:Modem Raw:|SD Raw:)\s*'                   # allow “Modem Raw:” or “SD Raw:”
+        r'SRC:\s*\[(?P<SRC>[^\]]+)\]\s*'               # SRC:[…]
+        r'DST:\s*\[(?P<DST>[^\]]+)\]\s*'               # DST:[…]
+        r'PATH:\s*(?P<PATH>(?:\[[^\]]+\]\s*)+)\s*'     # one or more PATH:[…] groups
+        r'DATA:\s*(?P<DATA>.*)'                        # everything after DATA:
+    )
+    m = re.match(pattern, line, re.IGNORECASE)
+    if not m:
+        return {}
+    fields = m.groupdict()
+    fields['PATH'] = ",".join(re.findall(r'\[([^\]]+)\]', fields['PATH']))
+    
+    return fields
+
+def decode_aprs(line):
+    fields = parse_raw_modem_fields(line)
+    if fields:
+        # KN6ARG-9>SWQTWR,WIDE1-1:`2Z5lr|j/`"7I}146.520MHz_1
+        message = fields['SRC'] + '>' + fields['DST'] + ',' + fields['PATH'] + ':' + fields['DATA']
+        try:
+            packet = APRS.parse(message)
+            return packet
+        except:
+            pass
+
+    return None
+
 # ---------- Serial I/O ----------
 def send_serial(custom_message=None):
     global history, history_index
@@ -211,25 +553,112 @@ def send_serial(custom_message=None):
 def read_serial():
     buffer = ""
     while connected:
-        try:
-            if ser.in_waiting > 0:
-                data = ser.read(ser.in_waiting).decode('utf-8', errors='ignore')
-                buffer += data
-                while '\r' in buffer:
-                    line, buffer = buffer.split('\r', 1)
-                    line = line.strip()
-                    timestamp = time.strftime("%H:%M:%S")
-                    if re.search(r"^Raw Modem:", line, re.IGNORECASE):
-                        tag = "Modem"
-                    else:
-                        tag = "Received"
-                    log_entry = f"[{timestamp}] ← {line}\n"
-                    log_entries.append({"text": log_entry, "type": "Received", "tag": tag})
-                    log_to_file(log_entry)
-                    #update_log_display()
-                    append_to_log(log_entries[-1])
-        except:
-            break
+        if ser.in_waiting > 0:
+            data = ser.read(ser.in_waiting).decode('utf-8', errors='ignore')
+            buffer += data
+
+            while '\r' in buffer:
+                line, buffer = buffer.split('\r', 1)
+                message_queue.put(line.strip())  # Push line to queue
+
+        # adding just 1ms here drastically reduces CPU usage
+        time.sleep(0.001) # milliseconds
+
+def process_messages():
+    while True:
+        line = message_queue.get()
+        if line is None:
+            break  # Exit signal
+
+        handle_line(line)
+        message_queue.task_done()
+
+        #
+        time.sleep(0.001) # milliseconds
+
+markers_by_source = {}
+def handle_line(line):
+    try:
+        #
+        timestamp = time.strftime("%H:%M:%S")
+
+        #
+        if re.search(r"^Modem Raw:SRC:", line, re.IGNORECASE) \
+            or re.search(r"^SD Raw:", line, re.IGNORECASE):
+
+            if re.search(r"^SD Raw:", line, re.IGNORECASE):
+                b64 = line[7:].strip() # remove 'SD Raw:'
+                try:
+                    data = base64.b64decode(b64)
+                    if len(data) != 173:
+                        print(f"Unexpected packet size: {len(data)}")
+                        return
+                    src  = data[0:15].decode('ascii', errors='ignore').strip('\x00')
+                    dst  = data[15:30].decode('ascii', errors='ignore').strip('\x00')
+                    path = data[30:40].decode('ascii', errors='ignore').strip('\x00')
+                    msg  = data[40:165].decode('ascii', errors='ignore').strip('\x00')
+                    line = f"SD Raw:SRC:{src} DST:{dst} PATH:{path} DATA:{msg}"
+                    
+                except:
+                    pass
+
+            packet = decode_aprs(line)
+            if packet is not None:
+                try:
+                    # search markers for duplicate and delete
+                    global markers_by_source
+                    source_key = packet.source.strip().upper() # normalize key
+                    if source_key in markers_by_source:
+                        try:
+                            old_marker = markers_by_source[source_key]
+                            map_widget.delete(old_marker)
+                        except Exception as e:
+                            print(f"Error: {e}")
+                            pass
+
+                    # add marker to map
+                    global symbol_map
+                    symbol_description = symbol_map.get(f'{packet.symbol_table}{packet.symbol_id}', 'Unknown')
+                    symbol_code = f"{packet.symbol_table}{packet.symbol_id}"
+                    emoji = emoji_map.get(symbol_code, "📍")  # default pin if unknown  
+                    marker = map_widget.set_marker(
+                        packet.latitude, packet.longitude,
+                        text = f"{emoji} {packet.source}\n{symbol_description}",
+                        command=lambda m, raw='[' + timestamp + '] ' + line: show_raw_data(raw, m)
+                    )
+                    # optional: pan to marker
+                    #map_widget.set_position(packet.latitude, packet.longitude)
+
+                    # keep marker for reference
+                    markers_by_source[source_key] = marker
+
+                    # marker examples
+                    #marker.delete()  # removes it from the map
+                    #marker.set_position(new_lat, new_lon) # update position
+                    #marker.set_text("new label") # update label
+                    #marker.raw_data = full_raw_line # stash data for later
+
+                except Exception as e:
+                    print(f"Error: {e}")
+                    pass
+
+        #
+        if re.search(r"^SD Raw:", line, re.IGNORECASE):
+            tag = "SD"
+        elif re.search(r"^Modem Raw:", line, re.IGNORECASE):
+            tag = "Modem"
+        else:
+            tag = "Received"
+
+        #
+        log_entry = f"[{timestamp}] ← {line}\n"
+        log_entries.append({"text": log_entry, "type": "Received", "tag": tag})
+        log_to_file(log_entry)
+        append_to_log(log_entries[-1])
+
+    except Exception as e:
+        print(f"Error: {e}")
+        pass
 
 # ---------- History ----------
 def handle_history(event):
@@ -308,6 +737,19 @@ root.title("HamMessenger Serial GUI")
 root.geometry("950x620")
 root.rowconfigure(5, weight=1)
 root.columnconfigure(0, weight=1)
+
+root.rowconfigure(6, weight=8)
+tabs = ttk_gui.Notebook(root)
+tabs.grid(row=6, column=0, sticky="nsew", padx=10, pady=(0, 10))
+
+log_tab = tk.Frame(tabs)
+map_tab = tk.Frame(tabs)
+log_tab.rowconfigure(0, weight=1)
+log_tab.columnconfigure(0, weight=1)
+
+tabs.add(log_tab, text="Log")
+tabs.add(map_tab, text="Map")
+
 
 load_config()
 dark_mode = config.get("dark_mode", False)
@@ -388,7 +830,7 @@ auto_scroll_btn.pack(side=tk.LEFT)
 tk.Label(log_control_frame, text="  Filter:").pack(side=tk.LEFT)
 filter_var = tk.StringVar(value="All")
 filter_menu = ttk.Combobox(log_control_frame, textvariable=filter_var,
-                           values=["All", "Sent", "Received", "Modem"], width=10)
+                           values=["All", "Sent", "Received", "Modem", "SD"], width=10)
 filter_menu.pack(side=tk.LEFT)
 filter_menu.bind("<<ComboboxSelected>>", change_filter_mode)
 
@@ -396,11 +838,46 @@ clear_log_btn = tk.Button(log_control_frame, text="Clear Log", command=clear_log
 clear_log_btn.pack(side=tk.LEFT, padx=(10, 0))
 
 # Log Viewer
-log_box = scrolledtext.ScrolledText(root, wrap=tk.WORD, state=tk.DISABLED)
-log_box.grid(row=5, column=0, sticky="nsew", padx=10, pady=(0, 10))
+log_box = scrolledtext.ScrolledText(log_tab, wrap=tk.WORD, state=tk.DISABLED)
+log_box.grid(row=0, column=0, sticky="nsew", padx=10, pady=10, in_=log_tab)
 log_box.tag_config("Sent", foreground="blue")
 log_box.tag_config("Received", foreground="green")
 log_box.tag_config("Modem", foreground="orange")
+log_box.tag_config("SD", foreground="red")
+
+# Map Viewer
+map_widget = TkinterMapView(map_tab, width=900, height=500)
+map_widget.pack(fill="both", expand=True)
+map_widget.set_position(37.7749, -122.4194)  # Default to SF
+map_widget.set_zoom(5)
+
+def show_raw_data(raw: str, marker):
+    """
+    Pop up a little frameless window next to the given marker
+    showing the full raw‐modem line.
+    """
+
+    # Get screen coordinates
+    screen_x = root.winfo_pointerx()
+    screen_y = root.winfo_pointery()    
+
+    # Create popup
+    popup = tk.Toplevel(root)
+    popup.wm_overrideredirect(True)
+    popup.attributes("-topmost", True)
+    popup.geometry(f"+{screen_x + 10}+{screen_y + 10}")
+
+    label = tk.Label(
+        popup,
+        text=raw,
+        justify="left",
+        background="#ffffe0",
+        relief="solid",
+        borderwidth=1
+    )
+    label.pack(padx=4, pady=2)
+    popup.after(3000, popup.destroy)
+
 
 # Startup
 refresh_ports()
