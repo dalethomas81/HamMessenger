@@ -17,10 +17,21 @@ At the core of the the project is the [MicroAPRS](https://github.com/markqvist/M
 
 I will add some videos and pictures of the device in action asap. Please feel free to contribute to the project. I am very busy outside of this project so any help is greatly appreciated :)  
 
-<img src="https://github.com/dalethomas81/HamMessenger/blob/master/Media/Illustration-Dark.jpeg" alt="menu" width="600"/>  
+<table>
+  <tr>
+    <td align="center">
+      <img src="https://github.com/dalethomas81/HamMessenger/blob/master/Media/Screenshots/GUI.png" alt="Screenshot 1" width="300px" style="border:1px solid #ccc; border-radius:8px;" /><br/>
+      <sub>Raw Serial Data Output</sub>
+    </td>
+    <td align="center">
+      <img src="https://github.com/dalethomas81/HamMessenger/blob/master/Media/Screenshots/GUI2.png" alt="Screenshot 2" width="300px" style="border:1px solid #ccc; border-radius:8px;" /><br/>
+      <sub>Station Markers on Map Tab</sub>
+    </td>
+  </tr>
+</table>
+
 <img src="https://github.com/dalethomas81/HamMessenger/blob/master/Media/CAD/Isometric.png" alt="menu" width="600"/>  
 <img src="https://github.com/dalethomas81/HamMessenger/blob/master/Media/Board-v1/all-together-layout.jpeg" alt="menu" width="600"/>  
-<img src="https://github.com/dalethomas81/HamMessenger/blob/master/Media/Screenshots/GUI.png" alt="menu" width="600"/>  
 <img src="https://github.com/dalethomas81/HamMessenger/blob/master/Media/Unibody-Frame-v1/front.jpeg" alt="menu" width="600"/>  
 
 ## Operation ##
