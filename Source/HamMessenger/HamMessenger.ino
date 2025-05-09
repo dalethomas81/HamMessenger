@@ -896,16 +896,17 @@ const char version[] = __DATE__ " " __TIME__;
   #include <Adafruit_SH1106.h>
 
   #define DISPLAY_REFRESH_RATE                  100
-  #define DISPLAY_REFRESH_RATE_SCROLL           80       // min 60
+  #define DISPLAY_REFRESH_RATE_SCROLL           80  // during testing, i found that anything less than 60 causes performance issues
   #define DISPLAY_BLINK_RATE                    500
   #define UI_DISPLAY_HOME                       0
   #define UI_DISPLAY_MESSAGES                   1
-  #define UI_DISPLAY_LIVEFEED                   2
-  #define UI_DISPLAY_SETTINGS                   3
-  #define UI_DISPLAY_SETTINGS_APRS              4
-  #define UI_DISPLAY_SETTINGS_GPS               5
-  #define UI_DISPLAY_SETTINGS_DISPLAY           6
-  #define UI_DISPLAY_SETTINGS_SAVE              7
+  #define UI_DISPLAY_MESSAGES_NEW_MESSAGE       2
+  #define UI_DISPLAY_LIVEFEED                   3
+  #define UI_DISPLAY_SETTINGS                   4
+  #define UI_DISPLAY_SETTINGS_APRS              5
+  #define UI_DISPLAY_SETTINGS_GPS               6
+  #define UI_DISPLAY_SETTINGS_DISPLAY           7
+  #define UI_DISPLAY_SETTINGS_SAVE              8
 
   #define UI_DISPLAY_ROW_TOP                    0
   #define UI_DISPLAY_ROW_01                     8
@@ -955,7 +956,10 @@ const char version[] = __DATE__ " " __TIME__;
   template <typename T> T numberOfDigits(T number){
     // https://studyfied.com/program/cpp-basic/count-number-of-digits-in-a-given-integer/
     // https://stackoverflow.com/questions/8627625/is-it-possible-to-make-function-that-will-accept-multiple-data-types-for-given-a/8627646
-
+    /*
+      This function assumes number is an integer type. Passing a float or double might lead to incorrect results or infinite loops because of how division works with floating-point numbers.
+      If number is negative, it may not behave as expected unless you handle the sign first.
+    */
       int count = 0;
       while(number != 0) {
         count++;
@@ -964,6 +968,8 @@ const char version[] = __DATE__ " " __TIME__;
     return count;
   }
 
+  // while in edit mode, this method is used to edit a temporary character array that will later be
+  // copied into memory. this makes it easier to manage editing a setting from the oled and keyboard.
   void handleDisplay_TempVarDisplay(int SettingsEditType){
     bool characterDelete = false;
     if (keyboardInputChar == KEYBOARD_LEFT_KEY) {
@@ -1097,6 +1103,10 @@ const char version[] = __DATE__ " " __TIME__;
     characterDelete = false;
   }
 
+  // this method is used to copy over settings that are being modified.
+  // while settings on the display are being modified, they are character arrays.
+  // once the settings are applied, this setting converts them into the destination datatype.
+  // this makes editing from the display and keyboard much easier.
   void handleDisplay_TempVarApply(int SettingsType, int SettingsTypeIndex){
     cursorPosition_X = 0;
     // apply edited values
@@ -1151,6 +1161,9 @@ const char version[] = __DATE__ " " __TIME__;
     }
   }
 
+  // this method is used to copy the current setting from memory to the temporarily displayed
+  // setting in the handleDisplay_TempVarDisplay method so that it can be edited in a temporary area
+  // before being copied back to memory using the handleDisplay_TempVarApply method.
   void handleDisplay_TempVarCopy(int SettingsType, int SettingsTypeIndex){
     // clear the char array first
     for (int i=0; i<sizeof(Settings_TempDispCharArr);i++) {
@@ -1208,6 +1221,8 @@ const char version[] = __DATE__ " " __TIME__;
     }
   }
 
+  // this method is used to print the current value of a setting onto the display for reference
+  // while scrolling through the settings menu.
   void handleDisplay_PrintValStoredInMem(int SettingsType, int SettingsTypeIndex){
     switch (SettingsType) {
       case SETTINGS_EDIT_TYPE_ALT1:
@@ -1263,12 +1278,19 @@ const char version[] = __DATE__ " " __TIME__;
     }
   }
 
+  // while in edit mode, this method is used to temporarily display and edit a setting on the oled using a keyboard.
+  // the setting displayed is a character array to make it easier to work with while editing.
   void handleDisplay_PrintTempVal(){
     Settings_EditValueSize = sizeof(Settings_TempDispCharArr) - 1;
     display.print(Settings_TempDispCharArr);
     cursorPosition_X = strlen(Settings_TempDispCharArr);
   }
 
+  // this method is used to determine the currently selected row based on the cursor position.
+  // as the up and down arrows are pressed, the cursor position is added or subtracted to navigate.
+  // this assigns an actual pixel count based on global settings. in other words, if your cursor is 
+  // equal to 0 then it is considered to be on "ROW 1" and will be printed at the position defined as 
+  // "ROW 1" - in this case UI_DISPLAY_ROW_01 = 8
   int handleDisplay_GetSelectionRow(int cursorPosition){
     int selectionRow = 0;
     switch (cursorPosition) {
@@ -1292,7 +1314,9 @@ const char version[] = __DATE__ " " __TIME__;
   }
 
   void handleDisplays(){ 
-    // run timers
+    // these timers are used to drive various display element. for example, there is a
+    // timer that is used to refresh the display, scroll the display, blink elements like
+    // a period, and even put the display to sleep
     if (millis() - display_refresh_timer > DISPLAY_REFRESH_RATE){
       displayRefresh_Global = true;
       display_refresh_timer = millis();
@@ -1309,7 +1333,7 @@ const char version[] = __DATE__ " " __TIME__;
       displayDim = true;
       display.SH1106_command(SH1106_SETCONTRAST);
       display.SH1106_command(0);
-    } else if (wakeDisplay){
+    } else if (wakeDisplay){ // wakeDisplay is called in various places such as when the keyboard is pressed or a message is received
       wakeDisplay = false;
       displayDim = false;
       display.SH1106_command(SH1106_SETCONTRAST);
@@ -1317,7 +1341,8 @@ const char version[] = __DATE__ " " __TIME__;
       display.SH1106_command(SH1106_DISPLAYON);
       display_timeout_timer = millis();
     }
-    // turn off the screen after an additional time
+
+    // turn off the screen after display_timeout_timer timer has expired
     if (displayDim) {
       if (millis() - display_off_timer > 3000) {
         display.SH1106_command(SH1106_DISPLAYOFF);
@@ -1325,22 +1350,31 @@ const char version[] = __DATE__ " " __TIME__;
     } else {
       display_off_timer = millis();
     }
-    //
+
+    // the display defaults to having a dark background and light text. that can be inverted here.
     display.invertDisplay(SETTINGS_DISPLAY_INVERT);
 
-    // when display changes call for the new display to initialize
+    // when display changes, call for the new display to initialize. the display logic will
+    // see the displayInitialized bit drop and proceed to run its init logic.
     if (currentDisplay != currentDisplayLast) {
       currentDisplayLast = currentDisplay;
       displayInitialized = false;
     }
 
-    // add display objects to buffer
+    // add display objects to buffer. all of the contents that make up each display are organized
+    // in each one of the method calls below. the switch..case ensures that each are mutually exclusive 
+    // and do not overwrite each other. the navigation between displays is controlled by the currentDisplay
+    // variable. when the value changes, the display changes to the display accordingly. this value is 
+    // written to from within the logic of each displays respective method.
     switch (currentDisplay) {
       case UI_DISPLAY_HOME:
         handleDisplay_Home();
         break;
       case UI_DISPLAY_MESSAGES:
         handleDisplay_Messages();
+        break;
+      case UI_DISPLAY_MESSAGES_NEW_MESSAGE:
+        handleDisplay_Messages_NewMessage();
         break;
       case UI_DISPLAY_LIVEFEED:
         handleDisplay_LiveFeed();
@@ -1365,10 +1399,14 @@ const char version[] = __DATE__ " " __TIME__;
         break;
     }
     
+    // clear these bits here at the end of this method since all other methods are called within and need a 
+    // chance to see the value of these variables for at least one cycle.
     displayRefresh_Global = false;
     displayRefresh_Scroll = false;
   }
 
+  // this method is called once in the setup() method of the controller and is used to initialize the
+  // display with things such as text size, text color, user callsign, and device info like build date.
   void handleDisplay_Startup(){
     
     // Show initial display buffer contents on the screen --
@@ -1402,28 +1440,37 @@ const char version[] = __DATE__ " " __TIME__;
     delay(5000);
   }
 
-  void handleDisplay_Global(){ 
+  // this method handles all of the global objects of the display. any objects that are common between
+  // the displays will go here. things such as voltage, scan time, latitude/longitude, etc all are 
+  // added to the display buffer here. each of the displays will call this method when building its
+  // own display.
+  void handleDisplay_Global(){
+    //
     if (digitalRead(rxPin) == HIGH){
       display.setCursor(0,UI_DISPLAY_ROW_TOP);
       display.print(F("Rx"));
     }
-    
     if (digitalRead(txPin) == HIGH){
       display.setCursor(20,UI_DISPLAY_ROW_TOP);
       display.print(F("Tx"));
     }
-    /*
+
+    /* TODO add this object and manage unread messages so that the user is notified
     if (UnreadMessages){
       display.setCursor(40,UI_DISPLAY_ROW_TOP);
       display.print(F("Msg"));
     }
     */
+
+    //
     display.setCursor(65,UI_DISPLAY_ROW_TOP);
     display.print(String((float)Voltage/1000.0,1) + F("V"));
     
+    //
     display.setCursor(100,UI_DISPLAY_ROW_TOP);
     display.print(String(scanTime) + F("ms"));
 
+    //
     if (SETTINGS_DISPLAY_SHOW_POSITION) {
       display.setCursor(0,UI_DISPLAY_ROW_BOTTOM);
       display.print(F("LT:"));
@@ -1439,8 +1486,11 @@ const char version[] = __DATE__ " " __TIME__;
     }
   }
 
+  // this is the upper most level display and is mostly used for navigation.
   void handleDisplay_Home(){
-    // on first show
+    // the displayInitialized variable gets cleared each time a display changes. this signals to the
+    // display method that it is in "on first show" and needs to initialize. this is where we clear and 
+    // initalize critical variables such as cursor positions.
     if (!displayInitialized){
       displayInitialized = true;
       cursorPosition_X = 0;
@@ -1469,7 +1519,7 @@ const char version[] = __DATE__ " " __TIME__;
       if (cursorPosition_Y == 0){
         // send message if the right arrow is pressed while messages is highlighted.
         // this is a temporary solution until a proper messaging screen can be developed.
-        sendMessage = true;
+        //sendMessage = true;
       }
     }
     if (keyboardInputChar == KEYBOARD_ENTER_KEY){
@@ -1536,7 +1586,9 @@ const char version[] = __DATE__ " " __TIME__;
     //  Radio 1: SRC: [NOCALL-3] DST: [APRS-0] PATH: [WIDE1-1] [WIDE2-2] DATA: :NOCALL-3 :Hi!{006
     //  Radio 2: SRC: [NOCALL-3] DST: [APRS-0] PATH: [WIDE1-1] [WIDE2-2] DATA: :NOCALL-3 :ack006
     
-    // on first show
+    // the displayInitialized variable gets cleared each time a display changes. this signals to the
+    // display method that it is in "on first show" and needs to initialize. this is where we clear and 
+    // initalize critical variables such as cursor positions.
     if (!displayInitialized){
       displayInitialized = true;
       cursorPosition_X = 0;
@@ -1561,7 +1613,27 @@ const char version[] = __DATE__ " " __TIME__;
         cursorPosition_Y=(MsgDataRecordCount > 0 ? MsgDataRecordCount - 1 : 0); // wanna roll to the end. check if record count is not 0 first
       }
     }
+    if (keyboardInputChar == KEYBOARD_LEFT_KEY){
+    }
+    if (keyboardInputChar == KEYBOARD_RIGHT_KEY){
+    }
     if (keyboardInputChar == KEYBOARD_ENTER_KEY){
+      // TODO: we want to go into a new message display here.
+      // if the currently highlighted message is valid, the new message will automatically
+      // set the destination the same as the source of the currently highlighted message - effectively
+      // implementing a "reply" feature. otherwise, the destination will be set to its last value.
+
+      //
+      currentDisplay = UI_DISPLAY_MESSAGES_NEW_MESSAGE;
+      previousDisplay = UI_DISPLAY_MESSAGES;
+
+      //
+      memset(&SETTINGS_APRS_MESSAGE, 0, sizeof(SETTINGS_APRS_MESSAGE));
+      SETTINGS_APRS_MESSAGE[sizeof(SETTINGS_APRS_MESSAGE) - 1] = '\0';
+
+      //
+      extractMsgCallParts(MsgData.from, SETTINGS_APRS_RECIPIENT_CALL, SETTINGS_APRS_RECIPIENT_SSID);
+
     }
     if (keyboardInputChar == KEYBOARD_ESCAPE_KEY){
       currentDisplay = previousDisplay;
@@ -1650,10 +1722,123 @@ const char version[] = __DATE__ " " __TIME__;
     }
   }
 
+  void handleDisplay_Messages_NewMessage(){
+    //  Radio 1: CMD: Modem:#Hi!
+    //  Radio 1: SRC: [NOCALL-3] DST: [APRS-0] PATH: [WIDE1-1] [WIDE2-2] DATA: :NOCALL-3 :Hi!{006
+    //  Radio 2: SRC: [NOCALL-3] DST: [APRS-0] PATH: [WIDE1-1] [WIDE2-2] DATA: :NOCALL-3 :ack006
+    
+    // the displayInitialized variable gets cleared each time a display changes. this signals to the
+    // display method that it is in "on first show" and needs to initialize. this is where we clear and 
+    // initalize critical variables such as cursor positions.
+    if (!displayInitialized){
+      displayInitialized = true;
+      cursorPosition_X = 0;
+      cursorPosition_Y = 3; // 3, 4, and 5 are message, recipient callsign, and recipient SSID
+      cursorPosition_X_Last = cursorPosition_X;
+      cursorPosition_Y_Last = -1;
+      editMode_Settings = false;
+    }
+    // handle button context for current display
+    if (KEYBOARD_PRINTABLE_CHARACTERS || KEYBOARD_DIRECTIONAL_KEYS || keyboardInputChar == KEYBOARD_BACKSPACE_KEY) {
+      if (editMode_Settings){
+        handleDisplay_TempVarDisplay(Settings_Type_APRS[cursorPosition_Y]);
+      } else if (keyboardInputChar == KEYBOARD_UP_KEY) {
+        if (cursorPosition_Y > 3) { // 3 is message
+          cursorPosition_Y--;
+        } else {
+          cursorPosition_Y = 5; // 5 is recipient ID
+        }
+      } else if (keyboardInputChar == KEYBOARD_DOWN_KEY) {
+        if (cursorPosition_Y < 5) { // 5 is recipient ID
+          cursorPosition_Y++;
+        } else {
+          cursorPosition_Y = 3; // 3 is message
+        }
+      }
+    }
+    if (keyboardInputChar == KEYBOARD_ENTER_KEY){
+      if (editMode_Settings) {
+        editMode_Settings = false;
+        handleDisplay_TempVarApply(Settings_Type_APRS[cursorPosition_Y],Settings_TypeIndex_APRS[cursorPosition_Y]);
+      } else {
+        // enable edit mode
+        editMode_Settings = true;
+        handleDisplay_TempVarCopy(Settings_Type_APRS[cursorPosition_Y],Settings_TypeIndex_APRS[cursorPosition_Y]);
+      }
+    }
+    if (keyboardInputChar == KEYBOARD_LEFT_KEY){
+    }
+    if (keyboardInputChar == KEYBOARD_RIGHT_KEY){
+      // trigger a message send
+      sendMessage = true;
+    }
+    if (keyboardInputChar == KEYBOARD_ESCAPE_KEY){
+      editMode_Settings = false;
+      cursorPosition_X = 0;
+      currentDisplay = previousDisplay;
+      previousDisplay = UI_DISPLAY_HOME;
+      return;
+    }
+    // build display
+    if (displayRefresh_Global){
+
+      // clear the buffer
+      display.clearDisplay();
+
+      // add global objects to buffer
+      bool showPositionMemory = SETTINGS_DISPLAY_SHOW_POSITION;
+      SETTINGS_DISPLAY_SHOW_POSITION = false; // we dont want to show the lat long while editing
+      handleDisplay_Global();
+      SETTINGS_DISPLAY_SHOW_POSITION = showPositionMemory; // put it back to what it was
+
+      //
+      if (editMode_Settings) {
+        if (displayBlink) {
+          display.setCursor(cursorPosition_X*6,UI_DISPLAY_ROW_BOTTOM);
+          display.print('_');
+        }
+      }
+
+      // place the cursor
+      display.setCursor(0,UI_DISPLAY_ROW_BOTTOM-1);
+
+      // print values to oled
+      if (editMode_Settings) {
+        handleDisplay_PrintTempVal();
+      } else {
+        handleDisplay_PrintValStoredInMem(Settings_Type_APRS[cursorPosition_Y],Settings_TypeIndex_APRS[cursorPosition_Y]);
+      }
+
+      // place the cursor
+      int selectionRow = handleDisplay_GetSelectionRow(cursorPosition_Y - 2);
+      display.setCursor(0,selectionRow);
+      display.print(F(">"));
+
+      //
+      display.setCursor(6,UI_DISPLAY_ROW_01);
+      display.print("New Message");
+      
+      display.setCursor(6,UI_DISPLAY_ROW_02);
+      display.print(MenuItems_Settings_APRS[3]);
+
+      display.setCursor(6,UI_DISPLAY_ROW_03);
+      display.print(MenuItems_Settings_APRS[4]);
+
+      display.setCursor(6,UI_DISPLAY_ROW_04);
+      display.print(MenuItems_Settings_APRS[5]);
+      
+      // display all content from buffer
+      display.display();
+
+    }
+  }
+
   APRSFormat_Raw RawData;
   uint32_t RawDataRecordCount;
   void handleDisplay_LiveFeed(){
-    // on first show
+    // the displayInitialized variable gets cleared each time a display changes. this signals to the
+    // display method that it is in "on first show" and needs to initialize. this is where we clear and 
+    // initalize critical variables such as cursor positions.
     if (!displayInitialized){
       displayInitialized = true;
       cursorPosition_X = 0;
@@ -1768,7 +1953,9 @@ const char version[] = __DATE__ " " __TIME__;
   }
 
   void handleDisplay_Settings_Save(){
-    // on first show
+    // the displayInitialized variable gets cleared each time a display changes. this signals to the
+    // display method that it is in "on first show" and needs to initialize. this is where we clear and 
+    // initalize critical variables such as cursor positions.
     if (!displayInitialized){
       displayInitialized= true;
       cursorPosition_X = 0;
@@ -1841,7 +2028,9 @@ const char version[] = __DATE__ " " __TIME__;
   }
 
   void handleDisplay_Settings(){
-    // on first show
+    // the displayInitialized variable gets cleared each time a display changes. this signals to the
+    // display method that it is in "on first show" and needs to initialize. this is where we clear and 
+    // initalize critical variables such as cursor positions.
     if (!displayInitialized){
       displayInitialized = true;
       cursorPosition_X = 0;
@@ -1922,7 +2111,9 @@ const char version[] = __DATE__ " " __TIME__;
   }
 
   void handleDisplay_Settings_APRS(){
-    // on first show
+    // the displayInitialized variable gets cleared each time a display changes. this signals to the
+    // display method that it is in "on first show" and needs to initialize. this is where we clear and 
+    // initalize critical variables such as cursor positions.
     if (!displayInitialized){
       displayInitialized = true;
       cursorPosition_X = 0;
@@ -2032,7 +2223,9 @@ const char version[] = __DATE__ " " __TIME__;
   }
 
   void handleDisplay_Settings_GPS(){
-    // on first show
+    // the displayInitialized variable gets cleared each time a display changes. this signals to the
+    // display method that it is in "on first show" and needs to initialize. this is where we clear and 
+    // initalize critical variables such as cursor positions.
     if (!displayInitialized){
       displayInitialized = true;
       cursorPosition_X = 0;
@@ -2142,7 +2335,9 @@ const char version[] = __DATE__ " " __TIME__;
   }
 
   void handleDisplay_Settings_Display(){
-    // on first show
+    // the displayInitialized variable gets cleared each time a display changes. this signals to the
+    // display method that it is in "on first show" and needs to initialize. this is where we clear and 
+    // initalize critical variables such as cursor positions.
     if (!displayInitialized){
       displayInitialized = true;
       cursorPosition_X = 0;
@@ -3516,42 +3711,6 @@ const char version[] = __DATE__ " " __TIME__;
     Serial.println(encodedBuffer);
   }
 
-/*
-  void printRawDataFromSd(uint32_t StartPosition){
-    APRSFormat_Raw RawData;
-    byte *buff = (byte *) &RawData; // to access RawData as bytes
-    RawDataFile.seek(StartPosition);
-
-    // if the file opened okay, read from it:
-    if (RawDataFile) {
-      Serial.println("Reading from raw.txt...");
-
-      while (RawDataFile.available()) {
-        //
-        for (int count = 0; count < sizeof(APRSFormat_Raw); ) {
-          byte nextByte = RawDataFile.read();
-          *(buff + count) = nextByte;
-          count++;
-        }
-        byte nextByte = RawDataFile.read(); // trim the \n TODO stop adding the \n!
-
-        // encode the data in case there are special chars like \n and \r
-        char encodedBuffer[((sizeof(APRSFormat_Raw) + 2) / 3) * 4 + 1];  // Safe buffer size
-        int len = encodeBase64(encodedBuffer, sizeof(encodedBuffer), buff, sizeof(APRSFormat_Raw));
-        
-        //
-        Serial.print("SD Raw:");
-        Serial.println(encodedBuffer);
-      }
-    } else {
-      // if the file didn't open, print an error:
-      Serial.println("error opening raw.txt");
-    }
-
-    RawDataFile.flush(); // will save data
-  }
-*/
-
   void writeMsgDataToSd(APRSFormat_Msg MsgData){
     byte *buff = (byte *) &MsgData; // to access MsgData as bytes
 
@@ -3681,6 +3840,55 @@ const char version[] = __DATE__ " " __TIME__;
     MsgDataFile.flush(); // will save data
     return RecordCount;
   }
+
+void extractRawCallParts(const char input[15], char callsign[7], char ssid[2]) {
+    // Initialize outputs to empty strings
+    callsign[0] = '\0';
+    ssid[0] = '\0';
+
+    const char* start = strchr(input, '[');
+    const char* dash = strchr(input, '-');
+    const char* end  = strchr(input, ']');
+
+    // Validate format: must contain all three and in correct order
+    if (start && dash && end && start < dash && dash < end) {
+        size_t callLen = dash - (start + 1);
+        size_t ssidLen = end - (dash + 1);
+
+        if (callLen < 7) {
+            strncpy(callsign, start + 1, callLen);
+            callsign[callLen] = '\0';  // null-terminate
+        }
+
+        if (ssidLen < 2) {
+            strncpy(ssid, dash + 1, ssidLen);
+            ssid[ssidLen] = '\0';  // null-terminate
+        }
+    }
+}
+
+void extractMsgCallParts(const char input[15], char callsign[7], char ssid[3]) {
+    // Clear outputs
+    callsign[0] = '\0';
+    ssid[0] = '\0';
+
+    const char* dash = strchr(input, '-');
+
+    if (dash) {
+        size_t callLen = dash - input;
+        size_t ssidLen = strlen(dash + 1);
+
+        if (callLen < 7) {
+            strncpy(callsign, input, callLen);
+            callsign[callLen] = '\0';
+        }
+
+        if (ssidLen < 3) {  // changed to 3 for 2-digit SSID + null
+            strncpy(ssid, dash + 1, ssidLen);
+            ssid[ssidLen] = '\0';
+        }
+    }
+}
 
 #pragma endregion
 
