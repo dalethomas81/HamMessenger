@@ -1562,6 +1562,22 @@ const char version[] = __DATE__ " " __TIME__;
       }
     }
     if (keyboardInputChar == KEYBOARD_ENTER_KEY){
+      // go into a new message display here.
+      // if the currently highlighted message is valid, the new message will automatically
+      // set the destination the same as the source of the currently highlighted message - effectively
+      // implementing a "reply" feature. otherwise, the destination will be set to its last value.
+
+      //
+      currentDisplay = UI_DISPLAY_MESSAGES_NEW_MESSAGE;
+      previousDisplay = UI_DISPLAY_MESSAGES;
+
+      // clear the last message contents
+      memset(&SETTINGS_APRS_MESSAGE, 0, sizeof(SETTINGS_APRS_MESSAGE));
+      SETTINGS_APRS_MESSAGE[sizeof(SETTINGS_APRS_MESSAGE) - 1] = '\0'; // always null terminate char arrays
+
+      // the 'from' member is formed like this 'NOCALL-1'. use a helper function to pull out the callsign and ID
+      extractMsgCallParts(MsgData.from, SETTINGS_APRS_RECIPIENT_CALL, SETTINGS_APRS_RECIPIENT_SSID);
+
     }
     if (keyboardInputChar == KEYBOARD_ESCAPE_KEY){
       currentDisplay = previousDisplay;
