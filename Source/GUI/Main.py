@@ -626,7 +626,8 @@ def handle_line(line):
                         text = f"{emoji} {packet.source}\n{symbol_description}",
                         command=lambda m, raw='[' + timestamp + '] ' + line: show_raw_data(raw, m)
                     )
-                    map_widget.set_position(packet.latitude, packet.longitude)  # optional: pan to marker
+                    # optional: pan to marker
+                    #map_widget.set_position(packet.latitude, packet.longitude)
 
                     # keep marker for reference
                     markers_by_source[source_key] = marker

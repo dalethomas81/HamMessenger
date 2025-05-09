@@ -3492,18 +3492,24 @@ const char version[] = __DATE__ " " __TIME__;
   }
 
   void printRawDataFromSd() {
-    // exit
+    // exit once the end of the file is reached
     if (!readingSD || !RawDataFile.available()) {
       readingSD = false;
       return;
     }
 
-    // the size of the APRS structure into buffer
+    // read the size of the APRS structure into buffer
     RawDataFile.read(buff, sizeof(APRSFormat_Raw));
-    byte nextByte = RawDataFile.read(); // burn the \n
+    // burn the \n
+    byte nextByte = RawDataFile.read(); 
 
-    // Encode and print the record
+    // Allocate space for Base64-encoded output:
+    // Every 3 bytes of binary input becomes 4 ASCII characters in Base64.
+    // We add 2 to the input size to round up to the next multiple of 3.
+    // Then multiply by 4/3 (implemented as *4/3 here).
+    // +1 for the null terminator at the end.
     char encodedBuffer[((sizeof(APRSFormat_Raw) + 2) / 3) * 4 + 1];
+    // Encode and print the record
     int len = encodeBase64(encodedBuffer, sizeof(encodedBuffer), buff, sizeof(APRSFormat_Raw));
 
     Serial.print("SD Raw:");
