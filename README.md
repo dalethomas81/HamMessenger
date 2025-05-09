@@ -30,9 +30,22 @@ I will add some videos and pictures of the device in action asap. Please feel fr
   </tr>
 </table>
 
-<img src="https://github.com/dalethomas81/HamMessenger/blob/master/Media/CAD/Isometric.png" alt="menu" width="600"/>  
-<img src="https://github.com/dalethomas81/HamMessenger/blob/master/Media/Board-v1/all-together-layout.jpeg" alt="menu" width="600"/>  
-<img src="https://github.com/dalethomas81/HamMessenger/blob/master/Media/Unibody-Frame-v1/front.jpeg" alt="menu" width="600"/>  
+<table>
+  <tr>
+    <td align="center">
+      <img src="https://github.com/dalethomas81/HamMessenger/blob/master/Media/CAD/Isometric.png" alt="Screenshot 1" width="300px" style="border:1px solid #ccc; border-radius:8px;" /><br/>
+      <sub>Isometric View of CAD</sub>
+    </td>
+    <td align="center">
+      <img src="https://github.com/dalethomas81/HamMessenger/blob/master/Media/Board-v1/all-together-layout.jpeg" alt="Screenshot 2" width="300px" style="border:1px solid #ccc; border-radius:8px;" /><br/>
+      <sub>Component Layout</sub>
+    </td>
+    <td align="center">
+      <img src="https://github.com/dalethomas81/HamMessenger/blob/master/Media/Unibody-Frame-v1/front.jpeg" alt="Screenshot 2" width="300px" style="border:1px solid #ccc; border-radius:8px;" /><br/>
+      <sub>Unibody Frame</sub>
+    </td>
+  </tr>
+</table>
 
 ## Operation ##
 
