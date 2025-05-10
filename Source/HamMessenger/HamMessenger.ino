@@ -115,8 +115,8 @@ const char version[] = __DATE__ " " __TIME__;
   }
 
   void handleStats(){
-    scanTime = millis() - processor_scan_time;
-    processor_scan_time = millis();
+    scanTime = micros() - processor_scan_time;
+    processor_scan_time = micros();
   }
 
 #pragma endregion
@@ -1463,12 +1463,20 @@ const char version[] = __DATE__ " " __TIME__;
     */
 
     //
-    display.setCursor(65,UI_DISPLAY_ROW_TOP);
+    display.setCursor(60,UI_DISPLAY_ROW_TOP);
     display.print(String((float)Voltage/1000.0,1) + F("V"));
     
     //
-    display.setCursor(100,UI_DISPLAY_ROW_TOP);
-    display.print(String(scanTime) + F("ms"));
+    display.setCursor(90,UI_DISPLAY_ROW_TOP);
+    if (scanTime >= 10000) {
+        float timeMs = scanTime / 1000.0;
+        display.print(timeMs, 1);  // One decimal place
+        display.print(F("ms"));
+    } else {
+        display.print(scanTime);
+        display.print(F("us"));
+    }
+
 
     //
     if (SETTINGS_DISPLAY_SHOW_POSITION) {
@@ -1545,8 +1553,11 @@ const char version[] = __DATE__ " " __TIME__;
     if (displayRefresh_Global){
       // clear the buffer
       display.clearDisplay();
+      
       // add global objects to buffer
       handleDisplay_Global();
+
+      //
       int selectionRow = 0;
       switch (cursorPosition_Y) {
         case 0:
@@ -1564,6 +1575,9 @@ const char version[] = __DATE__ " " __TIME__;
       }
       display.setCursor(0,selectionRow);
       display.print(F(">"));
+
+      display.setCursor(6,UI_DISPLAY_ROW_01);                    // 0 pixels right, 25 pixels down
+      display.print(F("[ MAIN ]"));
       
       display.setCursor(6,UI_DISPLAY_ROW_02);                    // 0 pixels right, 25 pixels down
       display.print(F("Messages"));
@@ -1736,7 +1750,7 @@ const char version[] = __DATE__ " " __TIME__;
       cursorPosition_Y = 3; // 3, 4, and 5 are message, recipient callsign, and recipient SSID
       cursorPosition_X_Last = cursorPosition_X;
       cursorPosition_Y_Last = -1;
-      editMode_Settings = false;
+      editMode_Settings = true; // true because we want the cursor blinking and ready for input
     }
     // handle button context for current display
     if (KEYBOARD_PRINTABLE_CHARACTERS || KEYBOARD_DIRECTIONAL_KEYS || keyboardInputChar == KEYBOARD_BACKSPACE_KEY) {
@@ -1816,7 +1830,7 @@ const char version[] = __DATE__ " " __TIME__;
 
       //
       display.setCursor(6,UI_DISPLAY_ROW_01);
-      display.print("New Message");
+      display.print("[ NEW MESSAGE ]");
       
       display.setCursor(6,UI_DISPLAY_ROW_02);
       display.print(MenuItems_Settings_APRS[3]);
@@ -1996,6 +2010,9 @@ const char version[] = __DATE__ " " __TIME__;
     if (displayRefresh_Global){
       // clear the buffer
       display.clearDisplay();
+
+      // add global objects to buffer
+      handleDisplay_Global();
       
       int selectionRow = 0;
       switch (cursorPosition_Y) {
@@ -2043,11 +2060,11 @@ const char version[] = __DATE__ " " __TIME__;
       if (cursorPosition_Y > 0){
         cursorPosition_Y--;
       } else {
-        cursorPosition_Y=ARRAY_SIZE(MenuItems_Settings) - 1;
+        cursorPosition_Y=ARRAY_SIZE(MenuItems_Settings)-1;
       }
     }
     if (keyboardInputChar == KEYBOARD_DOWN_KEY){
-      if (cursorPosition_Y < ARRAY_SIZE(MenuItems_Settings) - 1){ // Size of array / size of array element
+      if (cursorPosition_Y < ARRAY_SIZE(MenuItems_Settings)-1){ // Size of array / size of array element
         cursorPosition_Y++;
       } else {
         cursorPosition_Y=0;
@@ -2078,32 +2095,37 @@ const char version[] = __DATE__ " " __TIME__;
     if (displayRefresh_Global){
       // clear the buffer
       display.clearDisplay();
+
       // add global objects to buffer
       handleDisplay_Global();
+
       // determine the row
-      int selectionRow = handleDisplay_GetSelectionRow(cursorPosition_Y);
+      int selectionRow = handleDisplay_GetSelectionRow(cursorPosition_Y+1);
         
       display.setCursor(0,selectionRow);
-      display.print(F(">"));
+      display.print(F(">"));      
+      
+      display.setCursor(6,UI_DISPLAY_ROW_01);                    // 0 pixels right, 25 pixels down
+      display.print(F("[ SETTINGS ]"));
 
       int NumOfSettings = ARRAY_SIZE(MenuItems_Settings);
       
       if (NumOfSettings >= 1) {
-        display.setCursor(6,UI_DISPLAY_ROW_01);
-        display.print(MenuItems_Settings[cursorPosition_Y>3 ? cursorPosition_Y-3 : 0]);
+        display.setCursor(6,UI_DISPLAY_ROW_02);
+        display.print(MenuItems_Settings[cursorPosition_Y>2 ? cursorPosition_Y-2 : 0]);
       }
       if (NumOfSettings >= 2) {
-        display.setCursor(6,UI_DISPLAY_ROW_02);
-        display.print(MenuItems_Settings[cursorPosition_Y>3 ? cursorPosition_Y-2 : 1]);
+        display.setCursor(6,UI_DISPLAY_ROW_03);
+        display.print(MenuItems_Settings[cursorPosition_Y>2 ? cursorPosition_Y-1 : 1]);
       }
       if (NumOfSettings >= 3) {
-        display.setCursor(6,UI_DISPLAY_ROW_03);
-        display.print(MenuItems_Settings[cursorPosition_Y>3 ? cursorPosition_Y-1 : 2]);
-      }
-      if (NumOfSettings >= 4) {
         display.setCursor(6,UI_DISPLAY_ROW_04);
-        display.print(MenuItems_Settings[cursorPosition_Y>3 ? cursorPosition_Y-0 : 3]);
+        display.print(MenuItems_Settings[cursorPosition_Y>2 ? cursorPosition_Y-0 : 2]);
       }
+      //if (NumOfSettings >= 4) {
+      //  display.setCursor(6,UI_DISPLAY_ROW_04);
+      //  display.print(MenuItems_Settings[cursorPosition_Y>3 ? cursorPosition_Y-0 : 3]);
+      //}
 
       // display all content from buffer
       display.display();
@@ -2139,10 +2161,10 @@ const char version[] = __DATE__ " " __TIME__;
         if (cursorPosition_Y > 0) {
           cursorPosition_Y--;
         } else {
-          cursorPosition_Y=ARRAY_SIZE(MenuItems_Settings_APRS) - 1;
+          cursorPosition_Y=ARRAY_SIZE(MenuItems_Settings_APRS)-1;
         }
       } else if (keyboardInputChar == KEYBOARD_DOWN_KEY) {
-        if (cursorPosition_Y < ARRAY_SIZE(MenuItems_Settings_APRS) - 1) {
+        if (cursorPosition_Y < ARRAY_SIZE(MenuItems_Settings_APRS)-1) {
           cursorPosition_Y++;
         } else {
           cursorPosition_Y=0;
@@ -2178,14 +2200,24 @@ const char version[] = __DATE__ " " __TIME__;
     if (displayRefresh_Global){
       // clear the buffer
       display.clearDisplay();
+      
+      // add global objects to buffer
+      bool showPositionMemory = SETTINGS_DISPLAY_SHOW_POSITION;
+      SETTINGS_DISPLAY_SHOW_POSITION = false; // we dont want to show the lat long while editing
+      handleDisplay_Global();
+      SETTINGS_DISPLAY_SHOW_POSITION = showPositionMemory; // put it back to what it was
+
+      //
       if (editMode_Settings) {
         if (displayBlink) {
           display.setCursor(cursorPosition_X*6,UI_DISPLAY_ROW_BOTTOM);
           display.print('_');
         }
       }
+
       // place the cursor
       display.setCursor(0,UI_DISPLAY_ROW_BOTTOM-1);
+
       // print values to oled
       if (editMode_Settings) {
         handleDisplay_PrintTempVal();
@@ -2193,29 +2225,32 @@ const char version[] = __DATE__ " " __TIME__;
         handleDisplay_PrintValStoredInMem(Settings_Type_APRS[cursorPosition_Y],Settings_TypeIndex_APRS[cursorPosition_Y]);
       }
       // determine the row
-      int selectionRow = handleDisplay_GetSelectionRow(cursorPosition_Y);
+      int selectionRow = handleDisplay_GetSelectionRow(cursorPosition_Y+1);
         
       display.setCursor(0,selectionRow);
       display.print(F(">"));
 
+      display.setCursor(6,UI_DISPLAY_ROW_01);
+      display.print("[ APRS ]");
+
       int NumOfSettings = ARRAY_SIZE(MenuItems_Settings_APRS);
       
       if (NumOfSettings >= 1) {
-        display.setCursor(6,UI_DISPLAY_ROW_01);
-        display.print(MenuItems_Settings_APRS[cursorPosition_Y>3 ? cursorPosition_Y-3 : 0]);
+        display.setCursor(6,UI_DISPLAY_ROW_02);
+        display.print(MenuItems_Settings_APRS[cursorPosition_Y>2 ? cursorPosition_Y-2 : 0]);
       }
       if (NumOfSettings >= 2) {
-        display.setCursor(6,UI_DISPLAY_ROW_02);
-        display.print(MenuItems_Settings_APRS[cursorPosition_Y>3 ? cursorPosition_Y-2 : 1]);
+        display.setCursor(6,UI_DISPLAY_ROW_03);
+        display.print(MenuItems_Settings_APRS[cursorPosition_Y>2 ? cursorPosition_Y-1 : 1]);
       }
       if (NumOfSettings >= 3) {
-        display.setCursor(6,UI_DISPLAY_ROW_03);
-        display.print(MenuItems_Settings_APRS[cursorPosition_Y>3 ? cursorPosition_Y-1 : 2]);
-      }
-      if (NumOfSettings >= 4) {
         display.setCursor(6,UI_DISPLAY_ROW_04);
-        display.print(MenuItems_Settings_APRS[cursorPosition_Y>3 ? cursorPosition_Y-0 : 3]);
+        display.print(MenuItems_Settings_APRS[cursorPosition_Y>2 ? cursorPosition_Y-0 : 2]);
       }
+      //if (NumOfSettings >= 4) {
+      //  display.setCursor(6,UI_DISPLAY_ROW_04);
+      //  display.print(MenuItems_Settings_APRS[cursorPosition_Y>3 ? cursorPosition_Y-0 : 3]);
+      //}
 
       // display all content from buffer
       display.display();
@@ -2251,10 +2286,10 @@ const char version[] = __DATE__ " " __TIME__;
         if (cursorPosition_Y > 0) {
           cursorPosition_Y--;
         } else {
-          cursorPosition_Y=ARRAY_SIZE(MenuItems_Settings_GPS) - 1;
+          cursorPosition_Y=ARRAY_SIZE(MenuItems_Settings_GPS)-1;
         }
       } else if (keyboardInputChar == KEYBOARD_DOWN_KEY) {
-        if (cursorPosition_Y < ARRAY_SIZE(MenuItems_Settings_GPS) - 1) {
+        if (cursorPosition_Y < ARRAY_SIZE(MenuItems_Settings_GPS)-1) {
           cursorPosition_Y++;
         } else {
           cursorPosition_Y=0;
@@ -2290,6 +2325,14 @@ const char version[] = __DATE__ " " __TIME__;
     if (displayRefresh_Global){
       // clear the buffer
       display.clearDisplay();
+
+      // add global objects to buffer
+      bool showPositionMemory = SETTINGS_DISPLAY_SHOW_POSITION;
+      SETTINGS_DISPLAY_SHOW_POSITION = false; // we dont want to show the lat long while editing
+      handleDisplay_Global();
+      SETTINGS_DISPLAY_SHOW_POSITION = showPositionMemory; // put it back to what it was
+
+      //
       if (editMode_Settings) {
         if (displayBlink) {
           display.setCursor(cursorPosition_X*6,UI_DISPLAY_ROW_BOTTOM);
@@ -2305,29 +2348,32 @@ const char version[] = __DATE__ " " __TIME__;
         handleDisplay_PrintValStoredInMem(Settings_Type_GPS[cursorPosition_Y],Settings_TypeIndex_GPS[cursorPosition_Y]);
       }
       // determine the row
-      int selectionRow = handleDisplay_GetSelectionRow(cursorPosition_Y);
+      int selectionRow = handleDisplay_GetSelectionRow(cursorPosition_Y+1);
         
       display.setCursor(0,selectionRow);
       display.print(F(">"));
 
+      display.setCursor(6,UI_DISPLAY_ROW_01);
+      display.print("[ GPS ]");
+
       int NumOfSettings = ARRAY_SIZE(MenuItems_Settings_GPS);
       
       if (NumOfSettings >= 1) {
-        display.setCursor(6,UI_DISPLAY_ROW_01);
-        display.print(MenuItems_Settings_GPS[cursorPosition_Y>3 ? cursorPosition_Y-3 : 0]);
+        display.setCursor(6,UI_DISPLAY_ROW_02);
+        display.print(MenuItems_Settings_GPS[cursorPosition_Y>2 ? cursorPosition_Y-2 : 0]);
       }
       if (NumOfSettings >= 2) {
-        display.setCursor(6,UI_DISPLAY_ROW_02);
-        display.print(MenuItems_Settings_GPS[cursorPosition_Y>3 ? cursorPosition_Y-2 : 1]);
+        display.setCursor(6,UI_DISPLAY_ROW_03);
+        display.print(MenuItems_Settings_GPS[cursorPosition_Y>2 ? cursorPosition_Y-1 : 1]);
       }
       if (NumOfSettings >= 3) {
-        display.setCursor(6,UI_DISPLAY_ROW_03);
-        display.print(MenuItems_Settings_GPS[cursorPosition_Y>3 ? cursorPosition_Y-1 : 2]);
-      }
-      if (NumOfSettings >= 4) {
         display.setCursor(6,UI_DISPLAY_ROW_04);
-        display.print(MenuItems_Settings_GPS[cursorPosition_Y>3 ? cursorPosition_Y-0 : 3]);
+        display.print(MenuItems_Settings_GPS[cursorPosition_Y>2 ? cursorPosition_Y-0 : 2]);
       }
+      //if (NumOfSettings >= 4) {
+      //  display.setCursor(6,UI_DISPLAY_ROW_04);
+      //  display.print(MenuItems_Settings_GPS[cursorPosition_Y>3 ? cursorPosition_Y-0 : 3]);
+      //}
 
       // display all content from buffer
       display.display();
@@ -2363,10 +2409,10 @@ const char version[] = __DATE__ " " __TIME__;
         if (cursorPosition_Y > 0) {
           cursorPosition_Y--;
         } else {
-          cursorPosition_Y=ARRAY_SIZE(MenuItems_Settings_Display) - 1;
+          cursorPosition_Y=ARRAY_SIZE(MenuItems_Settings_Display)-1;
         }
       } else if (keyboardInputChar == KEYBOARD_DOWN_KEY) {
-        if (cursorPosition_Y < ARRAY_SIZE(MenuItems_Settings_Display) - 1) {
+        if (cursorPosition_Y < ARRAY_SIZE(MenuItems_Settings_Display)-1) {
           cursorPosition_Y++;
         } else {
           cursorPosition_Y=0;
@@ -2402,6 +2448,14 @@ const char version[] = __DATE__ " " __TIME__;
     if (displayRefresh_Global){
       // clear the buffer
       display.clearDisplay();
+
+      // add global objects to buffer
+      bool showPositionMemory = SETTINGS_DISPLAY_SHOW_POSITION;
+      SETTINGS_DISPLAY_SHOW_POSITION = false; // we dont want to show the lat long while editing
+      handleDisplay_Global();
+      SETTINGS_DISPLAY_SHOW_POSITION = showPositionMemory; // put it back to what it was
+
+      //
       if (editMode_Settings) {
         if (displayBlink) {
           display.setCursor(cursorPosition_X*6,UI_DISPLAY_ROW_BOTTOM);
@@ -2417,29 +2471,32 @@ const char version[] = __DATE__ " " __TIME__;
         handleDisplay_PrintValStoredInMem(Settings_Type_Display[cursorPosition_Y],Settings_TypeIndex_Display[cursorPosition_Y]);
       }
       // determine the row
-      int selectionRow = handleDisplay_GetSelectionRow(cursorPosition_Y);
+      int selectionRow = handleDisplay_GetSelectionRow(cursorPosition_Y+1);
         
       display.setCursor(0,selectionRow);
       display.print(F(">"));
 
+      display.setCursor(6,UI_DISPLAY_ROW_01);
+      display.print("[ DISPLAY ]");
+
       int NumOfSettings = ARRAY_SIZE(MenuItems_Settings_Display);
       
       if (NumOfSettings >= 1) {
-        display.setCursor(6,UI_DISPLAY_ROW_01);
-        display.print(MenuItems_Settings_Display[cursorPosition_Y>3 ? cursorPosition_Y-3 : 0]);
+        display.setCursor(6,UI_DISPLAY_ROW_02);
+        display.print(MenuItems_Settings_Display[cursorPosition_Y>2 ? cursorPosition_Y-2 : 0]);
       }
       if (NumOfSettings >= 2) {
-        display.setCursor(6,UI_DISPLAY_ROW_02);
-        display.print(MenuItems_Settings_Display[cursorPosition_Y>3 ? cursorPosition_Y-2 : 1]);
+        display.setCursor(6,UI_DISPLAY_ROW_03);
+        display.print(MenuItems_Settings_Display[cursorPosition_Y>2 ? cursorPosition_Y-1 : 1]);
       }
       if (NumOfSettings >= 3) {
-        display.setCursor(6,UI_DISPLAY_ROW_03);
-        display.print(MenuItems_Settings_Display[cursorPosition_Y>3 ? cursorPosition_Y-1 : 2]);
-      }
-      if (NumOfSettings >= 4) {
         display.setCursor(6,UI_DISPLAY_ROW_04);
-        display.print(MenuItems_Settings_Display[cursorPosition_Y>3 ? cursorPosition_Y-0 : 3]);
+        display.print(MenuItems_Settings_Display[cursorPosition_Y>2 ? cursorPosition_Y-0 : 2]);
       }
+      //if (NumOfSettings >= 4) {
+      //  display.setCursor(6,UI_DISPLAY_ROW_04);
+      //  display.print(MenuItems_Settings_Display[cursorPosition_Y>3 ? cursorPosition_Y-0 : 3]);
+      //}
 
       // display all content from buffer
       display.display();
