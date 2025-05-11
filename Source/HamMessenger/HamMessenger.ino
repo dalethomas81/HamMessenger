@@ -1653,11 +1653,16 @@ const char version[] = __DATE__ " " __TIME__;
       currentDisplay = previousDisplay;
       return;
     }
+
     // build display
     if (displayRefresh_Scroll || keyboardInputChar != 0){
       if (cursorPosition_Y != cursorPosition_Y_Last){ // changed to new record (index)
-        cursorPosition_Y_Last = cursorPosition_Y; 
+        cursorPosition_Y_Last = cursorPosition_Y;
+
+        //
         MsgDataRecordCount = getMsgDataRecord(cursorPosition_Y + 1, MsgData); // adding 1 here because cursorPosition_Y is zero indexed but getMsgDataRecord is not
+        
+        //
         int dataLen = strlen(MsgData.msg);
         ScrollingIndex_MessageFeed_minX = -10 * dataLen; // 10 = 5 pixels/character * text size 2
         if (!SETTINGS_DISPLAY_SCROLL_MESSAGES) {
@@ -1665,11 +1670,16 @@ const char version[] = __DATE__ " " __TIME__;
         } else {
           ScrollingIndex_MessageFeed = display.width(); // starting point for text 
         }
+
       }
+
       // clear the buffer
       display.clearDisplay();
+
       // add global objects to buffer
       handleDisplay_Global();
+
+      //
       if (MsgDataRecordCount > 0){
         char to_from[24] = {'\0'};
         byte index = 0;
