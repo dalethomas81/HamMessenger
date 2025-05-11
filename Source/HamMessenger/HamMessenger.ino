@@ -1562,11 +1562,6 @@ void drawDitheredHeader(const String& text, uint8_t level) {
     if (keyboardInputChar == KEYBOARD_LEFT_KEY){
     }
     if (keyboardInputChar == KEYBOARD_RIGHT_KEY){
-      if (cursorPosition_Y == 0){
-        // send message if the right arrow is pressed while messages is highlighted.
-        // this is a temporary solution until a proper messaging screen can be developed.
-        //sendMessage = true;
-      }
     }
     if (keyboardInputChar == KEYBOARD_ENTER_KEY){
       switch (cursorPosition_Y){
@@ -1600,6 +1595,7 @@ void drawDitheredHeader(const String& text, uint8_t level) {
       display.setCursor(0,selectionRow);
       display.print(F(">"));
 
+      // handle header
       display.setCursor(6,UI_DISPLAY_ROW_01);
       display.print(F("[      ]"));
       if(displayBlink || !displayInitialized){
@@ -1607,12 +1603,11 @@ void drawDitheredHeader(const String& text, uint8_t level) {
         display.print(F("[ MAIN ]"));
       }
       
+      // handle body
       display.setCursor(6,UI_DISPLAY_ROW_02);
       display.print(F("Messages"));
-      
       display.setCursor(6,UI_DISPLAY_ROW_03);
       display.print(F("Live Feed"));
-      
       display.setCursor(6,UI_DISPLAY_ROW_04);
       display.print(F("Settings"));
       
@@ -1635,7 +1630,6 @@ void drawDitheredHeader(const String& text, uint8_t level) {
     // display method that it is in "on first show" and needs to initialize. this is where we clear and 
     // initalize critical variables such as cursor positions.
     if (!displayInitialized){
-      displayInitialized = true;
       cursorPosition_X = 0;
       cursorPosition_Y = 0;
       cursorPosition_X_Last = cursorPosition_X;
@@ -1768,6 +1762,9 @@ void drawDitheredHeader(const String& text, uint8_t level) {
       }
       // display all content from buffer
       display.display();
+
+      //
+      displayInitialized = true;
     }
     // timeout and leave
     if (millis() - leave_display_timer > SETTINGS_DISPLAY_TIMEOUT && leaveDisplay_MessageFeed){
@@ -1845,7 +1842,7 @@ void drawDitheredHeader(const String& text, uint8_t level) {
       handleDisplay_Global();
       SETTINGS_DISPLAY_SHOW_POSITION = showPositionMemory; // put it back to what it was
 
-      // place the cursor
+      // handle cursor
       int selectionRow = handleDisplay_GetSelectionRow(cursorPosition_Y - 2);
       display.setCursor(0,selectionRow);
       display.print(F(">"));
@@ -1858,7 +1855,7 @@ void drawDitheredHeader(const String& text, uint8_t level) {
         display.print(F("[ NEW MESSAGE ]"));
       }
       
-      // place body
+      // handle body
       display.setCursor(6,UI_DISPLAY_ROW_02);
       display.print(MenuItems_Settings_APRS[3]);
       display.setCursor(6,UI_DISPLAY_ROW_03);
@@ -1894,7 +1891,6 @@ void drawDitheredHeader(const String& text, uint8_t level) {
     // display method that it is in "on first show" and needs to initialize. this is where we clear and 
     // initalize critical variables such as cursor positions.
     if (!displayInitialized){
-      displayInitialized = true;
       cursorPosition_X = 0;
       cursorPosition_Y = 0;
       cursorPosition_X_Last = cursorPosition_X;
@@ -1995,8 +1991,12 @@ void drawDitheredHeader(const String& text, uint8_t level) {
           leave_display_timer = millis();
         }
       }
+
       // display all content from buffer
       display.display();
+
+      //
+      displayInitialized = true;
     }
     // timeout and leave
     if (millis() - leave_display_timer > SETTINGS_DISPLAY_TIMEOUT && leaveDisplay_LiveFeed){
@@ -2147,7 +2147,7 @@ void drawDitheredHeader(const String& text, uint8_t level) {
         display.print(F("[ SETTINGS ]"));
       }
 
-      // place body
+      // handle body
       int NumOfSettings = ARRAY_SIZE(MenuItems_Settings);
       if (NumOfSettings >= 1) {
         display.setCursor(6,UI_DISPLAY_ROW_02);
@@ -2257,7 +2257,7 @@ void drawDitheredHeader(const String& text, uint8_t level) {
         display.print(F("[ APRS ]"));
       }
 
-      // place body
+      // handle body
       int NumOfSettings = ARRAY_SIZE(MenuItems_Settings_APRS);
       if (NumOfSettings >= 1) {
         display.setCursor(6,UI_DISPLAY_ROW_02);
@@ -2380,7 +2380,7 @@ void drawDitheredHeader(const String& text, uint8_t level) {
         display.print(F("[ GPS ]"));
       }
 
-      // place body
+      // handle body
       int NumOfSettings = ARRAY_SIZE(MenuItems_Settings_GPS);
       if (NumOfSettings >= 1) {
         display.setCursor(6,UI_DISPLAY_ROW_02);
@@ -2503,7 +2503,7 @@ void drawDitheredHeader(const String& text, uint8_t level) {
         display.print(F("[ DISPLAY ]"));
       }
 
-      // place body
+      // handle body
       int NumOfSettings = ARRAY_SIZE(MenuItems_Settings_Display);
       if (NumOfSettings >= 1) {
         display.setCursor(6,UI_DISPLAY_ROW_02);
