@@ -183,7 +183,7 @@ const char version[] = __DATE__ " " __TIME__;
   #define SETTINGS_EDIT_TYPE_ALT3         23
                           
   const char *MenuItems_Settings[] = {"APRS","GPS","Display"};
-  const char *MenuItems_Settings_APRS[] = {"Beacon Frequency","Raw Packet","Comment","Message","Recipient Callsign","Recipient SSID", "My Callsign","Callsign SSID", 
+  const char *MenuItems_Settings_APRS[] = {"Beacon Frequency","Raw Packet","Comment","Message Text","Recipient Callsign","Recipient SSID","My Callsign","My Callsign SSID", 
                                           "Dest Callsign", "Dest SSID", "PATH1 Callsign", "PATH1 SSID", "PATH2 Callsign", "PATH2 SSID",
                                           "Symbol", "Table", "Automatic ACK", "Preamble", "Tail", "Retry Count", "Retry Interval"};
   const char *MenuItems_Settings_GPS[] = {"Update Freq","Pos Tolerance", "Dest Latitude", "Dest Longitude"};
@@ -1809,8 +1809,11 @@ void drawDitheredHeader(const String& text, uint8_t level) {
     }
     if (keyboardInputChar == KEYBOARD_ENTER_KEY){
       if (editMode_Settings) {
+        //
         editMode_Settings = false;
         handleDisplay_TempVarApply(Settings_Type_APRS[cursorPosition_Y],Settings_TypeIndex_APRS[cursorPosition_Y]);
+        // trigger a message send
+        sendMessage = true;
       } else {
         // enable edit mode
         editMode_Settings = true;
@@ -1820,8 +1823,10 @@ void drawDitheredHeader(const String& text, uint8_t level) {
     if (keyboardInputChar == KEYBOARD_LEFT_KEY){
     }
     if (keyboardInputChar == KEYBOARD_RIGHT_KEY){
-      // trigger a message send
-      sendMessage = true;
+      if (!editMode_Settings) {
+        // trigger a message send
+        sendMessage = true;
+      }
     }
     if (keyboardInputChar == KEYBOARD_ESCAPE_KEY){
       editMode_Settings = false;
