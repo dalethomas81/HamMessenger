@@ -2813,7 +2813,7 @@ void drawDitheredHeader(const String& text, uint8_t level) {
     if (Serial1.available()){
       memset(modemData,'\0',sizeof(modemData));
       int len = Serial1.readBytesUntil('\n', modemData, sizeof(modemData));
-      modemData[len] = '\0';  // Null-terminate manually
+      modemData[len-1] = '\0';  // Null-terminate manually
       Serial.print("Modem Raw:");Serial.println(modemData);
       gotFormatRaw = true;
     }
