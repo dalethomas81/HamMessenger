@@ -895,7 +895,7 @@ const char version[] = __DATE__ " " __TIME__;
   #include <Adafruit_GFX.h>
   #include <Adafruit_SH1106.h>
 
-  #define DISPLAY_REFRESH_RATE                  100
+  #define DISPLAY_REFRESH_RATE                  100 // 33 is ~30fps | 100 is ~ 10fps
   #define DISPLAY_REFRESH_RATE_SCROLL           80  // during testing, i found that anything less than 60 causes performance issues
   #define DISPLAY_BLINK_RATE                    500
   #define UI_DISPLAY_HOME                       0
@@ -967,6 +967,44 @@ const char version[] = __DATE__ " " __TIME__;
     }
     return count;
   }
+
+  const uint8_t minBrightness = 32;
+  const uint8_t maxBrightness = 255;
+  const float breathingSpeedHz = 0.2;
+  uint8_t calculateBreathingBrightness() {
+    float t = millis() / 1000.0;  // Seconds
+    float wave = (sin(2 * PI * breathingSpeedHz * t) + 1.0) / 2.0; // [0, 1]
+    return map(wave * 100, 0, 100, minBrightness, maxBrightness);
+  }
+void drawDitheredHeader(const String& text, uint8_t level) {
+  // Assume cursor has already been set externally
+  int startX = display.getCursorX();
+  int startY = display.getCursorY();
+
+  // Draw the text
+  display.setTextColor(WHITE);
+  display.print(text);
+
+  // Width of text in pixels (6 px per char with default font)
+  int textWidth = text.length() * 6;
+  int textHeight = 8; // For default font height
+
+  // Overlay a simulated dimming mask
+  if (level < 255) {
+    for (int y = 0; y < textHeight; y++) {
+      for (int x = 0; x < textWidth; x++) {
+        // 50% dither mask if brightness is low
+        if (((x + y) % 2 == 0) && level < 128) {
+          display.drawPixel(startX + x, startY + y, BLACK);
+        }
+        // 25% dither if brightness is very low
+        else if (((x + y) % 4 == 0) && level < 64) {
+          display.drawPixel(startX + x, startY + y, BLACK);
+        }
+      }
+    }
+  }
+}
 
   // while in edit mode, this method is used to edit a temporary character array that will later be
   // copied into memory. this makes it easier to manage editing a setting from the oled and keyboard.
@@ -1438,7 +1476,7 @@ const char version[] = __DATE__ " " __TIME__;
     display.println(SETTINGS_APRS_CALLSIGN);
     
     display.display();
-    delay(5000);
+    delay(3000);
   }
 
   // this method handles all of the global objects of the display. any objects that are common between
@@ -1501,7 +1539,6 @@ const char version[] = __DATE__ " " __TIME__;
     // display method that it is in "on first show" and needs to initialize. this is where we clear and 
     // initalize critical variables such as cursor positions.
     if (!displayInitialized){
-      displayInitialized = true;
       cursorPosition_X = 0;
       cursorPosition_Y = 0;
       cursorPosition_X_Last = 0;
@@ -1558,29 +1595,19 @@ const char version[] = __DATE__ " " __TIME__;
       // add global objects to buffer
       handleDisplay_Global();
 
-      //
-      int selectionRow = 0;
-      switch (cursorPosition_Y) {
-        case 0:
-          selectionRow = UI_DISPLAY_ROW_02;
-          break;
-        case 1:
-          selectionRow = UI_DISPLAY_ROW_03;
-          break;
-        case 2:
-          selectionRow = UI_DISPLAY_ROW_04;
-          break;
-        default:
-          selectionRow = UI_DISPLAY_ROW_02;
-          break;
-      }
+      // handle cursor
+      int selectionRow = handleDisplay_GetSelectionRow(cursorPosition_Y+1);
       display.setCursor(0,selectionRow);
       display.print(F(">"));
 
-      display.setCursor(6,UI_DISPLAY_ROW_01);                    // 0 pixels right, 25 pixels down
-      display.print(F("[ MAIN ]"));
+      display.setCursor(6,UI_DISPLAY_ROW_01);
+      display.print(F("[      ]"));
+      if(displayBlink || !displayInitialized){
+        display.setCursor(6,UI_DISPLAY_ROW_01);
+        display.print(F("[ MAIN ]"));
+      }
       
-      display.setCursor(6,UI_DISPLAY_ROW_02);                    // 0 pixels right, 25 pixels down
+      display.setCursor(6,UI_DISPLAY_ROW_02);
       display.print(F("Messages"));
       
       display.setCursor(6,UI_DISPLAY_ROW_03);
@@ -1591,6 +1618,9 @@ const char version[] = __DATE__ " " __TIME__;
       
       // display all content from buffer
       display.display();
+
+      //
+      displayInitialized = true;
     }
   }
 
@@ -1756,7 +1786,6 @@ const char version[] = __DATE__ " " __TIME__;
     // display method that it is in "on first show" and needs to initialize. this is where we clear and 
     // initalize critical variables such as cursor positions.
     if (!displayInitialized){
-      displayInitialized = true;
       cursorPosition_X = 0;
       cursorPosition_Y = 3; // 3, 4, and 5 are message, recipient callsign, and recipient SSID
       cursorPosition_X_Last = cursorPosition_X;
@@ -1821,9 +1850,13 @@ const char version[] = __DATE__ " " __TIME__;
       display.setCursor(0,selectionRow);
       display.print(F(">"));
 
-      // place header
+      // handle header
       display.setCursor(6,UI_DISPLAY_ROW_01);
-      display.print("[ NEW MESSAGE ]");
+      display.print(F("[             ]"));
+      if(displayBlink || !displayInitialized){
+        display.setCursor(6,UI_DISPLAY_ROW_01);
+        display.print(F("[ NEW MESSAGE ]"));
+      }
       
       // place body
       display.setCursor(6,UI_DISPLAY_ROW_02);
@@ -1849,6 +1882,8 @@ const char version[] = __DATE__ " " __TIME__;
       // display all content from buffer
       display.display();
 
+      //
+      displayInitialized = true;
     }
   }
 
@@ -1976,7 +2011,6 @@ const char version[] = __DATE__ " " __TIME__;
     // display method that it is in "on first show" and needs to initialize. this is where we clear and 
     // initalize critical variables such as cursor positions.
     if (!displayInitialized){
-      displayInitialized= true;
       cursorPosition_X = 0;
       cursorPosition_Y = 0;
       cursorPosition_X_Last = 0;
@@ -2019,24 +2053,18 @@ const char version[] = __DATE__ " " __TIME__;
       // add global objects to buffer
       handleDisplay_Global();
       
-      int selectionRow = 0;
-      switch (cursorPosition_Y) {
-        case 0:
-          selectionRow = UI_DISPLAY_ROW_02; // no
-          break;
-        case 1:
-          selectionRow = UI_DISPLAY_ROW_03; // yes
-          break;
-        default:
-          selectionRow = UI_DISPLAY_ROW_02;
-          break;
-      }
-        
+      // handle cursor
+      int selectionRow = handleDisplay_GetSelectionRow(cursorPosition_Y+1);
       display.setCursor(0,selectionRow);
       display.print(F(">"));
-      
+
+      // handle question
       display.setCursor(6,UI_DISPLAY_ROW_01);
-      display.print(F("Save changes?"));
+      display.print(F("[               ]"));
+      if(displayBlink || !displayInitialized){
+        display.setCursor(6,UI_DISPLAY_ROW_01);
+        display.print(F("[ Save changes? ]"));
+      }
       
       display.setCursor(6,UI_DISPLAY_ROW_02);
       display.print(F("No"));
@@ -2046,6 +2074,9 @@ const char version[] = __DATE__ " " __TIME__;
 
       // display all content from buffer
       display.display();
+
+      //
+      displayInitialized= true;
     }
   }
 
@@ -2054,7 +2085,6 @@ const char version[] = __DATE__ " " __TIME__;
     // display method that it is in "on first show" and needs to initialize. this is where we clear and 
     // initalize critical variables such as cursor positions.
     if (!displayInitialized){
-      displayInitialized = true;
       cursorPosition_X = 0;
       cursorPosition_Y = 0;
       cursorPosition_X_Last = 0;
@@ -2103,18 +2133,22 @@ const char version[] = __DATE__ " " __TIME__;
 
       // add global objects to buffer
       handleDisplay_Global();
-
-      // determine the row
+      
+      // handle cursor
       int selectionRow = handleDisplay_GetSelectionRow(cursorPosition_Y+1);
-        
       display.setCursor(0,selectionRow);
       display.print(F(">"));      
       
-      display.setCursor(6,UI_DISPLAY_ROW_01);                    // 0 pixels right, 25 pixels down
-      display.print(F("[ SETTINGS ]"));
+      // handle header
+      display.setCursor(6,UI_DISPLAY_ROW_01);
+      display.print(F("[          ]"));
+      if(displayBlink || !displayInitialized){
+        display.setCursor(6,UI_DISPLAY_ROW_01);
+        display.print(F("[ SETTINGS ]"));
+      }
 
+      // place body
       int NumOfSettings = ARRAY_SIZE(MenuItems_Settings);
-      
       if (NumOfSettings >= 1) {
         display.setCursor(6,UI_DISPLAY_ROW_02);
         display.print(MenuItems_Settings[cursorPosition_Y>2 ? cursorPosition_Y-2 : 0]);
@@ -2127,13 +2161,12 @@ const char version[] = __DATE__ " " __TIME__;
         display.setCursor(6,UI_DISPLAY_ROW_04);
         display.print(MenuItems_Settings[cursorPosition_Y>2 ? cursorPosition_Y-0 : 2]);
       }
-      //if (NumOfSettings >= 4) {
-      //  display.setCursor(6,UI_DISPLAY_ROW_04);
-      //  display.print(MenuItems_Settings[cursorPosition_Y>3 ? cursorPosition_Y-0 : 3]);
-      //}
 
       // display all content from buffer
       display.display();
+
+      //
+      displayInitialized = true;
     }
   }
 
@@ -2142,7 +2175,6 @@ const char version[] = __DATE__ " " __TIME__;
     // display method that it is in "on first show" and needs to initialize. this is where we clear and 
     // initalize critical variables such as cursor positions.
     if (!displayInitialized){
-      displayInitialized = true;
       cursorPosition_X = 0;
       cursorPosition_Y = 0;
       cursorPosition_X_Last = 0;
@@ -2212,14 +2244,18 @@ const char version[] = __DATE__ " " __TIME__;
       handleDisplay_Global();
       SETTINGS_DISPLAY_SHOW_POSITION = showPositionMemory; // put it back to what it was
 
-      // place cursor
+      // handle cursor
       int selectionRow = handleDisplay_GetSelectionRow(cursorPosition_Y+1);
       display.setCursor(0,selectionRow);
       display.print(F(">"));
       
-      // place header
+      // handle header
       display.setCursor(6,UI_DISPLAY_ROW_01);
-      display.print("[ APRS ]");
+      display.print(F("[      ]"));
+      if(displayBlink || !displayInitialized){
+        display.setCursor(6,UI_DISPLAY_ROW_01);
+        display.print(F("[ APRS ]"));
+      }
 
       // place body
       int NumOfSettings = ARRAY_SIZE(MenuItems_Settings_APRS);
@@ -2251,6 +2287,9 @@ const char version[] = __DATE__ " " __TIME__;
 
       // display all content from buffer
       display.display();
+
+      //
+      displayInitialized = true;
     }
   }
 
@@ -2259,7 +2298,6 @@ const char version[] = __DATE__ " " __TIME__;
     // display method that it is in "on first show" and needs to initialize. this is where we clear and 
     // initalize critical variables such as cursor positions.
     if (!displayInitialized){
-      displayInitialized = true;
       cursorPosition_X = 0;
       cursorPosition_Y = 0;
       cursorPosition_X_Last = 0;
@@ -2329,14 +2367,18 @@ const char version[] = __DATE__ " " __TIME__;
       handleDisplay_Global();
       SETTINGS_DISPLAY_SHOW_POSITION = showPositionMemory; // put it back to what it was
 
-      // place cursor
+      // handle cursor
       int selectionRow = handleDisplay_GetSelectionRow(cursorPosition_Y+1);
       display.setCursor(0,selectionRow);
       display.print(F(">"));
 
-      // header
+      // handle header
       display.setCursor(6,UI_DISPLAY_ROW_01);
-      display.print("[ GPS ]");
+      display.print(F("[     ]"));
+      if(displayBlink || !displayInitialized){
+        display.setCursor(6,UI_DISPLAY_ROW_01);
+        display.print(F("[ GPS ]"));
+      }
 
       // place body
       int NumOfSettings = ARRAY_SIZE(MenuItems_Settings_GPS);
@@ -2368,6 +2410,9 @@ const char version[] = __DATE__ " " __TIME__;
 
       // display all content from buffer
       display.display();
+
+      //
+      displayInitialized = true;
     } 
   }
 
@@ -2376,7 +2421,6 @@ const char version[] = __DATE__ " " __TIME__;
     // display method that it is in "on first show" and needs to initialize. this is where we clear and 
     // initalize critical variables such as cursor positions.
     if (!displayInitialized){
-      displayInitialized = true;
       cursorPosition_X = 0;
       cursorPosition_Y = 0;
       cursorPosition_X_Last = 0;
@@ -2446,14 +2490,18 @@ const char version[] = __DATE__ " " __TIME__;
       handleDisplay_Global();
       SETTINGS_DISPLAY_SHOW_POSITION = showPositionMemory; // put it back to what it was
 
-      // place cursor
+      // handle cursor
       int selectionRow = handleDisplay_GetSelectionRow(cursorPosition_Y+1);
       display.setCursor(0,selectionRow);
       display.print(F(">"));
 
-      // place header
+      // handle header
       display.setCursor(6,UI_DISPLAY_ROW_01);
-      display.print("[ DISPLAY ]");
+      display.print(F("[         ]"));
+      if(displayBlink || !displayInitialized){
+        display.setCursor(6,UI_DISPLAY_ROW_01);
+        display.print(F("[ DISPLAY ]"));
+      }
 
       // place body
       int NumOfSettings = ARRAY_SIZE(MenuItems_Settings_Display);
@@ -2485,6 +2533,9 @@ const char version[] = __DATE__ " " __TIME__;
 
       // display all content from buffer
       display.display();
+
+      //
+      displayInitialized = true;
     } 
   }
 
