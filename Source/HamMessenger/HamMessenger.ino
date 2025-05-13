@@ -165,7 +165,7 @@ const char version[] = __DATE__ " " __TIME__;
 
   #include <EEPROM.h>
 
-  const char Initialized[] = {"Initialized03"}; // change this to something unique if you want to re-init the EEPROM during flashing. useful when there has been a change to a settings array.
+  const char Initialized[] = {"Initialized 2025MAY13"}; // change this to something unique if you want to re-init the EEPROM during flashing. useful when there has been a change to a settings array.
 
   #define EEPROM_SETTINGS_START_ADDR      1000
   #define SETTINGS_EDIT_TYPE_NONE         0
@@ -183,53 +183,56 @@ const char version[] = __DATE__ " " __TIME__;
   #define SETTINGS_EDIT_TYPE_ALT3         23
                           
   const char *MenuItems_Settings[] = {"APRS","GPS","Display"};
-  const char *MenuItems_Settings_APRS[] = {"Beacon Frequency","Raw Packet","Comment","Message Text","Recipient Callsign","Recipient SSID","My Callsign","My Callsign SSID", 
+  const char *MenuItems_Settings_APRS[] = {"Beacon Enabled","Beacon Tolerance","Beacon Frequency","Raw Packet","Comment","Message Text","Recipient Callsign","Recipient SSID","My Callsign","My Callsign SSID", 
                                           "Dest Callsign", "Dest SSID", "PATH1 Callsign", "PATH1 SSID", "PATH2 Callsign", "PATH2 SSID",
                                           "Symbol", "Table", "Automatic ACK", "Preamble", "Tail", "Retry Count", "Retry Interval"};
   const char *MenuItems_Settings_GPS[] = {"Update Freq","Pos Tolerance", "Dest Latitude", "Dest Longitude"};
   const char *MenuItems_Settings_Display[] = {"Timeout", "Brightness", "Show Position", "Scroll Messages", "Scroll Speed", "Invert"};
 
-  unsigned char Settings_Type_APRS[] = {SETTINGS_EDIT_TYPE_ULONG,SETTINGS_EDIT_TYPE_STRING100,SETTINGS_EDIT_TYPE_STRING100,SETTINGS_EDIT_TYPE_STRING100,SETTINGS_EDIT_TYPE_STRING7,SETTINGS_EDIT_TYPE_STRING2,SETTINGS_EDIT_TYPE_STRING7,SETTINGS_EDIT_TYPE_STRING2,
-                              SETTINGS_EDIT_TYPE_STRING7,SETTINGS_EDIT_TYPE_STRING2,SETTINGS_EDIT_TYPE_STRING7,SETTINGS_EDIT_TYPE_STRING2,SETTINGS_EDIT_TYPE_STRING7,SETTINGS_EDIT_TYPE_STRING2,
-                              SETTINGS_EDIT_TYPE_STRING2,SETTINGS_EDIT_TYPE_ALT1,SETTINGS_EDIT_TYPE_BOOLEAN,SETTINGS_EDIT_TYPE_UINT,SETTINGS_EDIT_TYPE_UINT,SETTINGS_EDIT_TYPE_UINT,SETTINGS_EDIT_TYPE_UINT};
+  unsigned char Settings_Type_APRS[] = {SETTINGS_EDIT_TYPE_BOOLEAN,SETTINGS_EDIT_TYPE_FLOAT,SETTINGS_EDIT_TYPE_ULONG,SETTINGS_EDIT_TYPE_STRING100,SETTINGS_EDIT_TYPE_STRING100,
+                                        SETTINGS_EDIT_TYPE_STRING100,SETTINGS_EDIT_TYPE_STRING7,SETTINGS_EDIT_TYPE_STRING2,SETTINGS_EDIT_TYPE_STRING7,SETTINGS_EDIT_TYPE_STRING2,
+                                        SETTINGS_EDIT_TYPE_STRING7,SETTINGS_EDIT_TYPE_STRING2,SETTINGS_EDIT_TYPE_STRING7,SETTINGS_EDIT_TYPE_STRING2,SETTINGS_EDIT_TYPE_STRING7,SETTINGS_EDIT_TYPE_STRING2,
+                                        SETTINGS_EDIT_TYPE_STRING2,SETTINGS_EDIT_TYPE_ALT1,SETTINGS_EDIT_TYPE_BOOLEAN,SETTINGS_EDIT_TYPE_UINT,SETTINGS_EDIT_TYPE_UINT,SETTINGS_EDIT_TYPE_UINT,SETTINGS_EDIT_TYPE_UINT};
   unsigned char Settings_Type_GPS[] = {SETTINGS_EDIT_TYPE_ULONG,SETTINGS_EDIT_TYPE_FLOAT,SETTINGS_EDIT_TYPE_FLOAT,SETTINGS_EDIT_TYPE_FLOAT};
   unsigned char Settings_Type_Display[] = {SETTINGS_EDIT_TYPE_ULONG, SETTINGS_EDIT_TYPE_UINT, SETTINGS_EDIT_TYPE_BOOLEAN, SETTINGS_EDIT_TYPE_BOOLEAN, SETTINGS_EDIT_TYPE_UINT, SETTINGS_EDIT_TYPE_BOOLEAN};
-  unsigned char Settings_TypeIndex_APRS[] = {0,0,1,2,0,0,1,1,2,2,3,3,4,4,5,6,2,1,2,4,5}; // this is the index in the array of the data arrays below
-  unsigned char Settings_TypeIndex_GPS[] = {1,0,1,2};
-  unsigned char Settings_TypeIndex_Display[] = {2,0,0,1,3,3};
+  unsigned char Settings_TypeIndex_APRS[] = {0,0,0,0,1,2,0,0,1,1,2,2,3,3,4,4,5,6,3,1,2,4,5}; // this is the index in the array of the data arrays below
+  unsigned char Settings_TypeIndex_GPS[] = {1,1,2,3};
+  unsigned char Settings_TypeIndex_Display[] = {2,0,1,2,3,4};
   // data arrays
-  bool Settings_TypeBool[4] = {true,true,true,false}; // display show position, scroll messages, auto ACK, invert
+  bool Settings_TypeBool[5] = {true,true,true,true,false}; // aprs beacon enabled, display show position, scroll messages, auto ACK, invert
   int Settings_TypeInt[0] = {};
   unsigned int Settings_TypeUInt[6] = {100,400,80,4,5,10000}; // display brightness, aprs preamble, aprs tail, scroll speed, Retry Count, Retry Interval
   long Settings_TypeLong[0] = {};
   unsigned long Settings_TypeULong[3] = {300000,10000,2000}; // aprs beacon frequency, gps update frequency, display timeout
-  float Settings_TypeFloat[3] = {0.00001,34.790040,-82.790672}; // gps position tolerance, gps latitude, gps longitude
+  float Settings_TypeFloat[4] = {1.00000,0.00001,34.790040,-82.790672}; // aprs beacon tolerance, gps position tolerance, gps latitude, gps longitude
   char Settings_TypeString2[7][2] = {'0','\0'};
   char Settings_TypeString7[5][7] = {'N','O','C','A','L','L','\0'};
   char Settings_TypeString100[3][100] = {'T','e','s','t','\0'};
   char Settings_TempDispCharArr[100];
 
-  #define SETTINGS_APRS_BEACON_FREQUENCY        Settings_TypeULong[Settings_TypeIndex_APRS[0]]        // beacon frequency
-  #define SETTINGS_APRS_RAW_PACKET              Settings_TypeString100[Settings_TypeIndex_APRS[1]]    // raw packet
-  #define SETTINGS_APRS_COMMENT                 Settings_TypeString100[Settings_TypeIndex_APRS[2]]    // comment
-  #define SETTINGS_APRS_MESSAGE                 Settings_TypeString100[Settings_TypeIndex_APRS[3]]    // message
-  #define SETTINGS_APRS_RECIPIENT_CALL          Settings_TypeString7[Settings_TypeIndex_APRS[4]]      // recipient
-  #define SETTINGS_APRS_RECIPIENT_SSID          Settings_TypeString2[Settings_TypeIndex_APRS[5]]      // recipient ssid
-  #define SETTINGS_APRS_CALLSIGN                Settings_TypeString7[Settings_TypeIndex_APRS[6]]      // callsign
-  #define SETTINGS_APRS_CALLSIGN_SSID           Settings_TypeString2[Settings_TypeIndex_APRS[7]]      // callsign ssid
-  #define SETTINGS_APRS_DESTINATION_CALL        Settings_TypeString7[Settings_TypeIndex_APRS[8]]      // Destination Callsign
-  #define SETTINGS_APRS_DESTINATION_SSID        Settings_TypeString2[Settings_TypeIndex_APRS[9]]      // Destination SSID
-  #define SETTINGS_APRS_PATH1_CALL              Settings_TypeString7[Settings_TypeIndex_APRS[10]]     // PATH1 Callsign
-  #define SETTINGS_APRS_PATH1_SSID              Settings_TypeString2[Settings_TypeIndex_APRS[11]]     // PATH1 SSID
-  #define SETTINGS_APRS_PATH2_CALL              Settings_TypeString7[Settings_TypeIndex_APRS[12]]     // PATH2 Callsign
-  #define SETTINGS_APRS_PATH2_SSID              Settings_TypeString2[Settings_TypeIndex_APRS[13]]     // PATH2 SSID
-  #define SETTINGS_APRS_SYMBOL                  Settings_TypeString2[Settings_TypeIndex_APRS[14]]     // Symbol
-  #define SETTINGS_APRS_SYMBOL_TABLE            Settings_TypeString2[Settings_TypeIndex_APRS[15]]     // Symbol Table
-  #define SETTINGS_APRS_AUTOMATIC_ACK           Settings_TypeBool[Settings_TypeIndex_APRS[16]]        // Automatic ACK
-  #define SETTINGS_APRS_PREAMBLE                Settings_TypeUInt[Settings_TypeIndex_APRS[17]]        // Preamble
-  #define SETTINGS_APRS_TAIL                    Settings_TypeUInt[Settings_TypeIndex_APRS[18]]        // Tail
-  #define SETTINGS_APRS_RETRY_COUNT             Settings_TypeUInt[Settings_TypeIndex_APRS[19]]        // Retry Count
-  #define SETTINGS_APRS_RETRY_INTERVAL          Settings_TypeUInt[Settings_TypeIndex_APRS[20]]        // Retry Interval
+  #define SETTINGS_APRS_BEACON_ENABLED          Settings_TypeBool[Settings_TypeIndex_APRS[0]]        // beacon enabled
+  #define SETTINGS_APRS_BEACON_TOLERANCE        Settings_TypeFloat[Settings_TypeIndex_APRS[1]]        // beacon tolerance
+  #define SETTINGS_APRS_BEACON_FREQUENCY        Settings_TypeULong[Settings_TypeIndex_APRS[2]]        // beacon frequency
+  #define SETTINGS_APRS_RAW_PACKET              Settings_TypeString100[Settings_TypeIndex_APRS[3]]    // raw packet
+  #define SETTINGS_APRS_COMMENT                 Settings_TypeString100[Settings_TypeIndex_APRS[4]]    // comment
+  #define SETTINGS_APRS_MESSAGE                 Settings_TypeString100[Settings_TypeIndex_APRS[5]]    // message
+  #define SETTINGS_APRS_RECIPIENT_CALL          Settings_TypeString7[Settings_TypeIndex_APRS[6]]      // recipient
+  #define SETTINGS_APRS_RECIPIENT_SSID          Settings_TypeString2[Settings_TypeIndex_APRS[7]]      // recipient ssid
+  #define SETTINGS_APRS_CALLSIGN                Settings_TypeString7[Settings_TypeIndex_APRS[8]]      // callsign
+  #define SETTINGS_APRS_CALLSIGN_SSID           Settings_TypeString2[Settings_TypeIndex_APRS[9]]      // callsign ssid
+  #define SETTINGS_APRS_DESTINATION_CALL        Settings_TypeString7[Settings_TypeIndex_APRS[10]]      // Destination Callsign
+  #define SETTINGS_APRS_DESTINATION_SSID        Settings_TypeString2[Settings_TypeIndex_APRS[11]]      // Destination SSID
+  #define SETTINGS_APRS_PATH1_CALL              Settings_TypeString7[Settings_TypeIndex_APRS[12]]     // PATH1 Callsign
+  #define SETTINGS_APRS_PATH1_SSID              Settings_TypeString2[Settings_TypeIndex_APRS[13]]     // PATH1 SSID
+  #define SETTINGS_APRS_PATH2_CALL              Settings_TypeString7[Settings_TypeIndex_APRS[14]]     // PATH2 Callsign
+  #define SETTINGS_APRS_PATH2_SSID              Settings_TypeString2[Settings_TypeIndex_APRS[15]]     // PATH2 SSID
+  #define SETTINGS_APRS_SYMBOL                  Settings_TypeString2[Settings_TypeIndex_APRS[16]]     // Symbol
+  #define SETTINGS_APRS_SYMBOL_TABLE            Settings_TypeString2[Settings_TypeIndex_APRS[17]]     // Symbol Table
+  #define SETTINGS_APRS_AUTOMATIC_ACK           Settings_TypeBool[Settings_TypeIndex_APRS[18]]        // Automatic ACK
+  #define SETTINGS_APRS_PREAMBLE                Settings_TypeUInt[Settings_TypeIndex_APRS[19]]        // Preamble
+  #define SETTINGS_APRS_TAIL                    Settings_TypeUInt[Settings_TypeIndex_APRS[20]]        // Tail
+  #define SETTINGS_APRS_RETRY_COUNT             Settings_TypeUInt[Settings_TypeIndex_APRS[21]]        // Retry Count
+  #define SETTINGS_APRS_RETRY_INTERVAL          Settings_TypeUInt[Settings_TypeIndex_APRS[22]]        // Retry Interval
 
   #define SETTINGS_GPS_UPDATE_FREQUENCY         Settings_TypeULong[Settings_TypeIndex_GPS[0]]       // update frequency
   #define SETTINGS_GPS_POSITION_TOLERANCE       Settings_TypeFloat[Settings_TypeIndex_GPS[1]]       // position tolerance
@@ -292,6 +295,10 @@ const char version[] = __DATE__ " " __TIME__;
 
   void applyDefaultsToSettings(){
     Serial.println(F("Applying defaults to settings..."));
+
+    SETTINGS_APRS_BEACON_ENABLED = true;
+    
+    SETTINGS_APRS_BEACON_TOLERANCE = 1.0000;
 
     SETTINGS_APRS_BEACON_FREQUENCY = 60000;
 
@@ -663,33 +670,49 @@ const char version[] = __DATE__ " " __TIME__;
   // http://ember2ash.com/lat.htm
   float currentLatDeg = 0;
   float currentLngDeg = 0;
-  //float positionTolerance = 0.00001;
   float lastLatDeg = 0.0;
   float lastLngDeg = 0.0;
+  float lastLatDegSmartBeacon = 0.0;
+  float lastLngDegSmartBeacon = 0.0;
+  float smartBeaconDistanceLast = 0.0;
   char currentLat[9] = {'0','0','0','0','.','0','0','N','\0'};
   char currentLng[10] = {'0','0','0','0','0','.','0','0','N','\0'};
   bool modemCmdFlag_Lat=false, modemCmdFlag_Lng=false;
   unsigned long gps_report_timer, destination_report_timer, gps_initializing_timer;
   bool gpsInitialized = false; // we can set this when we get our first coordinate
   bool gpsInitializing;
+  bool gpsSmartBeaconDistanceConditionMet = false;
 
   // London                                 LAT:51.508131     LNG:-0.128002
   //double DESTINATION_LAT = 51.508131, DESTINATION_LON = -0.128002;
+    
+  #define EARTH_RADIUS_MI 3958.8 // Earth's radius in miles
+  float haversineMiles(float lat1, float lon1, float lat2, float lon2) {
+    float toRad = PI / 180.0;
+    float dLat = (lat2 - lat1) * toRad;
+    float dLon = (lon2 - lon1) * toRad;
+
+    float a = sin(dLat/2) * sin(dLat/2) +
+              cos(lat1 * toRad) * cos(lat2 * toRad) *
+              sin(dLon/2) * sin(dLon/2);
+    float c = 2 * atan2(sqrt(a), sqrt(1 - a));
+    return EARTH_RADIUS_MI * c;
+  }
 
   void readGPS(){
-    //
+    // monitor the serial port for data from the GPS
     while (Serial2.available() > 0){
       gps.encode(Serial2.read());
     }
     
-    //
+    // blink display controls to indicate the GPS is still initializing
     if ((!gps.location.isUpdated() || !gps.location.isValid()) && millis() - gps_initializing_timer > 250){
       gps_initializing_timer = millis();
       gpsInitializing = !gpsInitializing;
     }
 
-    //  
-    if ( millis() - gps_report_timer > SETTINGS_GPS_UPDATE_FREQUENCY){
+    // 
+    if ( millis() - gps_report_timer > 1000){
         // reset timer
         gps_report_timer = millis();
 
@@ -740,6 +763,16 @@ const char version[] = __DATE__ " " __TIME__;
                 currentLngDeg < lastLngDeg - SETTINGS_GPS_POSITION_TOLERANCE) {
             modemCmdFlag_Lng=true;
             lastLngDeg = currentLngDeg;
+          }
+
+          // smart beaconing
+          float smartBeaconDistance = haversineMiles(currentLatDeg, currentLngDeg, lastLatDegSmartBeacon, lastLngDegSmartBeacon);
+          if (smartBeaconDistance > smartBeaconDistanceLast + SETTINGS_APRS_BEACON_TOLERANCE
+              || smartBeaconDistance < smartBeaconDistanceLast - SETTINGS_APRS_BEACON_TOLERANCE) {
+                  smartBeaconDistanceLast = smartBeaconDistance;
+                  lastLatDegSmartBeacon = currentLatDeg;
+                  lastLngDegSmartBeacon = currentLngDeg;
+                  gpsSmartBeaconDistanceConditionMet = true;
           }
           
         }
@@ -2595,18 +2628,22 @@ const char version[] = __DATE__ " " __TIME__;
 
   bool modemCmdFlag_Raw=false, modemCmdFlag_Cmt=false, modemCmdFlag_Msg=false;
   bool modemCmdFlag_MsgRecipient=false, modemCmdFlag_MsgRecipientSSID=false;
-  bool aprsAutomaticCommentEnabled = true;
   unsigned char sendMessage_Seq=0, sendMessage_Retrys;
   #define MAXIMUM_MODEM_COMMAND_RATE 100        // maximum rate that commands can be sent to modem
   unsigned long modem_command_timer, aprs_beacon_timer;
   unsigned long message_retry_timer;
 
   void handleAprsBeacon(){
-    if ( millis() - aprs_beacon_timer > SETTINGS_APRS_BEACON_FREQUENCY ){
-      if (aprsAutomaticCommentEnabled==true){
-        modemCmdFlag_Cmt=true;
-      }
-      aprs_beacon_timer = millis();
+    if ( millis() - aprs_beacon_timer > SETTINGS_APRS_BEACON_FREQUENCY 
+        && gpsSmartBeaconDistanceConditionMet 
+        && gps.location.isValid()==true){
+          //
+          gpsSmartBeaconDistanceConditionMet = false;
+          aprs_beacon_timer = millis();
+          
+          if (SETTINGS_APRS_BEACON_ENABLED==true){
+            modemCmdFlag_Cmt=true;
+          }
     }
   }
 
@@ -2661,7 +2698,7 @@ const char version[] = __DATE__ " " __TIME__;
       }
       // send location
       // dont send if we dont have valid coordinates (modemCmdFlag_Cmt will remain true so we send when we get coordinates)
-      if (modemCmdFlag_Cmt==true && gps.location.isValid()==true){
+      if (modemCmdFlag_Cmt==true){
         if (sendModemCommand("@", 1, SETTINGS_APRS_COMMENT, strlen(SETTINGS_APRS_COMMENT)) == -1){
           modemCmdFlag_Cmt=false;
         }
