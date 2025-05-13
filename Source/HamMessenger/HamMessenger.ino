@@ -300,7 +300,7 @@ const char version[] = __DATE__ " " __TIME__;
       SETTINGS_APRS_RAW_PACKET[i] = strTemp1[i];
     }
 
-    char strTemp2[] = {"Testing HamMessenger!"};
+    char strTemp2[] = {"https://github.com/dalethomas81/HamMessenger"};
     for (int i=0; i<sizeof(strTemp2);i++) {
       SETTINGS_APRS_COMMENT[i] = strTemp2[i];
     }
@@ -360,7 +360,7 @@ const char version[] = __DATE__ " " __TIME__;
     SETTINGS_APRS_RETRY_INTERVAL = 10000;
     
     // London  LAT:51.508131     LNG:-0.128002
-    SETTINGS_GPS_UPDATE_FREQUENCY = 5000; // how often we care about updates from the GPS unit
+    SETTINGS_GPS_UPDATE_FREQUENCY = 1000; // how often we care about updates from the GPS unit
 
     SETTINGS_GPS_POSITION_TOLERANCE = 0.01;  // unit is in degrees
 
@@ -368,7 +368,7 @@ const char version[] = __DATE__ " " __TIME__;
 
     SETTINGS_GPS_DESTINATION_LONGITUDE = -0.128002;
     
-    SETTINGS_DISPLAY_TIMEOUT = 15000;
+    SETTINGS_DISPLAY_TIMEOUT = 60000;
 
     SETTINGS_DISPLAY_BRIGHTNESS = 100;
 
@@ -669,224 +669,234 @@ const char version[] = __DATE__ " " __TIME__;
   char currentLat[9] = {'0','0','0','0','.','0','0','N','\0'};
   char currentLng[10] = {'0','0','0','0','0','.','0','0','N','\0'};
   bool modemCmdFlag_Lat=false, modemCmdFlag_Lng=false;
-  unsigned long gps_report_timer, destination_report_timer;
+  unsigned long gps_report_timer, destination_report_timer, gps_initializing_timer;
   bool gpsInitialized = false; // we can set this when we get our first coordinate
+  bool gpsInitializing;
 
   // London                                 LAT:51.508131     LNG:-0.128002
   //double DESTINATION_LAT = 51.508131, DESTINATION_LON = -0.128002;
 
   void readGPS(){
- 
-  while (Serial2.available() > 0)
+    //
+    while (Serial2.available() > 0){
+      gps.encode(Serial2.read());
+    }
+    
+    //
+    if ((!gps.location.isUpdated() || !gps.location.isValid()) && millis() - gps_initializing_timer > 250){
+      gps_initializing_timer = millis();
+      gpsInitializing = !gpsInitializing;
+    }
 
-  gps.encode(Serial2.read());
-      
-  if ( millis() - gps_report_timer > SETTINGS_GPS_UPDATE_FREQUENCY){
-      // reset timer
-      gps_report_timer = millis();
-      if (gps.location.isUpdated())
-      {
-        gpsInitialized = true;
-        //Serial.print(F("LOCATION   Fix Age="));
-        //Serial.print(gps.location.age());
-        //Serial.print(F("ms Raw Lat="));
-        //Serial.print(gps.location.rawLat().negative ? "-" : "+");
-        //Serial.print(gps.location.rawLat().deg);
-        //Serial.print("[+");
-        //Serial.print(gps.location.rawLat().billionths);
-        //Serial.print(F(" billionths],  Raw Long="));
-        //Serial.print(gps.location.rawLng().negative ? "-" : "+");
-        //Serial.print(gps.location.rawLng().deg);
-        //Serial.print("[+");
-        //Serial.print(gps.location.rawLng().billionths);
-        //Serial.print(F(" billionths],  Lat="));
-        //Serial.print(F(" Lat="));
-        //Serial.print(gps.location.lat(), 6);
-        //Serial.print(F(" Long="));
-        //Serial.print(gps.location.lng(), 6);
-        
-        // DDMM.MM http://ember2ash.com/lat.htm
-        //Serial.print(F(" Lat2="));
-        currentLatDeg = gps.location.rawLat().deg*100.0 + gps.location.rawLat().billionths*0.000000001*60.0;
-        dtostrf(currentLatDeg, 8, 3, currentLat);
-        currentLat[7] = gps.location.rawLat().negative ? 'S' : 'N';
-        for (byte i = 0; i < sizeof(currentLat) - 1; i++) {
-          if (currentLat[i] == ' ') currentLat[i] = '0';
-        }
-        if (currentLatDeg > lastLatDeg + SETTINGS_GPS_POSITION_TOLERANCE  ||
-              currentLatDeg < lastLatDeg - SETTINGS_GPS_POSITION_TOLERANCE) {
-          modemCmdFlag_Lat=true;
-          lastLatDeg = currentLatDeg;
-        }
-        
-        //Serial.print(F(" Long2="));
-        currentLngDeg = gps.location.rawLng().deg*100.0 + gps.location.rawLng().billionths*0.000000001*60.0;
-        dtostrf(currentLngDeg, 9, 3, currentLng);
-        currentLng[8] = gps.location.rawLng().negative ? 'W' : 'E';
-        for (byte i = 0; i < sizeof(currentLng) - 1; i++) {
-          if (currentLng[i] == ' ') currentLng[i] = '0';
-        }
-        if (currentLngDeg > lastLngDeg + SETTINGS_GPS_POSITION_TOLERANCE ||
-              currentLngDeg < lastLngDeg - SETTINGS_GPS_POSITION_TOLERANCE) {
-          modemCmdFlag_Lng=true;
-          lastLngDeg = currentLngDeg;
-        }
-        
-      }
-      if (gps.date.isUpdated())
-      {
-        /*
-        Serial.print(F("DATE       Fix Age="));
-        Serial.print(gps.date.age());
-        Serial.print(F("ms Raw="));
-        Serial.print(gps.date.value());
-        Serial.print(F(" Year="));
-        Serial.print(gps.date.year());
-        Serial.print(F(" Month="));
-        Serial.print(gps.date.month());
-        Serial.print(F(" Day="));
-        Serial.println(gps.date.day());
-        */
-        GPSData.Date.Day = gps.date.day();
-        GPSData.Date.Month = gps.date.month();
-        GPSData.Date.Year = gps.date.year();
-        GPSData.Date.DateInt = gps.date.value();
-      }
-      if (gps.time.isUpdated())
-      {
-        /*
-        Serial.print(F("TIME       Fix Age="));
-        Serial.print(gps.time.age());
-        Serial.print(F("ms Raw="));
-        Serial.print(gps.time.value());
-        Serial.print(F(" Hour="));
-        Serial.print(gps.time.hour());
-        Serial.print(F(" Minute="));
-        Serial.print(gps.time.minute());
-        Serial.print(F(" Second="));
-        Serial.print(gps.time.second());
-        Serial.print(F(" Hundredths="));
-        Serial.println(gps.time.centisecond());
-        */
-        GPSData.Time.Hour = gps.time.hour();
-        GPSData.Time.Minute = gps.time.minute();
-        GPSData.Time.Second = gps.time.second();
-        GPSData.Time.CentiSecond = gps.time.centisecond();
-        GPSData.Time.TimeInt = gps.time.value();
-      }
-      if (gps.speed.isUpdated())
-      {
-        /*
-        Serial.print(F("SPEED      Fix Age="));
-        Serial.print(gps.speed.age());
-        Serial.print(F("ms Raw="));
-        Serial.print(gps.speed.value());
-        Serial.print(F(" Knots="));
-        Serial.print(gps.speed.knots());
-        Serial.print(F(" MPH="));
-        Serial.print(gps.speed.mph());
-        Serial.print(F(" m/s="));
-        Serial.print(gps.speed.mps());
-        Serial.print(F(" km/h="));
-        Serial.println(gps.speed.kmph());
-        */
-      }
-      if (gps.course.isUpdated())
-      {
-        /*
-        Serial.print(F("COURSE     Fix Age="));
-        Serial.print(gps.course.age());
-        Serial.print(F("ms Raw="));
-        Serial.print(gps.course.value());
-        Serial.print(F(" Deg="));
-        Serial.println(gps.course.deg());
-        */
-      }
-      if (gps.altitude.isUpdated())
-      {
-        /*
-        Serial.print(F("ALTITUDE   Fix Age="));
-        Serial.print(gps.altitude.age());
-        Serial.print(F("ms Raw="));
-        Serial.print(gps.altitude.value());
-        Serial.print(F(" Meters="));
-        Serial.print(gps.altitude.meters());
-        Serial.print(F(" Miles="));
-        Serial.print(gps.altitude.miles());
-        Serial.print(F(" KM="));
-        Serial.print(gps.altitude.kilometers());
-        Serial.print(F(" Feet="));
-        Serial.println(gps.altitude.feet());
-        */
-      }
-      if (gps.satellites.isUpdated())
-      {
-        /*
-        Serial.print(F("SATELLITES Fix Age="));
-        Serial.print(gps.satellites.age());
-        Serial.print(F("ms Value="));
-        Serial.println(gps.satellites.value());
-        */
-        GPSData.Satellites = gps.satellites.value();
-      }
-      if (gps.hdop.isUpdated())
-      {
-        /*
-        Serial.print(F("HDOP       Fix Age="));
-        Serial.print(gps.hdop.age());
-        Serial.print(F("ms raw="));
-        Serial.print(gps.hdop.value());
-        Serial.print(F(" hdop="));
-        Serial.println(gps.hdop.hdop());
-        */
-      }
-      if (millis() - destination_report_timer > DESTINATION_REPORT_FREQUENCY)
-      {/*
-        Serial.println();
-        if (gps.location.isValid())
+    //  
+    if ( millis() - gps_report_timer > SETTINGS_GPS_UPDATE_FREQUENCY){
+        // reset timer
+        gps_report_timer = millis();
+
+        //
+        if (gps.location.isUpdated() && gps.location.isValid())
         {
-          double distanceToDestination =
-            TinyGPSPlus::distanceBetween(
-              gps.location.lat(),
-              gps.location.lng(),
-              DESTINATION_LAT, 
-              DESTINATION_LON);
-          double courseToDestination =
-            TinyGPSPlus::courseTo(
-              gps.location.lat(),
-              gps.location.lng(),
-              SETTINGS_GPS_DESTINATION_LATITUDE, 
-              SETTINGS_GPS_DESTINATION_LONGITUDE);
-    
-          Serial.print(F("DESTINATION     Distance="));
-          Serial.print((distanceToDestination/1000.0)*0.621371, 6); // mile factor 0.621371
-          Serial.print(F(" mi Course-to="));
-          Serial.print(courseToDestination, 6);
-          Serial.print(F(" degrees ["));
-          Serial.print(TinyGPSPlus::cardinal(courseToDestination));
-          Serial.println(F("]"));
+          gpsInitialized = true;
+          //Serial.print(F("LOCATION   Fix Age="));
+          //Serial.print(gps.location.age());
+          //Serial.print(F("ms Raw Lat="));
+          //Serial.print(gps.location.rawLat().negative ? "-" : "+");
+          //Serial.print(gps.location.rawLat().deg);
+          //Serial.print("[+");
+          //Serial.print(gps.location.rawLat().billionths);
+          //Serial.print(F(" billionths],  Raw Long="));
+          //Serial.print(gps.location.rawLng().negative ? "-" : "+");
+          //Serial.print(gps.location.rawLng().deg);
+          //Serial.print("[+");
+          //Serial.print(gps.location.rawLng().billionths);
+          //Serial.print(F(" billionths],  Lat="));
+          //Serial.print(F(" Lat="));
+          //Serial.print(gps.location.lat(), 6);
+          //Serial.print(F(" Long="));
+          //Serial.print(gps.location.lng(), 6);
+          
+          // DDMM.MM http://ember2ash.com/lat.htm
+          //Serial.print(F(" Lat2="));
+          currentLatDeg = gps.location.rawLat().deg*100.0 + gps.location.rawLat().billionths*0.000000001*60.0;
+          dtostrf(currentLatDeg, 8, 3, currentLat);
+          currentLat[7] = gps.location.rawLat().negative ? 'S' : 'N';
+          for (byte i = 0; i < sizeof(currentLat) - 1; i++) {
+            if (currentLat[i] == ' ') currentLat[i] = '0';
+          }
+          if (currentLatDeg > lastLatDeg + SETTINGS_GPS_POSITION_TOLERANCE  ||
+                currentLatDeg < lastLatDeg - SETTINGS_GPS_POSITION_TOLERANCE) {
+            modemCmdFlag_Lat=true;
+            lastLatDeg = currentLatDeg;
+          }
+          
+          //Serial.print(F(" Long2="));
+          currentLngDeg = gps.location.rawLng().deg*100.0 + gps.location.rawLng().billionths*0.000000001*60.0;
+          dtostrf(currentLngDeg, 9, 3, currentLng);
+          currentLng[8] = gps.location.rawLng().negative ? 'W' : 'E';
+          for (byte i = 0; i < sizeof(currentLng) - 1; i++) {
+            if (currentLng[i] == ' ') currentLng[i] = '0';
+          }
+          if (currentLngDeg > lastLngDeg + SETTINGS_GPS_POSITION_TOLERANCE ||
+                currentLngDeg < lastLngDeg - SETTINGS_GPS_POSITION_TOLERANCE) {
+            modemCmdFlag_Lng=true;
+            lastLngDeg = currentLngDeg;
+          }
+          
         }
-        
-        /*
-        Serial.print(F("DIAGS      Chars="));
-        Serial.print(gps.charsProcessed());
-        Serial.print(F(" Sentences-with-Fix="));
-        Serial.print(gps.sentencesWithFix());
-        Serial.print(F(" Failed-checksum="));
-        Serial.print(gps.failedChecksum());
-        Serial.print(F(" Passed-checksum="));
-        Serial.println(gps.passedChecksum());
-        */
-    /*
-        if (gps.charsProcessed() < 10)
-          Serial.println(F("WARNING: No GPS data.  Check wiring."));
-    
-        destination_report_timer = millis();
-        Serial.println();*/
-      }
+        if (gps.date.isUpdated())
+        {
+          /*
+          Serial.print(F("DATE       Fix Age="));
+          Serial.print(gps.date.age());
+          Serial.print(F("ms Raw="));
+          Serial.print(gps.date.value());
+          Serial.print(F(" Year="));
+          Serial.print(gps.date.year());
+          Serial.print(F(" Month="));
+          Serial.print(gps.date.month());
+          Serial.print(F(" Day="));
+          Serial.println(gps.date.day());
+          */
+          GPSData.Date.Day = gps.date.day();
+          GPSData.Date.Month = gps.date.month();
+          GPSData.Date.Year = gps.date.year();
+          GPSData.Date.DateInt = gps.date.value();
+        }
+        if (gps.time.isUpdated())
+        {
+          /*
+          Serial.print(F("TIME       Fix Age="));
+          Serial.print(gps.time.age());
+          Serial.print(F("ms Raw="));
+          Serial.print(gps.time.value());
+          Serial.print(F(" Hour="));
+          Serial.print(gps.time.hour());
+          Serial.print(F(" Minute="));
+          Serial.print(gps.time.minute());
+          Serial.print(F(" Second="));
+          Serial.print(gps.time.second());
+          Serial.print(F(" Hundredths="));
+          Serial.println(gps.time.centisecond());
+          */
+          GPSData.Time.Hour = gps.time.hour();
+          GPSData.Time.Minute = gps.time.minute();
+          GPSData.Time.Second = gps.time.second();
+          GPSData.Time.CentiSecond = gps.time.centisecond();
+          GPSData.Time.TimeInt = gps.time.value();
+        }
+        if (gps.speed.isUpdated())
+        {
+          /*
+          Serial.print(F("SPEED      Fix Age="));
+          Serial.print(gps.speed.age());
+          Serial.print(F("ms Raw="));
+          Serial.print(gps.speed.value());
+          Serial.print(F(" Knots="));
+          Serial.print(gps.speed.knots());
+          Serial.print(F(" MPH="));
+          Serial.print(gps.speed.mph());
+          Serial.print(F(" m/s="));
+          Serial.print(gps.speed.mps());
+          Serial.print(F(" km/h="));
+          Serial.println(gps.speed.kmph());
+          */
+        }
+        if (gps.course.isUpdated())
+        {
+          /*
+          Serial.print(F("COURSE     Fix Age="));
+          Serial.print(gps.course.age());
+          Serial.print(F("ms Raw="));
+          Serial.print(gps.course.value());
+          Serial.print(F(" Deg="));
+          Serial.println(gps.course.deg());
+          */
+        }
+        if (gps.altitude.isUpdated())
+        {
+          /*
+          Serial.print(F("ALTITUDE   Fix Age="));
+          Serial.print(gps.altitude.age());
+          Serial.print(F("ms Raw="));
+          Serial.print(gps.altitude.value());
+          Serial.print(F(" Meters="));
+          Serial.print(gps.altitude.meters());
+          Serial.print(F(" Miles="));
+          Serial.print(gps.altitude.miles());
+          Serial.print(F(" KM="));
+          Serial.print(gps.altitude.kilometers());
+          Serial.print(F(" Feet="));
+          Serial.println(gps.altitude.feet());
+          */
+        }
+        if (gps.satellites.isUpdated())
+        {
+          /*
+          Serial.print(F("SATELLITES Fix Age="));
+          Serial.print(gps.satellites.age());
+          Serial.print(F("ms Value="));
+          Serial.println(gps.satellites.value());
+          */
+          GPSData.Satellites = gps.satellites.value();
+        }
+        if (gps.hdop.isUpdated())
+        {
+          /*
+          Serial.print(F("HDOP       Fix Age="));
+          Serial.print(gps.hdop.age());
+          Serial.print(F("ms raw="));
+          Serial.print(gps.hdop.value());
+          Serial.print(F(" hdop="));
+          Serial.println(gps.hdop.hdop());
+          */
+        }
+        if (millis() - destination_report_timer > DESTINATION_REPORT_FREQUENCY)
+        {/*
+          Serial.println();
+          if (gps.location.isValid())
+          {
+            double distanceToDestination =
+              TinyGPSPlus::distanceBetween(
+                gps.location.lat(),
+                gps.location.lng(),
+                DESTINATION_LAT, 
+                DESTINATION_LON);
+            double courseToDestination =
+              TinyGPSPlus::courseTo(
+                gps.location.lat(),
+                gps.location.lng(),
+                SETTINGS_GPS_DESTINATION_LATITUDE, 
+                SETTINGS_GPS_DESTINATION_LONGITUDE);
+      
+            Serial.print(F("DESTINATION     Distance="));
+            Serial.print((distanceToDestination/1000.0)*0.621371, 6); // mile factor 0.621371
+            Serial.print(F(" mi Course-to="));
+            Serial.print(courseToDestination, 6);
+            Serial.print(F(" degrees ["));
+            Serial.print(TinyGPSPlus::cardinal(courseToDestination));
+            Serial.println(F("]"));
+          }
+          
+          /*
+          Serial.print(F("DIAGS      Chars="));
+          Serial.print(gps.charsProcessed());
+          Serial.print(F(" Sentences-with-Fix="));
+          Serial.print(gps.sentencesWithFix());
+          Serial.print(F(" Failed-checksum="));
+          Serial.print(gps.failedChecksum());
+          Serial.print(F(" Passed-checksum="));
+          Serial.println(gps.passedChecksum());
+          */
+      /*
+          if (gps.charsProcessed() < 10)
+            Serial.println(F("WARNING: No GPS data.  Check wiring."));
+      
+          destination_report_timer = millis();
+          Serial.println();*/
+        }
 
+    }
   }
-}
 
 #pragma endregion
 
@@ -909,12 +919,12 @@ const char version[] = __DATE__ " " __TIME__;
   #define UI_DISPLAY_SETTINGS_SAVE              8
 
   #define UI_DISPLAY_ROW_TOP                    0
-  #define UI_DISPLAY_ROW_01                     8
-  #define UI_DISPLAY_ROW_02                     16
-  #define UI_DISPLAY_ROW_03                     24
-  #define UI_DISPLAY_ROW_04                     32
-  #define UI_DISPLAY_ROW_05                     40
-  #define UI_DISPLAY_ROW_06                     48
+  #define UI_DISPLAY_ROW_01                     12 // 8
+  #define UI_DISPLAY_ROW_02                     22 // 16
+  #define UI_DISPLAY_ROW_03                     30 // 14
+  #define UI_DISPLAY_ROW_04                     38 // 32
+  #define UI_DISPLAY_ROW_05                     46 // 40
+  #define UI_DISPLAY_ROW_06                     54 // 48
   #define UI_DISPLAY_ROW_BOTTOM                 56
 
   unsigned char currentDisplay = UI_DISPLAY_HOME;
@@ -976,35 +986,69 @@ const char version[] = __DATE__ " " __TIME__;
     float wave = (sin(2 * PI * breathingSpeedHz * t) + 1.0) / 2.0; // [0, 1]
     return map(wave * 100, 0, 100, minBrightness, maxBrightness);
   }
-void drawDitheredHeader(const String& text, uint8_t level) {
-  // Assume cursor has already been set externally
-  int startX = display.getCursorX();
-  int startY = display.getCursorY();
+  void drawDitheredHeader(const String& text, uint8_t level) {
+    // Assume cursor has already been set externally
+    int startX = display.getCursorX();
+    int startY = display.getCursorY();
 
-  // Draw the text
-  display.setTextColor(WHITE);
-  display.print(text);
+    // Draw the text
+    display.setTextColor(WHITE);
+    display.print(text);
 
-  // Width of text in pixels (6 px per char with default font)
-  int textWidth = text.length() * 6;
-  int textHeight = 8; // For default font height
+    // Width of text in pixels (6 px per char with default font)
+    int textWidth = text.length() * 6;
+    int textHeight = 8; // For default font height
 
-  // Overlay a simulated dimming mask
-  if (level < 255) {
-    for (int y = 0; y < textHeight; y++) {
-      for (int x = 0; x < textWidth; x++) {
-        // 50% dither mask if brightness is low
-        if (((x + y) % 2 == 0) && level < 128) {
-          display.drawPixel(startX + x, startY + y, BLACK);
-        }
-        // 25% dither if brightness is very low
-        else if (((x + y) % 4 == 0) && level < 64) {
-          display.drawPixel(startX + x, startY + y, BLACK);
+    // Overlay a simulated dimming mask
+    if (level < 255) {
+      for (int y = 0; y < textHeight; y++) {
+        for (int x = 0; x < textWidth; x++) {
+          // 50% dither mask if brightness is low
+          if (((x + y) % 2 == 0) && level < 128) {
+            display.drawPixel(startX + x, startY + y, BLACK);
+          }
+          // 25% dither if brightness is very low
+          else if (((x + y) % 4 == 0) && level < 64) {
+            display.drawPixel(startX + x, startY + y, BLACK);
+          }
         }
       }
     }
   }
-}
+
+  // x bitmap
+  const uint8_t noGpsIcon[8] = {
+    0b10000001,
+    0b01000010,
+    0b00100100,
+    0b00011000,
+    0b00011000,
+    0b00100100,
+    0b01000010,
+    0b10000001
+  };
+
+  void drawNoGpsIcon(int x, int y) {
+    display.drawBitmap(x, y, noGpsIcon, 8, 8, WHITE);
+  }
+
+  void drawGpsStatusText(bool gpsConnected, uint32_t satellites, int16_t x, int16_t y) {
+    display.setCursor(x, y);
+    display.print("GPS-");
+
+    //
+    int textWidth = 6 * 4;    // 6px per char, 4 letters: G P S |
+    if (!gpsConnected) {
+      // Strikethrough the word "GPS"
+      int _x = x;                // Cursor X where "G" starts
+      int _y = y + 3;           // Middle of text height (for strikethrough)
+      display.drawLine(_x, _y, _x + textWidth - 1, _y, WHITE);
+    }
+
+    //
+    display.setCursor(x + textWidth, y);
+    display.print(satellites);
+  }
 
   // while in edit mode, this method is used to edit a temporary character array that will later be
   // copied into memory. this makes it easier to manage editing a setting from the oled and keyboard.
@@ -1490,10 +1534,14 @@ void drawDitheredHeader(const String& text, uint8_t level) {
       display.print(F("Rx"));
     }
     if (digitalRead(txPin) == HIGH){
-      display.setCursor(20,UI_DISPLAY_ROW_TOP);
+      display.setCursor(13,UI_DISPLAY_ROW_TOP);
       display.print(F("Tx"));
     }
-
+    if (gpsInitializing || gps.location.isValid()){
+      //display.setCursor(31,UI_DISPLAY_ROW_TOP);
+      //display.print(F("GPS"));
+      drawGpsStatusText(gps.location.isValid(), gps.satellites.value(), 26, UI_DISPLAY_ROW_TOP);
+    }
     /* TODO add this object and manage unread messages so that the user is notified
     if (UnreadMessages){
       display.setCursor(40,UI_DISPLAY_ROW_TOP);
@@ -1501,12 +1549,12 @@ void drawDitheredHeader(const String& text, uint8_t level) {
     }
     */
 
-    //
-    display.setCursor(60,UI_DISPLAY_ROW_TOP);
+    // display the voltage
+    display.setCursor(65,UI_DISPLAY_ROW_TOP);
     display.print(String((float)Voltage/1000.0,1) + F("V"));
     
-    //
-    display.setCursor(90,UI_DISPLAY_ROW_TOP);
+    // display the spu scan time
+    display.setCursor(93,UI_DISPLAY_ROW_TOP);
     if (scanTime >= 10000) {
         float timeMs = scanTime / 1000.0;
         display.print(timeMs, 1);  // One decimal place
@@ -1516,20 +1564,15 @@ void drawDitheredHeader(const String& text, uint8_t level) {
         display.print(F("us"));
     }
 
-
-    //
+    // display gps location
     if (SETTINGS_DISPLAY_SHOW_POSITION) {
-      display.setCursor(0,UI_DISPLAY_ROW_BOTTOM);
-      display.print(F("LT:"));
-      
-      display.setCursor(0+18,UI_DISPLAY_ROW_BOTTOM);
-      display.print(currentLatDeg);
-      
-      display.setCursor(62,UI_DISPLAY_ROW_BOTTOM);
-      display.print(F("LG:"));
-      
-      display.setCursor(62+18,UI_DISPLAY_ROW_BOTTOM);
-      display.print(currentLngDeg);
+      int x_lat = 13;
+      display.setCursor(x_lat,UI_DISPLAY_ROW_BOTTOM);
+      display.print(currentLat); // DDMM.mmN
+
+      int x_lng = x_lat + (8 * 6) + 5; // 8 letters times 6 pixels wide plus a gap of 3 (0000.00N)
+      display.setCursor(x_lng, UI_DISPLAY_ROW_BOTTOM);
+      display.print(currentLng); // DDDMM.mmW
     }
   }
 
@@ -2618,7 +2661,7 @@ void drawDitheredHeader(const String& text, uint8_t level) {
       }
       // send location
       // dont send if we dont have valid coordinates (modemCmdFlag_Cmt will remain true so we send when we get coordinates)
-      if (modemCmdFlag_Cmt==true && gpsInitialized==true){
+      if (modemCmdFlag_Cmt==true && gps.location.isValid()==true){
         if (sendModemCommand("@", 1, SETTINGS_APRS_COMMENT, strlen(SETTINGS_APRS_COMMENT)) == -1){
           modemCmdFlag_Cmt=false;
         }
