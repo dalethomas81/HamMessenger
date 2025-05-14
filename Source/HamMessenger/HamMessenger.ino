@@ -682,6 +682,9 @@ const char version[] = __DATE__ " " __TIME__;
   bool gpsInitialized = false; // we can set this when we get our first coordinate
   bool gpsInitializing;
   bool gpsSmartBeaconDistanceConditionMet = false;
+  bool gpsLocationHasChanged = false;
+  float smartBeaconDistance = 0.0;
+  unsigned long currentIdleTime = 0.0;
 
   // London                                 LAT:51.508131     LNG:-0.128002
   //double DESTINATION_LAT = 51.508131, DESTINATION_LON = -0.128002;
@@ -749,6 +752,7 @@ const char version[] = __DATE__ " " __TIME__;
           if (currentLatDeg > lastLatDeg + SETTINGS_GPS_POSITION_TOLERANCE  ||
                 currentLatDeg < lastLatDeg - SETTINGS_GPS_POSITION_TOLERANCE) {
             modemCmdFlag_Lat=true;
+            gpsLocationHasChanged = true;
             lastLatDeg = currentLatDeg;
           }
           
@@ -762,17 +766,8 @@ const char version[] = __DATE__ " " __TIME__;
           if (currentLngDeg > lastLngDeg + SETTINGS_GPS_POSITION_TOLERANCE ||
                 currentLngDeg < lastLngDeg - SETTINGS_GPS_POSITION_TOLERANCE) {
             modemCmdFlag_Lng=true;
+            gpsLocationHasChanged = true;
             lastLngDeg = currentLngDeg;
-          }
-
-          // smart beaconing
-          float smartBeaconDistance = haversineMiles(currentLatDeg, currentLngDeg, lastLatDegSmartBeacon, lastLngDegSmartBeacon);
-          if (smartBeaconDistance > smartBeaconDistanceLast + SETTINGS_APRS_BEACON_TOLERANCE
-              || smartBeaconDistance < smartBeaconDistanceLast - SETTINGS_APRS_BEACON_TOLERANCE) {
-                  smartBeaconDistanceLast = smartBeaconDistance;
-                  lastLatDegSmartBeacon = currentLatDeg;
-                  lastLngDegSmartBeacon = currentLngDeg;
-                  gpsSmartBeaconDistanceConditionMet = true;
           }
           
         }
@@ -1586,7 +1581,7 @@ const char version[] = __DATE__ " " __TIME__;
     display.setCursor(65,UI_DISPLAY_ROW_TOP);
     display.print(String((float)Voltage/1000.0,1) + F("V"));
     
-    // display the spu scan time
+    // display the cpu scan time
     display.setCursor(93,UI_DISPLAY_ROW_TOP);
     if (scanTime >= 10000) {
         float timeMs = scanTime / 1000.0;
@@ -1596,6 +1591,14 @@ const char version[] = __DATE__ " " __TIME__;
         display.print(scanTime);
         display.print(F("us"));
     }
+
+    // temp remove after debug
+    display.setCursor(0,UI_DISPLAY_ROW_05);
+    display.print(currentIdleTime);
+    display.setCursor(40,UI_DISPLAY_ROW_05);
+    display.print(smartBeaconDistance);
+    display.setCursor(100,UI_DISPLAY_ROW_05);
+    display.print(gpsLocationHasChanged);
 
     // display gps location
     if (SETTINGS_DISPLAY_SHOW_POSITION) {
@@ -2634,17 +2637,38 @@ const char version[] = __DATE__ " " __TIME__;
   unsigned long message_retry_timer;
 
   void handleAprsBeacon(){
-    if ( millis() - aprs_beacon_timer > SETTINGS_APRS_BEACON_FREQUENCY 
-        && gpsSmartBeaconDistanceConditionMet 
-        && gps.location.isValid()==true){
-          //
-          gpsSmartBeaconDistanceConditionMet = false;
-          aprs_beacon_timer = millis();
-          
-          if (SETTINGS_APRS_BEACON_ENABLED==true){
-            modemCmdFlag_Cmt=true;
-          }
+    // smart beaconing
+    currentIdleTime = millis() - aprs_beacon_timer;
+    smartBeaconDistance = haversineMiles(currentLatDeg, currentLngDeg, lastLatDegSmartBeacon, lastLngDegSmartBeacon);
+    if (!gpsLocationHasChanged){
+      aprs_beacon_timer = millis();
+
+    } else {
+      if (smartBeaconDistance > smartBeaconDistanceLast + SETTINGS_APRS_BEACON_TOLERANCE
+          || smartBeaconDistance < smartBeaconDistanceLast - SETTINGS_APRS_BEACON_TOLERANCE) {
+              // internal variables
+              smartBeaconDistanceLast = smartBeaconDistance;
+              lastLatDegSmartBeacon = currentLatDeg;
+              lastLngDegSmartBeacon = currentLngDeg;
+              // set flag
+              gpsSmartBeaconDistanceConditionMet = true;
+              // reset the beacon timer
+              //aprs_beacon_timer = millis();
+
+      }
+      if ((currentIdleTime > SETTINGS_APRS_BEACON_FREQUENCY || gpsSmartBeaconDistanceConditionMet) && gps.location.isValid()==true){
+        gpsSmartBeaconDistanceConditionMet = false;
+        //
+        gpsLocationHasChanged = false;
+        //
+        smartBeaconDistanceLast = smartBeaconDistance;
+        lastLatDegSmartBeacon = currentLatDeg;
+        lastLngDegSmartBeacon = currentLngDeg;
+        //
+        if (SETTINGS_APRS_BEACON_ENABLED==true) modemCmdFlag_Cmt=true;
+      }
     }
+
   }
 
   void handleSendMessage(){  
