@@ -1627,7 +1627,7 @@ const char version[] = __DATE__ " " __TIME__;
       display.clearDisplay();
       
       // add global objects to buffer
-      //handleDisplay_Global();
+      handleDisplay_Global();
 
       // handle cursor
       //int selectionRow = handleDisplay_GetSelectionRow(cursorPosition_Y+1);
@@ -1643,12 +1643,20 @@ const char version[] = __DATE__ " " __TIME__;
       }
       
       // handle body
-      display.setCursor(0,UI_DISPLAY_ROW_05);
+      display.setCursor(0,UI_DISPLAY_ROW_02);
+      display.print(F("Idle Time:"));
+      display.setCursor(60,UI_DISPLAY_ROW_02); // 6 pixels * 10 chars
       display.print(currentIdleTime);
-      display.setCursor(40,UI_DISPLAY_ROW_05);
+
+      display.setCursor(0,UI_DISPLAY_ROW_03);
+      display.print(F("Distance:"));
+      display.setCursor(54,UI_DISPLAY_ROW_03); // 6 pixels * 9 chars
       display.print(smartBeaconDistance);
-      display.setCursor(100,UI_DISPLAY_ROW_05);
-      display.print(gpsLocationHasChanged);
+
+      display.setCursor(0,UI_DISPLAY_ROW_04);
+      display.print(F("Locating:"));
+      display.setCursor(54,UI_DISPLAY_ROW_04); // 6 pixels * 9 chars
+      display.print((gpsLocationHasChanged ? "True" : "False"));
 
       
       // display all content from buffer
