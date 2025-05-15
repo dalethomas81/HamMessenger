@@ -1643,20 +1643,30 @@ const char version[] = __DATE__ " " __TIME__;
       }
       
       // handle body
-      display.setCursor(0,UI_DISPLAY_ROW_02);
-      display.print(F("Idle Time:"));
-      display.setCursor(60,UI_DISPLAY_ROW_02); // 6 pixels * 10 chars
+      display.setCursor(6,UI_DISPLAY_ROW_02);
+      display.print(F("Idle:"));
+      display.setCursor(36,UI_DISPLAY_ROW_02); // 6 pixels + 6 pixels * 5 chars = 36
       display.print(currentIdleTime);
 
-      display.setCursor(0,UI_DISPLAY_ROW_03);
-      display.print(F("Distance:"));
-      display.setCursor(54,UI_DISPLAY_ROW_03); // 6 pixels * 9 chars
+      display.setCursor(6,UI_DISPLAY_ROW_03);
+      display.print(F("Dist:"));
+      display.setCursor(36,UI_DISPLAY_ROW_03); // 6 pixels + 6 pixels * 5 chars = 36
       display.print(smartBeaconDistance);
 
-      display.setCursor(0,UI_DISPLAY_ROW_04);
-      display.print(F("Locating:"));
-      display.setCursor(54,UI_DISPLAY_ROW_04); // 6 pixels * 9 chars
+      display.setCursor(6,UI_DISPLAY_ROW_04);
+      display.print(F("Loc:"));
+      display.setCursor(30,UI_DISPLAY_ROW_04); // 6 pixels + 6 pixels * 4 chars = 30
       display.print((gpsLocationHasChanged ? "True" : "False"));
+
+      display.setCursor(6,UI_DISPLAY_ROW_05);
+      display.print(F("Spd:"));
+      display.setCursor(30,UI_DISPLAY_ROW_05); // 6 pixels + 6 pixels * 4 chars = 30
+      display.print(gps.speed.mph());
+
+      display.setCursor(66,UI_DISPLAY_ROW_05); // 30 pixels + 6 pixels * 6 chars = 66
+      display.print(F("hdop:"));
+      display.setCursor(96,UI_DISPLAY_ROW_05); // 66 pixels + 6 pixels * 5 chars = 96
+      display.print(gps.hdop.value());
 
       
       // display all content from buffer
