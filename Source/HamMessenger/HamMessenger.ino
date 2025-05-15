@@ -151,6 +151,7 @@ const char version[] = __DATE__ " " __TIME__;
     char c = Wire.read();
     if (c != 0)
     {
+      //Serial.println((int)c);
       if (!displayDim) { // key presses should only register if screen awake
         keyboardInputChar = c;
       }
@@ -165,7 +166,7 @@ const char version[] = __DATE__ " " __TIME__;
 
   #include <EEPROM.h>
 
-  const char Initialized[] = {"Initialized 2025MAY13"}; // change this to something unique if you want to re-init the EEPROM during flashing. useful when there has been a change to a settings array.
+  const char Initialized[] = {"Initialized 2025MAY14"}; // change this to something unique if you want to re-init the EEPROM during flashing. useful when there has been a change to a settings array.
 
   #define EEPROM_SETTINGS_START_ADDR      1000
   #define SETTINGS_EDIT_TYPE_NONE         0
@@ -183,36 +184,36 @@ const char version[] = __DATE__ " " __TIME__;
   #define SETTINGS_EDIT_TYPE_ALT3         23
                           
   const char *MenuItems_Settings[] = {"APRS","GPS","Display"};
-  const char *MenuItems_Settings_APRS[] = {"Beacon Enabled","Beacon Tolerance","Beacon Frequency","Raw Packet","Comment","Message Text","Recipient Callsign","Recipient SSID","My Callsign","My Callsign SSID", 
+  const char *MenuItems_Settings_APRS[] = {"Beacon Enabled","Beacon Distance","Beacon Idle Time","Raw Packet","Comment","Message Text","Recipient Callsign","Recipient SSID","My Callsign","My Callsign SSID", 
                                           "Dest Callsign", "Dest SSID", "PATH1 Callsign", "PATH1 SSID", "PATH2 Callsign", "PATH2 SSID",
                                           "Symbol", "Table", "Automatic ACK", "Preamble", "Tail", "Retry Count", "Retry Interval"};
-  const char *MenuItems_Settings_GPS[] = {"Update Freq","Pos Tolerance", "Dest Latitude", "Dest Longitude"};
+  const char *MenuItems_Settings_GPS[] = {"Pos Tolerance", "Dest Latitude", "Dest Longitude"};
   const char *MenuItems_Settings_Display[] = {"Timeout", "Brightness", "Show Position", "Scroll Messages", "Scroll Speed", "Invert"};
 
   unsigned char Settings_Type_APRS[] = {SETTINGS_EDIT_TYPE_BOOLEAN,SETTINGS_EDIT_TYPE_FLOAT,SETTINGS_EDIT_TYPE_ULONG,SETTINGS_EDIT_TYPE_STRING100,SETTINGS_EDIT_TYPE_STRING100,
                                         SETTINGS_EDIT_TYPE_STRING100,SETTINGS_EDIT_TYPE_STRING7,SETTINGS_EDIT_TYPE_STRING2,SETTINGS_EDIT_TYPE_STRING7,SETTINGS_EDIT_TYPE_STRING2,
                                         SETTINGS_EDIT_TYPE_STRING7,SETTINGS_EDIT_TYPE_STRING2,SETTINGS_EDIT_TYPE_STRING7,SETTINGS_EDIT_TYPE_STRING2,SETTINGS_EDIT_TYPE_STRING7,SETTINGS_EDIT_TYPE_STRING2,
                                         SETTINGS_EDIT_TYPE_STRING2,SETTINGS_EDIT_TYPE_ALT1,SETTINGS_EDIT_TYPE_BOOLEAN,SETTINGS_EDIT_TYPE_UINT,SETTINGS_EDIT_TYPE_UINT,SETTINGS_EDIT_TYPE_UINT,SETTINGS_EDIT_TYPE_UINT};
-  unsigned char Settings_Type_GPS[] = {SETTINGS_EDIT_TYPE_ULONG,SETTINGS_EDIT_TYPE_FLOAT,SETTINGS_EDIT_TYPE_FLOAT,SETTINGS_EDIT_TYPE_FLOAT};
+  unsigned char Settings_Type_GPS[] = {SETTINGS_EDIT_TYPE_FLOAT,SETTINGS_EDIT_TYPE_FLOAT,SETTINGS_EDIT_TYPE_FLOAT};
   unsigned char Settings_Type_Display[] = {SETTINGS_EDIT_TYPE_ULONG, SETTINGS_EDIT_TYPE_UINT, SETTINGS_EDIT_TYPE_BOOLEAN, SETTINGS_EDIT_TYPE_BOOLEAN, SETTINGS_EDIT_TYPE_UINT, SETTINGS_EDIT_TYPE_BOOLEAN};
   unsigned char Settings_TypeIndex_APRS[] = {0,0,0,0,1,2,0,0,1,1,2,2,3,3,4,4,5,6,3,1,2,4,5}; // this is the index in the array of the data arrays below
-  unsigned char Settings_TypeIndex_GPS[] = {1,1,2,3};
-  unsigned char Settings_TypeIndex_Display[] = {2,0,1,2,3,4};
+  unsigned char Settings_TypeIndex_GPS[] = {1,2,3};
+  unsigned char Settings_TypeIndex_Display[] = {1,0,1,2,3,4};
   // data arrays
   bool Settings_TypeBool[5] = {true,true,true,true,false}; // aprs beacon enabled, display show position, scroll messages, auto ACK, invert
   int Settings_TypeInt[0] = {};
   unsigned int Settings_TypeUInt[6] = {100,400,80,4,5,10000}; // display brightness, aprs preamble, aprs tail, scroll speed, Retry Count, Retry Interval
   long Settings_TypeLong[0] = {};
-  unsigned long Settings_TypeULong[3] = {300000,10000,2000}; // aprs beacon frequency, gps update frequency, display timeout
-  float Settings_TypeFloat[4] = {1.00000,0.00001,34.790040,-82.790672}; // aprs beacon tolerance, gps position tolerance, gps latitude, gps longitude
+  unsigned long Settings_TypeULong[2] = {300000, 2000}; // aprs beacon Idle Time, display timeout
+  float Settings_TypeFloat[4] = {1.00000,0.00001,34.790040,-82.790672}; // aprs beacon distance, gps position tolerance, gps latitude, gps longitude
   char Settings_TypeString2[7][2] = {'0','\0'};
   char Settings_TypeString7[5][7] = {'N','O','C','A','L','L','\0'};
   char Settings_TypeString100[3][100] = {'T','e','s','t','\0'};
   char Settings_TempDispCharArr[100];
 
   #define SETTINGS_APRS_BEACON_ENABLED          Settings_TypeBool[Settings_TypeIndex_APRS[0]]        // beacon enabled
-  #define SETTINGS_APRS_BEACON_TOLERANCE        Settings_TypeFloat[Settings_TypeIndex_APRS[1]]        // beacon tolerance
-  #define SETTINGS_APRS_BEACON_FREQUENCY        Settings_TypeULong[Settings_TypeIndex_APRS[2]]        // beacon frequency
+  #define SETTINGS_APRS_BEACON_DISTANCE         Settings_TypeFloat[Settings_TypeIndex_APRS[1]]        // beacon distance
+  #define SETTINGS_APRS_BEACON_IDLE_TIME        Settings_TypeULong[Settings_TypeIndex_APRS[2]]        // beacon idle time
   #define SETTINGS_APRS_RAW_PACKET              Settings_TypeString100[Settings_TypeIndex_APRS[3]]    // raw packet
   #define SETTINGS_APRS_COMMENT                 Settings_TypeString100[Settings_TypeIndex_APRS[4]]    // comment
   #define SETTINGS_APRS_MESSAGE                 Settings_TypeString100[Settings_TypeIndex_APRS[5]]    // message
@@ -234,10 +235,9 @@ const char version[] = __DATE__ " " __TIME__;
   #define SETTINGS_APRS_RETRY_COUNT             Settings_TypeUInt[Settings_TypeIndex_APRS[21]]        // Retry Count
   #define SETTINGS_APRS_RETRY_INTERVAL          Settings_TypeUInt[Settings_TypeIndex_APRS[22]]        // Retry Interval
 
-  #define SETTINGS_GPS_UPDATE_FREQUENCY         Settings_TypeULong[Settings_TypeIndex_GPS[0]]       // update frequency
-  #define SETTINGS_GPS_POSITION_TOLERANCE       Settings_TypeFloat[Settings_TypeIndex_GPS[1]]       // position tolerance
-  #define SETTINGS_GPS_DESTINATION_LATITUDE     Settings_TypeFloat[Settings_TypeIndex_GPS[2]]       // destination latitude
-  #define SETTINGS_GPS_DESTINATION_LONGITUDE    Settings_TypeFloat[Settings_TypeIndex_GPS[3]]       // destination longitute
+  #define SETTINGS_GPS_POSITION_TOLERANCE       Settings_TypeFloat[Settings_TypeIndex_GPS[0]]       // position tolerance
+  #define SETTINGS_GPS_DESTINATION_LATITUDE     Settings_TypeFloat[Settings_TypeIndex_GPS[1]]       // destination latitude
+  #define SETTINGS_GPS_DESTINATION_LONGITUDE    Settings_TypeFloat[Settings_TypeIndex_GPS[2]]       // destination longitute
 
   #define SETTINGS_DISPLAY_TIMEOUT              Settings_TypeULong[Settings_TypeIndex_Display[0]]        // timeout
   #define SETTINGS_DISPLAY_BRIGHTNESS           Settings_TypeUInt[Settings_TypeIndex_Display[1]]         // brightness
@@ -298,9 +298,9 @@ const char version[] = __DATE__ " " __TIME__;
 
     SETTINGS_APRS_BEACON_ENABLED = true;
     
-    SETTINGS_APRS_BEACON_TOLERANCE = 1.0000;
+    SETTINGS_APRS_BEACON_DISTANCE = 1.0000;
 
-    SETTINGS_APRS_BEACON_FREQUENCY = 60000;
+    SETTINGS_APRS_BEACON_IDLE_TIME = 60000;
 
     char strTemp1[] = {"HamMessenger!"};
     for (int i=0; i<sizeof(strTemp1);i++) {
@@ -366,11 +366,9 @@ const char version[] = __DATE__ " " __TIME__;
 
     SETTINGS_APRS_RETRY_INTERVAL = 10000;
     
-    // London  LAT:51.508131     LNG:-0.128002
-    SETTINGS_GPS_UPDATE_FREQUENCY = 1000; // how often we care about updates from the GPS unit
-
     SETTINGS_GPS_POSITION_TOLERANCE = 0.01;  // unit is in degrees
 
+    // London  LAT:51.508131     LNG:-0.128002
     SETTINGS_GPS_DESTINATION_LATITUDE = 51.508131;
 
     SETTINGS_GPS_DESTINATION_LONGITUDE = -0.128002;
@@ -701,6 +699,40 @@ const char version[] = __DATE__ " " __TIME__;
     float c = 2 * atan2(sqrt(a), sqrt(1 - a));
     return EARTH_RADIUS_MI * c;
   }
+  float parseAprsLat(const char *aprsLat) {
+    // Extract degrees (first 2 chars)
+    uint8_t degrees = (aprsLat[0] - '0') * 10 + (aprsLat[1] - '0');
+
+    // Extract minutes (next chars until hemisphere)
+    float minutes = atof(&aprsLat[2]);
+
+    // Hemisphere (N/S is at position 7 for 8-char string)
+    char hemisphere = aprsLat[7];
+
+    float decimalDegrees = degrees + (minutes / 60.0);
+
+    if (hemisphere == 'S') decimalDegrees = -decimalDegrees;
+
+    return decimalDegrees;
+  }
+  float parseAprsLon(const char *aprsLon) {
+    // Extract degrees (first 3 chars)
+    uint16_t degrees = (aprsLon[0] - '0') * 100 +
+                      (aprsLon[1] - '0') * 10 +
+                      (aprsLon[2] - '0');
+
+    // Extract minutes (next chars until hemisphere)
+    float minutes = atof(&aprsLon[3]);
+
+    // Hemisphere (E/W is at position 8 for 9-char string)
+    char hemisphere = aprsLon[8];
+
+    float decimalDegrees = degrees + (minutes / 60.0);
+
+    if (hemisphere == 'W') decimalDegrees = -decimalDegrees;
+
+    return decimalDegrees;
+  }
 
   void readGPS(){
     // monitor the serial port for data from the GPS
@@ -723,23 +755,23 @@ const char version[] = __DATE__ " " __TIME__;
         if (gps.location.isUpdated() && gps.location.isValid())
         {
           gpsInitialized = true;
-          //Serial.print(F("LOCATION   Fix Age="));
-          //Serial.print(gps.location.age());
-          //Serial.print(F("ms Raw Lat="));
-          //Serial.print(gps.location.rawLat().negative ? "-" : "+");
-          //Serial.print(gps.location.rawLat().deg);
-          //Serial.print("[+");
-          //Serial.print(gps.location.rawLat().billionths);
-          //Serial.print(F(" billionths],  Raw Long="));
-          //Serial.print(gps.location.rawLng().negative ? "-" : "+");
-          //Serial.print(gps.location.rawLng().deg);
-          //Serial.print("[+");
-          //Serial.print(gps.location.rawLng().billionths);
-          //Serial.print(F(" billionths],  Lat="));
-          //Serial.print(F(" Lat="));
-          //Serial.print(gps.location.lat(), 6);
-          //Serial.print(F(" Long="));
-          //Serial.print(gps.location.lng(), 6);
+        /*Serial.print(F("LOCATION   Fix Age="));
+          Serial.print(gps.location.age());
+          Serial.print(F("ms Raw Lat="));
+          Serial.print(gps.location.rawLat().negative ? "-" : "+");
+          Serial.print(gps.location.rawLat().deg);
+          Serial.print("[+");
+          Serial.print(gps.location.rawLat().billionths);
+          Serial.print(F(" billionths],  Raw Long="));
+          Serial.print(gps.location.rawLng().negative ? "-" : "+");
+          Serial.print(gps.location.rawLng().deg);
+          Serial.print("[+");
+          Serial.print(gps.location.rawLng().billionths);
+          Serial.print(F(" billionths],  Lat="));
+          Serial.print(F(" Lat="));
+          Serial.print(gps.location.lat(), 6);
+          Serial.print(F(" Long="));
+          Serial.print(gps.location.lng(), 6); */
           
           // DDMM.MM http://ember2ash.com/lat.htm
           //Serial.print(F(" Lat2="));
@@ -945,6 +977,7 @@ const char version[] = __DATE__ " " __TIME__;
   #define UI_DISPLAY_SETTINGS_GPS               6
   #define UI_DISPLAY_SETTINGS_DISPLAY           7
   #define UI_DISPLAY_SETTINGS_SAVE              8
+  #define UI_DISPLAY_DEBUG                      9
 
   #define UI_DISPLAY_ROW_TOP                    0
   #define UI_DISPLAY_ROW_01                     12 // 8
@@ -1505,6 +1538,9 @@ const char version[] = __DATE__ " " __TIME__;
       case UI_DISPLAY_SETTINGS_SAVE:
         handleDisplay_Settings_Save();
         break;
+      case UI_DISPLAY_DEBUG:
+        handleDisplay_Debug();
+        break;
       default:
         handleDisplay_Home();
         break;
@@ -1551,6 +1587,78 @@ const char version[] = __DATE__ " " __TIME__;
     delay(3000);
   }
 
+  void handleDisplay_Debug(){
+    // the displayInitialized variable gets cleared each time a display changes. this signals to the
+    // display method that it is in "on first show" and needs to initialize. this is where we clear and 
+    // initalize critical variables such as cursor positions.
+    if (!displayInitialized){
+      cursorPosition_X = 0;
+      cursorPosition_Y = 0;
+      cursorPosition_X_Last = 0;
+      cursorPosition_Y_Last = 0;
+    }
+    // handle button context for current display
+    if (keyboardInputChar == KEYBOARD_UP_KEY){
+      if (cursorPosition_Y > 0){
+        cursorPosition_Y--;
+      } else {
+        cursorPosition_Y=2;
+      }
+    }
+    if (keyboardInputChar == KEYBOARD_DOWN_KEY){ 
+      if (cursorPosition_Y < 2){
+        cursorPosition_Y++;
+      } else {
+        cursorPosition_Y=0;
+      }
+    }
+    if (keyboardInputChar == KEYBOARD_LEFT_KEY){
+    }
+    if (keyboardInputChar == KEYBOARD_RIGHT_KEY){
+    }
+    if (keyboardInputChar == KEYBOARD_ENTER_KEY){
+    }
+    if (keyboardInputChar == KEYBOARD_ESCAPE_KEY){
+      currentDisplay = UI_DISPLAY_HOME;
+    }      
+    // build display
+    if (displayRefresh_Global){
+      // clear the buffer
+      display.clearDisplay();
+      
+      // add global objects to buffer
+      //handleDisplay_Global();
+
+      // handle cursor
+      //int selectionRow = handleDisplay_GetSelectionRow(cursorPosition_Y+1);
+      //display.setCursor(0,selectionRow);
+      //display.print(F(">"));
+
+      // handle header
+      display.setCursor(6,UI_DISPLAY_ROW_01);
+      display.print(F("[       ]"));
+      if(displayBlink || !displayInitialized){
+        display.setCursor(6,UI_DISPLAY_ROW_01);
+        display.print(F("[ DEBUG ]"));
+      }
+      
+      // handle body
+      display.setCursor(0,UI_DISPLAY_ROW_05);
+      display.print(currentIdleTime);
+      display.setCursor(40,UI_DISPLAY_ROW_05);
+      display.print(smartBeaconDistance);
+      display.setCursor(100,UI_DISPLAY_ROW_05);
+      display.print(gpsLocationHasChanged);
+
+      
+      // display all content from buffer
+      display.display();
+
+      //
+      displayInitialized = true;
+    }
+  }
+
   // this method handles all of the global objects of the display. any objects that are common between
   // the displays will go here. things such as voltage, scan time, latitude/longitude, etc all are 
   // added to the display buffer here. each of the displays will call this method when building its
@@ -1592,14 +1700,6 @@ const char version[] = __DATE__ " " __TIME__;
         display.print(F("us"));
     }
 
-    // temp remove after debug
-    display.setCursor(0,UI_DISPLAY_ROW_05);
-    display.print(currentIdleTime);
-    display.setCursor(40,UI_DISPLAY_ROW_05);
-    display.print(smartBeaconDistance);
-    display.setCursor(100,UI_DISPLAY_ROW_05);
-    display.print(gpsLocationHasChanged);
-
     // display gps location
     if (SETTINGS_DISPLAY_SHOW_POSITION) {
       int x_lat = 13;
@@ -1639,6 +1739,8 @@ const char version[] = __DATE__ " " __TIME__;
       }
     }
     if (keyboardInputChar == KEYBOARD_LEFT_KEY){
+      currentDisplay = UI_DISPLAY_DEBUG;
+      previousDisplay = UI_DISPLAY_HOME;
     }
     if (keyboardInputChar == KEYBOARD_RIGHT_KEY){
     }
@@ -2633,40 +2735,56 @@ const char version[] = __DATE__ " " __TIME__;
   bool modemCmdFlag_MsgRecipient=false, modemCmdFlag_MsgRecipientSSID=false;
   unsigned char sendMessage_Seq=0, sendMessage_Retrys;
   #define MAXIMUM_MODEM_COMMAND_RATE 100        // maximum rate that commands can be sent to modem
-  unsigned long modem_command_timer, aprs_beacon_timer;
+  unsigned long modem_command_timer, aprs_beacon_timer, smart_beacon_timer;
   unsigned long message_retry_timer;
 
   void handleAprsBeacon(){
-    // smart beaconing
-    currentIdleTime = millis() - aprs_beacon_timer;
-    smartBeaconDistance = haversineMiles(currentLatDeg, currentLngDeg, lastLatDegSmartBeacon, lastLngDegSmartBeacon);
-    if (!gpsLocationHasChanged){
-      aprs_beacon_timer = millis();
+    
+    if (millis() - smart_beacon_timer > 0){ 
+      smart_beacon_timer = millis();
 
-    } else {
-      if (smartBeaconDistance > smartBeaconDistanceLast + SETTINGS_APRS_BEACON_TOLERANCE
-          || smartBeaconDistance < smartBeaconDistanceLast - SETTINGS_APRS_BEACON_TOLERANCE) {
-              // internal variables
-              smartBeaconDistanceLast = smartBeaconDistance;
-              lastLatDegSmartBeacon = currentLatDeg;
-              lastLngDegSmartBeacon = currentLngDeg;
-              // set flag
-              gpsSmartBeaconDistanceConditionMet = true;
-              // reset the beacon timer
-              //aprs_beacon_timer = millis();
+      // move inside else when done debugging
+      currentIdleTime = millis() - aprs_beacon_timer;
+      float i = parseAprsLat(currentLat);
+      float j = parseAprsLon(currentLng);
+      smartBeaconDistance = haversineMiles(i, j, lastLatDegSmartBeacon, lastLngDegSmartBeacon);
+
+      // smart beaconing
+      if (!gpsLocationHasChanged){
+        aprs_beacon_timer = millis();
+
+      } else {
+        // as long as we are moving, reset the beacon timer
+        if (modemCmdFlag_Lat || modemCmdFlag_Lng){
+          aprs_beacon_timer = millis();
+        }
+        // if the beacon distance is satisfied we set the flag to beacon
+        if (smartBeaconDistance > smartBeaconDistanceLast + SETTINGS_APRS_BEACON_DISTANCE
+            || smartBeaconDistance < smartBeaconDistanceLast - SETTINGS_APRS_BEACON_DISTANCE) {
+                // internal variables
+                smartBeaconDistanceLast = smartBeaconDistance;
+                lastLatDegSmartBeacon = i;
+                lastLngDegSmartBeacon = j;
+                // set flag
+                gpsSmartBeaconDistanceConditionMet = true;
+                // reset the beacon timer
+                //aprs_beacon_timer = millis();
+        }
+        // if the beacon flag is set or the timer expires, we beacon
+        if ((currentIdleTime > SETTINGS_APRS_BEACON_IDLE_TIME || gpsSmartBeaconDistanceConditionMet) && gps.location.isValid()==true){
+          gpsSmartBeaconDistanceConditionMet = false;
+          //
+          gpsLocationHasChanged = false;
+          //
+          smartBeaconDistanceLast = smartBeaconDistance;
+          lastLatDegSmartBeacon = i;
+          lastLngDegSmartBeacon = j;
+          //
+          if (SETTINGS_APRS_BEACON_ENABLED==true) modemCmdFlag_Cmt=true;
+        }
 
       }
-      if ((currentIdleTime > SETTINGS_APRS_BEACON_FREQUENCY || gpsSmartBeaconDistanceConditionMet) && gps.location.isValid()==true){
-        gpsSmartBeaconDistanceConditionMet = false;
-        //
-        gpsLocationHasChanged = false;
-        //
-        smartBeaconDistanceLast = smartBeaconDistance;
-        lastLatDegSmartBeacon = currentLatDeg;
-        lastLngDegSmartBeacon = currentLngDeg;
-        //
-        if (SETTINGS_APRS_BEACON_ENABLED==true) modemCmdFlag_Cmt=true;
-      }
+
     }
 
   }
@@ -3180,32 +3298,33 @@ const char version[] = __DATE__ " " __TIME__;
     Serial.println();
     Serial.println(F("Current Settings"));
     Serial.println(F("APRS:"));
-    Serial.print(MenuItems_Settings_APRS[0]); Serial.print("="); Serial.println(SETTINGS_APRS_BEACON_FREQUENCY);
-    Serial.print(MenuItems_Settings_APRS[1]); Serial.print("="); Serial.println(SETTINGS_APRS_RAW_PACKET);
-    Serial.print(MenuItems_Settings_APRS[2]); Serial.print("="); Serial.println(SETTINGS_APRS_COMMENT);
-    Serial.print(MenuItems_Settings_APRS[3]); Serial.print("="); Serial.println(SETTINGS_APRS_MESSAGE);
-    Serial.print(MenuItems_Settings_APRS[4]); Serial.print("="); Serial.println(SETTINGS_APRS_RECIPIENT_CALL);
-    Serial.print(MenuItems_Settings_APRS[5]); Serial.print("="); Serial.println(SETTINGS_APRS_RECIPIENT_SSID);
-    Serial.print(MenuItems_Settings_APRS[6]); Serial.print("="); Serial.println(SETTINGS_APRS_CALLSIGN);
-    Serial.print(MenuItems_Settings_APRS[7]); Serial.print("="); Serial.println(SETTINGS_APRS_CALLSIGN_SSID);
-    Serial.print(MenuItems_Settings_APRS[8]); Serial.print("="); Serial.println(SETTINGS_APRS_DESTINATION_CALL);
-    Serial.print(MenuItems_Settings_APRS[9]); Serial.print("="); Serial.println(SETTINGS_APRS_DESTINATION_SSID);
-    Serial.print(MenuItems_Settings_APRS[10]); Serial.print("="); Serial.println(SETTINGS_APRS_PATH1_CALL);
-    Serial.print(MenuItems_Settings_APRS[11]); Serial.print("="); Serial.println(SETTINGS_APRS_PATH1_SSID);
-    Serial.print(MenuItems_Settings_APRS[12]); Serial.print("="); Serial.println(SETTINGS_APRS_PATH2_CALL);
-    Serial.print(MenuItems_Settings_APRS[13]); Serial.print("="); Serial.println(SETTINGS_APRS_PATH2_SSID);
-    Serial.print(MenuItems_Settings_APRS[14]); Serial.print("="); Serial.println(SETTINGS_APRS_SYMBOL);
-    Serial.print(MenuItems_Settings_APRS[15]); Serial.print("="); Serial.println(SETTINGS_APRS_SYMBOL_TABLE);
-    Serial.print(MenuItems_Settings_APRS[16]); Serial.print("="); Serial.println(SETTINGS_APRS_AUTOMATIC_ACK);
-    Serial.print(MenuItems_Settings_APRS[17]); Serial.print("="); Serial.println(SETTINGS_APRS_PREAMBLE);
-    Serial.print(MenuItems_Settings_APRS[18]); Serial.print("="); Serial.println(SETTINGS_APRS_TAIL);
-    Serial.print(MenuItems_Settings_APRS[19]); Serial.print("="); Serial.println(SETTINGS_APRS_RETRY_COUNT);
-    Serial.print(MenuItems_Settings_APRS[20]); Serial.print("="); Serial.println(SETTINGS_APRS_RETRY_INTERVAL);
+    Serial.print(MenuItems_Settings_APRS[0]); Serial.print("="); Serial.println(SETTINGS_APRS_BEACON_ENABLED);
+    Serial.print(MenuItems_Settings_APRS[1]); Serial.print("="); Serial.println(SETTINGS_APRS_BEACON_DISTANCE);
+    Serial.print(MenuItems_Settings_APRS[2]); Serial.print("="); Serial.println(SETTINGS_APRS_BEACON_IDLE_TIME);
+    Serial.print(MenuItems_Settings_APRS[3]); Serial.print("="); Serial.println(SETTINGS_APRS_RAW_PACKET);
+    Serial.print(MenuItems_Settings_APRS[4]); Serial.print("="); Serial.println(SETTINGS_APRS_COMMENT);
+    Serial.print(MenuItems_Settings_APRS[5]); Serial.print("="); Serial.println(SETTINGS_APRS_MESSAGE);
+    Serial.print(MenuItems_Settings_APRS[6]); Serial.print("="); Serial.println(SETTINGS_APRS_RECIPIENT_CALL);
+    Serial.print(MenuItems_Settings_APRS[7]); Serial.print("="); Serial.println(SETTINGS_APRS_RECIPIENT_SSID);
+    Serial.print(MenuItems_Settings_APRS[8]); Serial.print("="); Serial.println(SETTINGS_APRS_CALLSIGN);
+    Serial.print(MenuItems_Settings_APRS[9]); Serial.print("="); Serial.println(SETTINGS_APRS_CALLSIGN_SSID);
+    Serial.print(MenuItems_Settings_APRS[10]); Serial.print("="); Serial.println(SETTINGS_APRS_DESTINATION_CALL);
+    Serial.print(MenuItems_Settings_APRS[11]); Serial.print("="); Serial.println(SETTINGS_APRS_DESTINATION_SSID);
+    Serial.print(MenuItems_Settings_APRS[12]); Serial.print("="); Serial.println(SETTINGS_APRS_PATH1_CALL);
+    Serial.print(MenuItems_Settings_APRS[13]); Serial.print("="); Serial.println(SETTINGS_APRS_PATH1_SSID);
+    Serial.print(MenuItems_Settings_APRS[14]); Serial.print("="); Serial.println(SETTINGS_APRS_PATH2_CALL);
+    Serial.print(MenuItems_Settings_APRS[15]); Serial.print("="); Serial.println(SETTINGS_APRS_PATH2_SSID);
+    Serial.print(MenuItems_Settings_APRS[16]); Serial.print("="); Serial.println(SETTINGS_APRS_SYMBOL);
+    Serial.print(MenuItems_Settings_APRS[17]); Serial.print("="); Serial.println(SETTINGS_APRS_SYMBOL_TABLE);
+    Serial.print(MenuItems_Settings_APRS[18]); Serial.print("="); Serial.println(SETTINGS_APRS_AUTOMATIC_ACK);
+    Serial.print(MenuItems_Settings_APRS[19]); Serial.print("="); Serial.println(SETTINGS_APRS_PREAMBLE);
+    Serial.print(MenuItems_Settings_APRS[20]); Serial.print("="); Serial.println(SETTINGS_APRS_TAIL);
+    Serial.print(MenuItems_Settings_APRS[21]); Serial.print("="); Serial.println(SETTINGS_APRS_RETRY_COUNT);
+    Serial.print(MenuItems_Settings_APRS[22]); Serial.print("="); Serial.println(SETTINGS_APRS_RETRY_INTERVAL);
     Serial.println(F("GPS:"));
-    Serial.print(MenuItems_Settings_GPS[0]); Serial.print("="); Serial.println(SETTINGS_GPS_UPDATE_FREQUENCY);
-    Serial.print(MenuItems_Settings_GPS[1]); Serial.print("="); Serial.println(SETTINGS_GPS_POSITION_TOLERANCE, 2);
-    Serial.print(MenuItems_Settings_GPS[2]); Serial.print("="); Serial.println(SETTINGS_GPS_DESTINATION_LATITUDE, 6);
-    Serial.print(MenuItems_Settings_GPS[3]); Serial.print("="); Serial.println(SETTINGS_GPS_DESTINATION_LONGITUDE, 6);
+    Serial.print(MenuItems_Settings_GPS[0]); Serial.print("="); Serial.println(SETTINGS_GPS_POSITION_TOLERANCE, 2);
+    Serial.print(MenuItems_Settings_GPS[1]); Serial.print("="); Serial.println(SETTINGS_GPS_DESTINATION_LATITUDE, 6);
+    Serial.print(MenuItems_Settings_GPS[2]); Serial.print("="); Serial.println(SETTINGS_GPS_DESTINATION_LONGITUDE, 6);
     Serial.println(F("Display:"));
     Serial.print(MenuItems_Settings_Display[0]); Serial.print("="); Serial.println(SETTINGS_DISPLAY_TIMEOUT);
     Serial.print(MenuItems_Settings_Display[1]); Serial.print("="); Serial.println(SETTINGS_DISPLAY_BRIGHTNESS);
@@ -3371,7 +3490,36 @@ const char version[] = __DATE__ " " __TIME__;
             i++; j_s_APRS++;
           }
           i++; // i should be sitting at the ':'. go ahead and skip that.
-          if (strstr(Setting, MenuItems_Settings_APRS[0]) != NULL) { // "Beacon Frequency"
+          if (strstr(Setting, MenuItems_Settings_APRS[0]) != NULL) { // "Beacon Enabled"
+            while (inData[i] != '\n' && inData[i] != '\0') {
+              inData_Value[k] = inData[i];
+              i++; k++;
+            }
+            //Serial.print(DataEntered);Serial.println(inData_Value); 
+            if (inData_Value[0]=='1' || inData_Value[0]=='T' || inData_Value[0]=='t'){
+              SETTINGS_APRS_BEACON_ENABLED = true;
+            } else if (inData_Value[0]=='0' || inData_Value[0]=='F' || inData_Value[0]=='f'){
+              SETTINGS_APRS_BEACON_ENABLED = false;
+            } else {
+              Serial.println(InvalidData_TrueFalse);
+            }
+          } else if (strstr(Setting, MenuItems_Settings_APRS[1]) != NULL) { // "Beacon Distance"
+            while (inData[i] != '\n' && inData[i] != '\0') {
+              if (k>40) { // float would be no longer than 40 digits (this is ridiculous)
+                Serial.print(InvalidData_Float);Serial.println(inData_Value);
+                return;
+              }
+              if (!isDigit(inData[i]) && !'.' && !'-') {
+                Serial.print(InvalidData_Float);Serial.println(inData[i]);
+                return;
+              }
+              inData_Value[k] = inData[i];
+              i++; k++;
+            }
+            //SETTINGS_APRS_BEACON_DISTANCE = strtod(inData_Value,NULL); // should we use strtod or atof? which is best?
+            SETTINGS_APRS_BEACON_DISTANCE = atof(inData_Value);
+
+          } else if (strstr(Setting, MenuItems_Settings_APRS[2]) != NULL) { // "Beacon Idle Time"
             while (inData[i] != '\n' && inData[i] != '\0') {
               if (k>9) { // unsigned long would be no longer than 10 digits
                 Serial.print(InvalidData_UnsignedLong);Serial.println(inData_Value);
@@ -3385,9 +3533,9 @@ const char version[] = __DATE__ " " __TIME__;
               i++; k++;
             }
             //Serial.print(DataEntered);Serial.println(inData_Value);
-            SETTINGS_APRS_BEACON_FREQUENCY = atol(inData_Value);
+            SETTINGS_APRS_BEACON_IDLE_TIME = atol(inData_Value);
             
-          } else if (strstr(Setting, MenuItems_Settings_APRS[1]) != NULL) { // "Raw Packet"
+          } else if (strstr(Setting, MenuItems_Settings_APRS[3]) != NULL) { // "Raw Packet"
             while (inData[i] != '\n' && inData[i] != '\0') {
               inData_Value[k] = inData[i];
               i++; k++;
@@ -3398,7 +3546,7 @@ const char version[] = __DATE__ " " __TIME__;
               SETTINGS_APRS_RAW_PACKET[i] = inData_Value[i];
             }
             
-          } else if (strstr(Setting, MenuItems_Settings_APRS[2]) != NULL) { // "Comment"
+          } else if (strstr(Setting, MenuItems_Settings_APRS[4]) != NULL) { // "Comment"
             while (inData[i] != '\n' && inData[i] != '\0') {
               inData_Value[k] = inData[i];
               i++; k++;
@@ -3409,7 +3557,7 @@ const char version[] = __DATE__ " " __TIME__;
               SETTINGS_APRS_COMMENT[i] = inData_Value[i];
             }
             
-          } else if (strstr(Setting, MenuItems_Settings_APRS[3]) != NULL) { // "Message"
+          } else if (strstr(Setting, MenuItems_Settings_APRS[5]) != NULL) { // "Message"
             while (inData[i] != '\n' && inData[i] != '\0') {
               inData_Value[k] = inData[i];
               i++; k++;
@@ -3420,7 +3568,7 @@ const char version[] = __DATE__ " " __TIME__;
               SETTINGS_APRS_MESSAGE[i] = inData_Value[i];
             }
             
-          } else if (strstr(Setting, MenuItems_Settings_APRS[4]) != NULL) { // "Recipient Callsign"
+          } else if (strstr(Setting, MenuItems_Settings_APRS[6]) != NULL) { // "Recipient Callsign"
             while (inData[i] != '\n' && inData[i] != '\0') {
               inData_Value[k] = inData[i];
               i++; k++;
@@ -3431,7 +3579,7 @@ const char version[] = __DATE__ " " __TIME__;
               SETTINGS_APRS_RECIPIENT_CALL[i] = inData_Value[i]; 
             }
             
-          } else if (strstr(Setting, MenuItems_Settings_APRS[5]) != NULL) { // "Recipient SSID"
+          } else if (strstr(Setting, MenuItems_Settings_APRS[7]) != NULL) { // "Recipient SSID"
             while (inData[i] != '\n' && inData[i] != '\0') {
               inData_Value[k] = inData[i];
               i++; k++;
@@ -3443,7 +3591,7 @@ const char version[] = __DATE__ " " __TIME__;
               SETTINGS_APRS_RECIPIENT_SSID[i] = inData_Value[i]; 
             }
             
-          } else if (strstr(Setting, MenuItems_Settings_APRS[6]) != NULL) { // "My Callsign"
+          } else if (strstr(Setting, MenuItems_Settings_APRS[8]) != NULL) { // "My Callsign"
             while (inData[i] != '\n' && inData[i] != '\0') {
               inData_Value[k] = inData[i];
               i++; k++;
@@ -3454,7 +3602,7 @@ const char version[] = __DATE__ " " __TIME__;
               SETTINGS_APRS_CALLSIGN[i] = inData_Value[i]; 
             }
             
-          } else if (strstr(Setting, MenuItems_Settings_APRS[7]) != NULL) { // "Callsign SSID"
+          } else if (strstr(Setting, MenuItems_Settings_APRS[9]) != NULL) { // "Callsign SSID"
             while (inData[i] != '\n' && inData[i] != '\0') {
               inData_Value[k] = inData[i];
               i++; k++;
@@ -3466,7 +3614,7 @@ const char version[] = __DATE__ " " __TIME__;
               SETTINGS_APRS_CALLSIGN_SSID[i] = inData_Value[i]; 
             }
             
-          } else if (strstr(Setting, MenuItems_Settings_APRS[8]) != NULL) { // "Destination Callsign"
+          } else if (strstr(Setting, MenuItems_Settings_APRS[10]) != NULL) { // "Destination Callsign"
             while (inData[i] != '\n' && inData[i] != '\0') {
               inData_Value[k] = inData[i];
               i++; k++;
@@ -3477,7 +3625,7 @@ const char version[] = __DATE__ " " __TIME__;
               SETTINGS_APRS_DESTINATION_CALL[i] = inData_Value[i]; 
             }
             
-          } else if (strstr(Setting, MenuItems_Settings_APRS[9]) != NULL) { // "Destination SSID"
+          } else if (strstr(Setting, MenuItems_Settings_APRS[11]) != NULL) { // "Destination SSID"
             while (inData[i] != '\n' && inData[i] != '\0') {
               inData_Value[k] = inData[i];
               i++; k++;
@@ -3489,7 +3637,7 @@ const char version[] = __DATE__ " " __TIME__;
               SETTINGS_APRS_DESTINATION_SSID[i] = inData_Value[i]; 
             }
             
-          } else if (strstr(Setting, MenuItems_Settings_APRS[10]) != NULL) { // "PATH1 Callsign"
+          } else if (strstr(Setting, MenuItems_Settings_APRS[12]) != NULL) { // "PATH1 Callsign"
             while (inData[i] != '\n' && inData[i] != '\0') {
               inData_Value[k] = inData[i];
               i++; k++;
@@ -3500,7 +3648,7 @@ const char version[] = __DATE__ " " __TIME__;
               SETTINGS_APRS_PATH1_CALL[i] = inData_Value[i]; 
             }
             
-          } else if (strstr(Setting, MenuItems_Settings_APRS[11]) != NULL) { // "PATH1 SSID"
+          } else if (strstr(Setting, MenuItems_Settings_APRS[13]) != NULL) { // "PATH1 SSID"
             while (inData[i] != '\n' && inData[i] != '\0') {
               inData_Value[k] = inData[i];
               i++; k++;
@@ -3512,7 +3660,7 @@ const char version[] = __DATE__ " " __TIME__;
               SETTINGS_APRS_PATH1_SSID[i] = inData_Value[i]; 
             }
             
-          } else if (strstr(Setting, MenuItems_Settings_APRS[12]) != NULL) { // "PATH2 Callsign"
+          } else if (strstr(Setting, MenuItems_Settings_APRS[14]) != NULL) { // "PATH2 Callsign"
             while (inData[i] != '\n' && inData[i] != '\0') {
               inData_Value[k] = inData[i];
               i++; k++;
@@ -3523,7 +3671,7 @@ const char version[] = __DATE__ " " __TIME__;
               SETTINGS_APRS_PATH2_CALL[i] = inData_Value[i]; 
             }
             
-          } else if (strstr(Setting, MenuItems_Settings_APRS[13]) != NULL) { // "PATH2 SSID"
+          } else if (strstr(Setting, MenuItems_Settings_APRS[15]) != NULL) { // "PATH2 SSID"
             while (inData[i] != '\n' && inData[i] != '\0') {
               inData_Value[k] = inData[i];
               i++; k++;
@@ -3535,7 +3683,7 @@ const char version[] = __DATE__ " " __TIME__;
               SETTINGS_APRS_PATH2_SSID[i] = inData_Value[i]; 
             }
             
-          } else if (strstr(Setting, MenuItems_Settings_APRS[14]) != NULL) { // "Symbol"
+          } else if (strstr(Setting, MenuItems_Settings_APRS[16]) != NULL) { // "Symbol"
             while (inData[i] != '\n' && inData[i] != '\0') {
               inData_Value[k] = inData[i];
               i++; k++;
@@ -3547,7 +3695,7 @@ const char version[] = __DATE__ " " __TIME__;
               SETTINGS_APRS_SYMBOL[i] = inData_Value[i]; 
             }
             
-          } else if (strstr(Setting, MenuItems_Settings_APRS[15]) != NULL) { // "Table"
+          } else if (strstr(Setting, MenuItems_Settings_APRS[17]) != NULL) { // "Table"
             while (inData[i] != '\n' && inData[i] != '\0') {
               inData_Value[k] = inData[i];
               i++; k++;
@@ -3561,7 +3709,7 @@ const char version[] = __DATE__ " " __TIME__;
               Serial.println(InvalidData_TrueFalse);
             }
             
-          } else if (strstr(Setting, MenuItems_Settings_APRS[16]) != NULL) { // "Automatic ACK"
+          } else if (strstr(Setting, MenuItems_Settings_APRS[18]) != NULL) { // "Automatic ACK"
             while (inData[i] != '\n' && inData[i] != '\0') {
               inData_Value[k] = inData[i];
               i++; k++;
@@ -3575,7 +3723,7 @@ const char version[] = __DATE__ " " __TIME__;
               Serial.println(InvalidData_TrueFalse);
             }
             
-          } else if (strstr(Setting, MenuItems_Settings_APRS[17]) != NULL) { // "Preamble"
+          } else if (strstr(Setting, MenuItems_Settings_APRS[19]) != NULL) { // "Preamble"
             while (inData[i] != '\n' && inData[i] != '\0') {
               if (k>4) { // unsigned int would be no longer than 5 digits
                 Serial.print(InvalidData_UnsignedInt);Serial.println(inData_Value);
@@ -3591,7 +3739,7 @@ const char version[] = __DATE__ " " __TIME__;
             //Serial.print(DataEntered);Serial.println(inData_Value);
             SETTINGS_APRS_PREAMBLE = atoi(inData_Value);
             
-          } else if (strstr(Setting, MenuItems_Settings_APRS[18]) != NULL) { // "Tail"
+          } else if (strstr(Setting, MenuItems_Settings_APRS[20]) != NULL) { // "Tail"
             while (inData[i] != '\n' && inData[i] != '\0') {
               if (k>4) { // unsigned int would be no longer than 5 digits
                 Serial.print(InvalidData_UnsignedInt);Serial.println(inData_Value);
@@ -3606,7 +3754,8 @@ const char version[] = __DATE__ " " __TIME__;
             }
             //Serial.print(DataEntered);Serial.println(inData_Value);
             SETTINGS_APRS_TAIL = atoi(inData_Value);
-          } else if (strstr(Setting, MenuItems_Settings_APRS[19]) != NULL) { // "Retry Count"
+
+          } else if (strstr(Setting, MenuItems_Settings_APRS[21]) != NULL) { // "Retry Count"
             while (inData[i] != '\n' && inData[i] != '\0') {
               if (k>4) { // unsigned int would be no longer than 5 digits
                 Serial.print(InvalidData_UnsignedInt);Serial.println(inData_Value);
@@ -3621,7 +3770,8 @@ const char version[] = __DATE__ " " __TIME__;
             }
             //Serial.print(DataEntered);Serial.println(inData_Value);
             SETTINGS_APRS_RETRY_COUNT = atoi(inData_Value);
-          } else if (strstr(Setting, MenuItems_Settings_APRS[20]) != NULL) { // "Retry Interval"
+
+          } else if (strstr(Setting, MenuItems_Settings_APRS[22]) != NULL) { // "Retry Interval"
             while (inData[i] != '\n' && inData[i] != '\0') {
               if (k>4) { // unsigned int would be no longer than 5 digits
                 Serial.print(InvalidData_UnsignedInt);Serial.println(inData_Value);
@@ -3636,6 +3786,7 @@ const char version[] = __DATE__ " " __TIME__;
             }
             //Serial.print(DataEntered);Serial.println(inData_Value);
             SETTINGS_APRS_RETRY_INTERVAL = atoi(inData_Value);
+
           } else {
             Serial.println(InvalidCommand);
           }
@@ -3648,22 +3799,7 @@ const char version[] = __DATE__ " " __TIME__;
             i++; j_s_GPS++;
           }
           i++; // i should be sitting at the ':'. go ahead and skip that.
-          if (strstr(Setting, MenuItems_Settings_GPS[0]) != NULL) { // Update Frequency
-            // SETTINGS_GPS_UPDATE_FREQUENCY 
-            while (inData[i] != '\n' && inData[i] != '\0') {
-              if (k>9) { // unsigned long would be no longer than 10 digits
-                Serial.print(InvalidData_UnsignedLong);Serial.println(inData_Value);
-                return;
-              }
-              if (!isDigit(inData[i])) {
-                Serial.print(InvalidData_UnsignedLong);Serial.println(inData[i]);
-                return;
-              }
-              inData_Value[k] = inData[i];
-              i++; k++;
-            }
-            SETTINGS_GPS_UPDATE_FREQUENCY = atol(inData_Value);
-          } else if (strstr(Setting, MenuItems_Settings_GPS[1]) != NULL) { // Position Tolerance"
+          if (strstr(Setting, MenuItems_Settings_GPS[0]) != NULL) { // Position Tolerance"
             while (inData[i] != '\n' && inData[i] != '\0') {
               if (k>40) { // float would be no longer than 40 digits (this is ridiculous)
                 Serial.print(InvalidData_Float);Serial.println(inData_Value);
@@ -3678,7 +3814,8 @@ const char version[] = __DATE__ " " __TIME__;
             }
             //SETTINGS_GPS_POSITION_TOLERANCE = strtod(inData_Value,NULL); // should we use strtod or atof? which is best?
             SETTINGS_GPS_POSITION_TOLERANCE = atof(inData_Value);
-          } else if (strstr(Setting, MenuItems_Settings_GPS[2]) != NULL) { // Destination Latitude
+
+          } else if (strstr(Setting, MenuItems_Settings_GPS[1]) != NULL) { // Destination Latitude
             while (inData[i] != '\n' && inData[i] != '\0') {
               if (k>40) { // float would be no longer than 40 digits (this is ridiculous)
                 Serial.print(InvalidData_Float);Serial.println(inData_Value);
@@ -3693,7 +3830,8 @@ const char version[] = __DATE__ " " __TIME__;
             }
             //SETTINGS_GPS_DESTINATION_LATITUDE = strtod(inData_Value,NULL); // should we use strtod or atof? which is best?
             SETTINGS_GPS_DESTINATION_LATITUDE = atof(inData_Value);
-          } else if (strstr(Setting, MenuItems_Settings_GPS[3]) != NULL) { // Destination Longitude
+
+          } else if (strstr(Setting, MenuItems_Settings_GPS[2]) != NULL) { // Destination Longitude
             while (inData[i] != '\n' && inData[i] != '\0') {
               if (k>40) { // float would be no longer than 40 digits (this is ridiculous)
                 Serial.print(InvalidData_Float);Serial.println(inData_Value);
@@ -3708,6 +3846,7 @@ const char version[] = __DATE__ " " __TIME__;
             }
             //SETTINGS_GPS_DESTINATION_LONGITUDE = strtod(inData_Value,NULL); // should we use strtod or atof? which is best?
             SETTINGS_GPS_DESTINATION_LONGITUDE = atof(inData_Value);
+
           } else {
             Serial.println(InvalidCommand);
           }
@@ -3795,6 +3934,7 @@ const char version[] = __DATE__ " " __TIME__;
             }
             //Serial.print(DataEntered);Serial.println(inData_Value);
             SETTINGS_DISPLAY_SCROLL_SPEED = atoi(inData_Value);
+
           } else if (strstr(Setting, MenuItems_Settings_Display[5]) != NULL) { // "Invert"
             while (inData[i] != '\n' && inData[i] != '\0') {
               inData_Value[k] = inData[i];
