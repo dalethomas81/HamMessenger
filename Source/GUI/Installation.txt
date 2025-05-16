@@ -9,4 +9,5 @@ pip freeze > requirements.txt
 
 // build
 1) pip install pyinstaller
-2) pyinstaller --noconfirm --windowed --onefile Main.py --add-data "icons;icons"
+2) (windows) pyinstaller --noconfirm --windowed --name HamMessenger --onefile Main.py
+   (mac) /usr/local/bin/python3 -m PyInstaller --windowed --name HamMessenger --onefile Main.py 

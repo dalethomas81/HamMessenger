@@ -7,3 +7,4 @@ Source/GUI/build/*
 Source/GUI/Main.spec
 Source/GUI/dist/*
 .DS_Store
+Source/GUI/HamMessenger.spec
