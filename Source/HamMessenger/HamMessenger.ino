@@ -1983,7 +1983,7 @@ const char version[] = __DATE__ " " __TIME__;
     // initalize critical variables such as cursor positions.
     if (!displayInitialized){
       cursorPosition_X = 0;
-      cursorPosition_Y = 3; // 3, 4, and 5 are message, recipient callsign, and recipient SSID
+      cursorPosition_Y = 5; // 5, 6, and 7 are message, recipient callsign, and recipient SSID
       cursorPosition_X_Last = cursorPosition_X;
       cursorPosition_Y_Last = -1;
       editMode_Settings = false;
@@ -1993,16 +1993,16 @@ const char version[] = __DATE__ " " __TIME__;
       if (editMode_Settings){
         handleDisplay_TempVarDisplay(Settings_Type_APRS[cursorPosition_Y]);
       } else if (keyboardInputChar == KEYBOARD_UP_KEY) {
-        if (cursorPosition_Y > 3) { // 3 is message
+        if (cursorPosition_Y > 5) { // 5 is message
           cursorPosition_Y--;
         } else {
-          cursorPosition_Y = 5; // 5 is recipient ID
+          cursorPosition_Y = 7; // 7 is recipient ID
         }
       } else if (keyboardInputChar == KEYBOARD_DOWN_KEY) {
-        if (cursorPosition_Y < 5) { // 5 is recipient ID
+        if (cursorPosition_Y < 7) { // 7 is recipient ID
           cursorPosition_Y++;
         } else {
-          cursorPosition_Y = 3; // 3 is message
+          cursorPosition_Y = 5; // 5 is message
         }
       }
     }
@@ -2011,8 +2011,10 @@ const char version[] = __DATE__ " " __TIME__;
         //
         editMode_Settings = false;
         handleDisplay_TempVarApply(Settings_Type_APRS[cursorPosition_Y],Settings_TypeIndex_APRS[cursorPosition_Y]);
-        // trigger a message send
-        sendMessage = true;
+        if (cursorPosition_Y == 5){
+          // trigger a message send
+          sendMessage = true;
+        }
       } else {
         // enable edit mode
         editMode_Settings = true;
@@ -2047,7 +2049,7 @@ const char version[] = __DATE__ " " __TIME__;
       SETTINGS_DISPLAY_SHOW_POSITION = showPositionMemory; // put it back to what it was
 
       // handle cursor
-      int selectionRow = handleDisplay_GetSelectionRow(cursorPosition_Y - 2);
+      int selectionRow = handleDisplay_GetSelectionRow(cursorPosition_Y - 4);
       display.setCursor(0,selectionRow);
       display.print(F(">"));
 
@@ -2061,11 +2063,11 @@ const char version[] = __DATE__ " " __TIME__;
       
       // handle body
       display.setCursor(6,UI_DISPLAY_ROW_02);
-      display.print(MenuItems_Settings_APRS[3]);
-      display.setCursor(6,UI_DISPLAY_ROW_03);
-      display.print(MenuItems_Settings_APRS[4]);
-      display.setCursor(6,UI_DISPLAY_ROW_04);
       display.print(MenuItems_Settings_APRS[5]);
+      display.setCursor(6,UI_DISPLAY_ROW_03);
+      display.print(MenuItems_Settings_APRS[6]);
+      display.setCursor(6,UI_DISPLAY_ROW_04);
+      display.print(MenuItems_Settings_APRS[7]);
 
       // handle edit field
       display.setCursor(cursorPosition_X*6,UI_DISPLAY_ROW_BOTTOM);
