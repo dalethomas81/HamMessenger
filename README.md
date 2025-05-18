@@ -34,7 +34,7 @@ I will add some videos and pictures of the device in action asap. Please feel fr
   <tr>
     <td align="center">
       <img src="https://github.com/dalethomas81/HamMessenger/blob/master/Media/Table-colors.jpg" alt="Screenshot 1" width="300px" style="border:1px solid #ccc; border-radius:8px;" /><br/>
-      <sub>Isometric View of CAD</sub>
+      <sub>Full Enclosure</sub>
     </td>
     <td align="center">
       <img src="https://github.com/dalethomas81/HamMessenger/blob/master/Media/Board-v1/all-together-layout.jpeg" alt="Screenshot 2" width="300px" style="border:1px solid #ccc; border-radius:8px;" /><br/>
@@ -42,7 +42,7 @@ I will add some videos and pictures of the device in action asap. Please feel fr
     </td>
     <td align="center">
       <img src="https://github.com/dalethomas81/HamMessenger/blob/master/Media/CAD/Enclosure.png" alt="Screenshot 2" width="300px" style="border:1px solid #ccc; border-radius:8px;" /><br/>
-      <sub>Unibody Frame</sub>
+      <sub>CAD Isometric</sub>
     </td>
   </tr>
 </table>
