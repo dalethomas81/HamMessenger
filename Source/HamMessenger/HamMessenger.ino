@@ -298,7 +298,7 @@ const char version[] = __DATE__ " " __TIME__;
 
     SETTINGS_APRS_BEACON_ENABLED = true;
     
-    SETTINGS_APRS_BEACON_DISTANCE = 1.0000;
+    SETTINGS_APRS_BEACON_DISTANCE = 0.5000;
 
     SETTINGS_APRS_BEACON_IDLE_TIME = 60000;
 
@@ -362,7 +362,7 @@ const char version[] = __DATE__ " " __TIME__;
 
     SETTINGS_APRS_TAIL = 80;
 
-    SETTINGS_APRS_RETRY_COUNT = 5;
+    SETTINGS_APRS_RETRY_COUNT = 2;
 
     SETTINGS_APRS_RETRY_INTERVAL = 10000;
     
@@ -373,7 +373,7 @@ const char version[] = __DATE__ " " __TIME__;
 
     SETTINGS_GPS_DESTINATION_LONGITUDE = -0.128002;
     
-    SETTINGS_DISPLAY_TIMEOUT = 60000;
+    SETTINGS_DISPLAY_TIMEOUT = 120000;
 
     SETTINGS_DISPLAY_BRIGHTNESS = 100;
 
@@ -781,8 +781,8 @@ const char version[] = __DATE__ " " __TIME__;
           for (byte i = 0; i < sizeof(currentLat) - 1; i++) {
             if (currentLat[i] == ' ') currentLat[i] = '0';
           }
-          if (currentLatDeg > lastLatDeg + SETTINGS_GPS_POSITION_TOLERANCE  ||
-                currentLatDeg < lastLatDeg - SETTINGS_GPS_POSITION_TOLERANCE) {
+          if (currentLatDeg > lastLatDeg + abs(SETTINGS_GPS_POSITION_TOLERANCE)  ||
+                currentLatDeg < lastLatDeg - abs(SETTINGS_GPS_POSITION_TOLERANCE)) {
             modemCmdFlag_Lat=true;
             gpsLocationHasChanged = true;
             lastLatDeg = currentLatDeg;
@@ -795,8 +795,8 @@ const char version[] = __DATE__ " " __TIME__;
           for (byte i = 0; i < sizeof(currentLng) - 1; i++) {
             if (currentLng[i] == ' ') currentLng[i] = '0';
           }
-          if (currentLngDeg > lastLngDeg + SETTINGS_GPS_POSITION_TOLERANCE ||
-                currentLngDeg < lastLngDeg - SETTINGS_GPS_POSITION_TOLERANCE) {
+          if (currentLngDeg > lastLngDeg + abs(SETTINGS_GPS_POSITION_TOLERANCE) ||
+                currentLngDeg < lastLngDeg - abs(SETTINGS_GPS_POSITION_TOLERANCE)) {
             modemCmdFlag_Lng=true;
             gpsLocationHasChanged = true;
             lastLngDeg = currentLngDeg;
@@ -2779,8 +2779,8 @@ const char version[] = __DATE__ " " __TIME__;
           aprs_beacon_timer = millis();
         }
         // if the beacon distance is satisfied we set the flag to beacon
-        if (smartBeaconDistance > smartBeaconDistanceLast + SETTINGS_APRS_BEACON_DISTANCE
-            || smartBeaconDistance < smartBeaconDistanceLast - SETTINGS_APRS_BEACON_DISTANCE) {
+        if (smartBeaconDistance > smartBeaconDistanceLast + abs(SETTINGS_APRS_BEACON_DISTANCE)
+            || smartBeaconDistance < smartBeaconDistanceLast - abs(SETTINGS_APRS_BEACON_DISTANCE)) {
                 // internal variables
                 smartBeaconDistanceLast = smartBeaconDistance;
                 lastLatDegSmartBeacon = i;
