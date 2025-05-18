@@ -7,6 +7,7 @@
 -Select the setting using the **[Up]** and **[Down]** keys.\
 -Press the **[Enter]** key. This will put the device in edit mode.\
 -Use the **[Up]** and **[Down]** keys to modify a boolean value.\
+-Use the **[-]** key to change the sign of a float value.\
 -Use the **[Backspace]** key to delete alphanumeric values and enter new values.\
 -Press the **[Enter]** key to accept a new value or press the **[Escape]** key to revert to the original value.
 
@@ -22,21 +23,21 @@
 └───────────┬─────────────┘
             │
             │
-  HOME      │                                    Messages
-┌───────────┴─────────────┐                    ┌─────────────────────────┐
-│ Tx  Rx  Msg   5.2V   0ms│                    │ Tx  Rx  Msg   5.2V   0ms│
-│                         │                    │  [NOCALL-0]>[NOCALL-1]  │
-│ >Messages               ├──────────┬─────────┤                         │
-│  Live Feed              │          │         │ Hi, Dale!               │
-│  Settings               │          │         │ Record: 1 of 100        │
-│                         │          │         │ D: 110721   T: 9271700  │
-│ LT:9999.99 LG:99999.99  │          │         │ LT:9999.99 LG:99999.99  │
-└─────────────────────────┘          │         └─────────────────────────┘
+  HOME      │                                    MESSAGES                            NEW MESSAGE
+┌───────────┴─────────────┐                    ┌─────────────────────────┐         ┌─────────────────────────┐
+│ Tx Rx GPS-10 5.2V 9999us│                    │ Tx Rx GPS-10 5.2V 9999us│         │ Tx Rx GPS-10 5.2V 9999us│
+│  [ HOME ]               │                    │  [NOCALL-0]>[NOCALL-1]  │         │  [ NEW MESSAGE ]        │
+│ >Messages               ├──────────┬─────────┤                         ├─────────┤ >Message Text           | 
+│  Live Feed              │          │         │ Hi, Dale!               │         │  Recipient Callsign     │
+│  Settings               │          │         │ Record: 1 of 100        │         │  Recipient SSID         │
+│                         │          │         │ D: 110721   T: 9271700  │         │                         │
+│ LT:9999.99 LG:99999.99  │          │         │ LT:9999.99 LG:99999.99  │         │  Type msg then <ENTER>_ │
+└─────────────────────────┘          │         └─────────────────────────┘         └─────────────────────────┘
                                      │
                                      │
-                                     │           Live Feed
+                                     │           LIVE FEED
                                      │         ┌─────────────────────────┐
-                                     │         │ Tx  Rx  Msg   5.2V   0ms│
+                                     │         │ Tx Rx GPS-10 5.2V 9999us│
                                      │         │  [NOCALL-0]>[NOCALL-1]  │
                                      ├─────────┤                         │
                                      │         │ The weather report for F│
@@ -46,13 +47,13 @@
                                      │         └─────────────────────────┘
                                      │
                                      │
-                                     │           Settings                            APRS
+                                     │           SETTINGS                            APRS
                                      │         ┌─────────────────────────┐         ┌─────────────────────────┐
-                                     │         │ Tx  Rx  Msg   5.2V   0ms│         │ Tx  Rx  Msg   5.2V   0ms│
-                                     │         │                         │         │ >Beacon Freq            │
-                                     └─────────┤ >APRS                   ├────┬────┤  Raw Packet             │
-                                               │  GPS                    │    │    │  Comment                │
-                                               │  Display                │    │    │  Message                │
+                                     │         │ Tx Rx GPS-10 5.2V 9999us│         │ Tx Rx GPS-10 5.2V 9999us│
+                                     │         │  [ SETTINGS ]           │         │  [ APRS ]               │
+                                     └─────────┤ >APRS                   ├────┬────┤ >Beacon Enabled         │
+                                               │  GPS                    │    │    │  Beacon Distance        │
+                                               │  Display                │    │    │  Beacon Idle Time       │
                                                │                         │    │    │                         │
                                                │ LT:9999.99 LG:99999.99  │    │    │  120000_                │
                                                └─────────────────────────┘    │    └─────────────────────────┘
@@ -60,9 +61,9 @@
                                                                               │
                                                                               │      GPS
                                                                               │    ┌─────────────────────────┐
-                                                                              │    │ Tx  Rx  Msg   5.2V   0ms│
-                                                                              │    │ >Update Frequency       │
-                                                                              ├────┤  Position Tolerance     │
+                                                                              │    │ Tx Rx GPS-10 5.2V 9999us│
+                                                                              │    │  [ GPS ]                │
+                                                                              ├────┤ >Position Tolerance     │
                                                                               │    │  Dest Latitude          │
                                                                               │    │  Dest Longitude         │
                                                                               │    │                         │
@@ -70,13 +71,13 @@
                                                                               │    └─────────────────────────┘
                                                                               │
                                                                               │
-                                                                              │      Display
+                                                                              │      DISPLAY
                                                                               │    ┌─────────────────────────┐
-                                                                              │    │ Tx  Rx  Msg   5.2V   0ms│
-                                                                              │    │ >Timeout                │
-                                                                              └────┤  Brightness             │
+                                                                              │    │ Tx Rx GPS-10 5.2V 9999us│
+                                                                              │    │  [ DISPLAY ]            │
+                                                                              └────┤ >Timeout                │
+                                                                                   │  Brightness             │
                                                                                    │  Show Position          │
-                                                                                   │  Scroll Messages        │
                                                                                    │                         │
                                                                                    │  10000_                 │
                                                                                    └─────────────────────────┘

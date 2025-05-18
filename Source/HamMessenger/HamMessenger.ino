@@ -115,8 +115,8 @@ const char version[] = __DATE__ " " __TIME__;
   }
 
   void handleStats(){
-    scanTime = millis() - processor_scan_time;
-    processor_scan_time = millis();
+    scanTime = micros() - processor_scan_time;
+    processor_scan_time = micros();
   }
 
 #pragma endregion
@@ -151,6 +151,7 @@ const char version[] = __DATE__ " " __TIME__;
     char c = Wire.read();
     if (c != 0)
     {
+      //Serial.println((int)c);
       if (!displayDim) { // key presses should only register if screen awake
         keyboardInputChar = c;
       }
@@ -165,7 +166,7 @@ const char version[] = __DATE__ " " __TIME__;
 
   #include <EEPROM.h>
 
-  const char Initialized[] = {"Initialized03"}; // change this to something unique if you want to re-init the EEPROM during flashing. useful when there has been a change to a settings array.
+  const char Initialized[] = {"Initialized 2025MAY14"}; // change this to something unique if you want to re-init the EEPROM during flashing. useful when there has been a change to a settings array.
 
   #define EEPROM_SETTINGS_START_ADDR      1000
   #define SETTINGS_EDIT_TYPE_NONE         0
@@ -183,58 +184,60 @@ const char version[] = __DATE__ " " __TIME__;
   #define SETTINGS_EDIT_TYPE_ALT3         23
                           
   const char *MenuItems_Settings[] = {"APRS","GPS","Display"};
-  const char *MenuItems_Settings_APRS[] = {"Beacon Frequency","Raw Packet","Comment","Message","Recipient Callsign","Recipient SSID", "My Callsign","Callsign SSID", 
+  const char *MenuItems_Settings_APRS[] = {"Beacon Enabled","Beacon Distance","Beacon Idle Time","Raw Packet","Comment","Message Text","Recipient Callsign","Recipient SSID","My Callsign","My Callsign SSID", 
                                           "Dest Callsign", "Dest SSID", "PATH1 Callsign", "PATH1 SSID", "PATH2 Callsign", "PATH2 SSID",
                                           "Symbol", "Table", "Automatic ACK", "Preamble", "Tail", "Retry Count", "Retry Interval"};
-  const char *MenuItems_Settings_GPS[] = {"Update Freq","Pos Tolerance", "Dest Latitude", "Dest Longitude"};
+  const char *MenuItems_Settings_GPS[] = {"Pos Tolerance", "Dest Latitude", "Dest Longitude"};
   const char *MenuItems_Settings_Display[] = {"Timeout", "Brightness", "Show Position", "Scroll Messages", "Scroll Speed", "Invert"};
 
-  unsigned char Settings_Type_APRS[] = {SETTINGS_EDIT_TYPE_ULONG,SETTINGS_EDIT_TYPE_STRING100,SETTINGS_EDIT_TYPE_STRING100,SETTINGS_EDIT_TYPE_STRING100,SETTINGS_EDIT_TYPE_STRING7,SETTINGS_EDIT_TYPE_STRING2,SETTINGS_EDIT_TYPE_STRING7,SETTINGS_EDIT_TYPE_STRING2,
-                              SETTINGS_EDIT_TYPE_STRING7,SETTINGS_EDIT_TYPE_STRING2,SETTINGS_EDIT_TYPE_STRING7,SETTINGS_EDIT_TYPE_STRING2,SETTINGS_EDIT_TYPE_STRING7,SETTINGS_EDIT_TYPE_STRING2,
-                              SETTINGS_EDIT_TYPE_STRING2,SETTINGS_EDIT_TYPE_ALT1,SETTINGS_EDIT_TYPE_BOOLEAN,SETTINGS_EDIT_TYPE_UINT,SETTINGS_EDIT_TYPE_UINT,SETTINGS_EDIT_TYPE_UINT,SETTINGS_EDIT_TYPE_UINT};
-  unsigned char Settings_Type_GPS[] = {SETTINGS_EDIT_TYPE_ULONG,SETTINGS_EDIT_TYPE_FLOAT,SETTINGS_EDIT_TYPE_FLOAT,SETTINGS_EDIT_TYPE_FLOAT};
+  unsigned char Settings_Type_APRS[] = {SETTINGS_EDIT_TYPE_BOOLEAN,SETTINGS_EDIT_TYPE_FLOAT,SETTINGS_EDIT_TYPE_ULONG,SETTINGS_EDIT_TYPE_STRING100,SETTINGS_EDIT_TYPE_STRING100,
+                                        SETTINGS_EDIT_TYPE_STRING100,SETTINGS_EDIT_TYPE_STRING7,SETTINGS_EDIT_TYPE_STRING2,SETTINGS_EDIT_TYPE_STRING7,SETTINGS_EDIT_TYPE_STRING2,
+                                        SETTINGS_EDIT_TYPE_STRING7,SETTINGS_EDIT_TYPE_STRING2,SETTINGS_EDIT_TYPE_STRING7,SETTINGS_EDIT_TYPE_STRING2,SETTINGS_EDIT_TYPE_STRING7,SETTINGS_EDIT_TYPE_STRING2,
+                                        SETTINGS_EDIT_TYPE_STRING2,SETTINGS_EDIT_TYPE_ALT1,SETTINGS_EDIT_TYPE_BOOLEAN,SETTINGS_EDIT_TYPE_UINT,SETTINGS_EDIT_TYPE_UINT,SETTINGS_EDIT_TYPE_UINT,SETTINGS_EDIT_TYPE_UINT};
+  unsigned char Settings_Type_GPS[] = {SETTINGS_EDIT_TYPE_FLOAT,SETTINGS_EDIT_TYPE_FLOAT,SETTINGS_EDIT_TYPE_FLOAT};
   unsigned char Settings_Type_Display[] = {SETTINGS_EDIT_TYPE_ULONG, SETTINGS_EDIT_TYPE_UINT, SETTINGS_EDIT_TYPE_BOOLEAN, SETTINGS_EDIT_TYPE_BOOLEAN, SETTINGS_EDIT_TYPE_UINT, SETTINGS_EDIT_TYPE_BOOLEAN};
-  unsigned char Settings_TypeIndex_APRS[] = {0,0,1,2,0,0,1,1,2,2,3,3,4,4,5,6,2,1,2,4,5}; // this is the index in the array of the data arrays below
-  unsigned char Settings_TypeIndex_GPS[] = {1,0,1,2};
-  unsigned char Settings_TypeIndex_Display[] = {2,0,0,1,3,3};
+  unsigned char Settings_TypeIndex_APRS[] = {0,0,0,0,1,2,0,0,1,1,2,2,3,3,4,4,5,6,3,1,2,4,5}; // this is the index in the array of the data arrays below
+  unsigned char Settings_TypeIndex_GPS[] = {1,2,3};
+  unsigned char Settings_TypeIndex_Display[] = {1,0,1,2,3,4};
   // data arrays
-  bool Settings_TypeBool[4] = {true,true,true,false}; // display show position, scroll messages, auto ACK, invert
+  bool Settings_TypeBool[5] = {true,true,true,true,false}; // aprs beacon enabled, display show position, scroll messages, auto ACK, invert
   int Settings_TypeInt[0] = {};
   unsigned int Settings_TypeUInt[6] = {100,400,80,4,5,10000}; // display brightness, aprs preamble, aprs tail, scroll speed, Retry Count, Retry Interval
   long Settings_TypeLong[0] = {};
-  unsigned long Settings_TypeULong[3] = {300000,10000,2000}; // aprs beacon frequency, gps update frequency, display timeout
-  float Settings_TypeFloat[3] = {0.00001,34.790040,-82.790672}; // gps position tolerance, gps latitude, gps longitude
+  unsigned long Settings_TypeULong[2] = {300000, 2000}; // aprs beacon Idle Time, display timeout
+  float Settings_TypeFloat[4] = {1.00000,0.00001,34.790040,-82.790672}; // aprs beacon distance, gps position tolerance, gps latitude, gps longitude
   char Settings_TypeString2[7][2] = {'0','\0'};
   char Settings_TypeString7[5][7] = {'N','O','C','A','L','L','\0'};
   char Settings_TypeString100[3][100] = {'T','e','s','t','\0'};
   char Settings_TempDispCharArr[100];
 
-  #define SETTINGS_APRS_BEACON_FREQUENCY        Settings_TypeULong[Settings_TypeIndex_APRS[0]]        // beacon frequency
-  #define SETTINGS_APRS_RAW_PACKET              Settings_TypeString100[Settings_TypeIndex_APRS[1]]    // raw packet
-  #define SETTINGS_APRS_COMMENT                 Settings_TypeString100[Settings_TypeIndex_APRS[2]]    // comment
-  #define SETTINGS_APRS_MESSAGE                 Settings_TypeString100[Settings_TypeIndex_APRS[3]]    // message
-  #define SETTINGS_APRS_RECIPIENT_CALL          Settings_TypeString7[Settings_TypeIndex_APRS[4]]      // recipient
-  #define SETTINGS_APRS_RECIPIENT_SSID          Settings_TypeString2[Settings_TypeIndex_APRS[5]]      // recipient ssid
-  #define SETTINGS_APRS_CALLSIGN                Settings_TypeString7[Settings_TypeIndex_APRS[6]]      // callsign
-  #define SETTINGS_APRS_CALLSIGN_SSID           Settings_TypeString2[Settings_TypeIndex_APRS[7]]      // callsign ssid
-  #define SETTINGS_APRS_DESTINATION_CALL        Settings_TypeString7[Settings_TypeIndex_APRS[8]]      // Destination Callsign
-  #define SETTINGS_APRS_DESTINATION_SSID        Settings_TypeString2[Settings_TypeIndex_APRS[9]]      // Destination SSID
-  #define SETTINGS_APRS_PATH1_CALL              Settings_TypeString7[Settings_TypeIndex_APRS[10]]     // PATH1 Callsign
-  #define SETTINGS_APRS_PATH1_SSID              Settings_TypeString2[Settings_TypeIndex_APRS[11]]     // PATH1 SSID
-  #define SETTINGS_APRS_PATH2_CALL              Settings_TypeString7[Settings_TypeIndex_APRS[12]]     // PATH2 Callsign
-  #define SETTINGS_APRS_PATH2_SSID              Settings_TypeString2[Settings_TypeIndex_APRS[13]]     // PATH2 SSID
-  #define SETTINGS_APRS_SYMBOL                  Settings_TypeString2[Settings_TypeIndex_APRS[14]]     // Symbol
-  #define SETTINGS_APRS_SYMBOL_TABLE            Settings_TypeString2[Settings_TypeIndex_APRS[15]]     // Symbol Table
-  #define SETTINGS_APRS_AUTOMATIC_ACK           Settings_TypeBool[Settings_TypeIndex_APRS[16]]        // Automatic ACK
-  #define SETTINGS_APRS_PREAMBLE                Settings_TypeUInt[Settings_TypeIndex_APRS[17]]        // Preamble
-  #define SETTINGS_APRS_TAIL                    Settings_TypeUInt[Settings_TypeIndex_APRS[18]]        // Tail
-  #define SETTINGS_APRS_RETRY_COUNT             Settings_TypeUInt[Settings_TypeIndex_APRS[19]]        // Retry Count
-  #define SETTINGS_APRS_RETRY_INTERVAL          Settings_TypeUInt[Settings_TypeIndex_APRS[20]]        // Retry Interval
+  #define SETTINGS_APRS_BEACON_ENABLED          Settings_TypeBool[Settings_TypeIndex_APRS[0]]        // beacon enabled
+  #define SETTINGS_APRS_BEACON_DISTANCE         Settings_TypeFloat[Settings_TypeIndex_APRS[1]]        // beacon distance
+  #define SETTINGS_APRS_BEACON_IDLE_TIME        Settings_TypeULong[Settings_TypeIndex_APRS[2]]        // beacon idle time
+  #define SETTINGS_APRS_RAW_PACKET              Settings_TypeString100[Settings_TypeIndex_APRS[3]]    // raw packet
+  #define SETTINGS_APRS_COMMENT                 Settings_TypeString100[Settings_TypeIndex_APRS[4]]    // comment
+  #define SETTINGS_APRS_MESSAGE                 Settings_TypeString100[Settings_TypeIndex_APRS[5]]    // message
+  #define SETTINGS_APRS_RECIPIENT_CALL          Settings_TypeString7[Settings_TypeIndex_APRS[6]]      // recipient
+  #define SETTINGS_APRS_RECIPIENT_SSID          Settings_TypeString2[Settings_TypeIndex_APRS[7]]      // recipient ssid
+  #define SETTINGS_APRS_CALLSIGN                Settings_TypeString7[Settings_TypeIndex_APRS[8]]      // callsign
+  #define SETTINGS_APRS_CALLSIGN_SSID           Settings_TypeString2[Settings_TypeIndex_APRS[9]]      // callsign ssid
+  #define SETTINGS_APRS_DESTINATION_CALL        Settings_TypeString7[Settings_TypeIndex_APRS[10]]      // Destination Callsign
+  #define SETTINGS_APRS_DESTINATION_SSID        Settings_TypeString2[Settings_TypeIndex_APRS[11]]      // Destination SSID
+  #define SETTINGS_APRS_PATH1_CALL              Settings_TypeString7[Settings_TypeIndex_APRS[12]]     // PATH1 Callsign
+  #define SETTINGS_APRS_PATH1_SSID              Settings_TypeString2[Settings_TypeIndex_APRS[13]]     // PATH1 SSID
+  #define SETTINGS_APRS_PATH2_CALL              Settings_TypeString7[Settings_TypeIndex_APRS[14]]     // PATH2 Callsign
+  #define SETTINGS_APRS_PATH2_SSID              Settings_TypeString2[Settings_TypeIndex_APRS[15]]     // PATH2 SSID
+  #define SETTINGS_APRS_SYMBOL                  Settings_TypeString2[Settings_TypeIndex_APRS[16]]     // Symbol
+  #define SETTINGS_APRS_SYMBOL_TABLE            Settings_TypeString2[Settings_TypeIndex_APRS[17]]     // Symbol Table
+  #define SETTINGS_APRS_AUTOMATIC_ACK           Settings_TypeBool[Settings_TypeIndex_APRS[18]]        // Automatic ACK
+  #define SETTINGS_APRS_PREAMBLE                Settings_TypeUInt[Settings_TypeIndex_APRS[19]]        // Preamble
+  #define SETTINGS_APRS_TAIL                    Settings_TypeUInt[Settings_TypeIndex_APRS[20]]        // Tail
+  #define SETTINGS_APRS_RETRY_COUNT             Settings_TypeUInt[Settings_TypeIndex_APRS[21]]        // Retry Count
+  #define SETTINGS_APRS_RETRY_INTERVAL          Settings_TypeUInt[Settings_TypeIndex_APRS[22]]        // Retry Interval
 
-  #define SETTINGS_GPS_UPDATE_FREQUENCY         Settings_TypeULong[Settings_TypeIndex_GPS[0]]       // update frequency
-  #define SETTINGS_GPS_POSITION_TOLERANCE       Settings_TypeFloat[Settings_TypeIndex_GPS[1]]       // position tolerance
-  #define SETTINGS_GPS_DESTINATION_LATITUDE     Settings_TypeFloat[Settings_TypeIndex_GPS[2]]       // destination latitude
-  #define SETTINGS_GPS_DESTINATION_LONGITUDE    Settings_TypeFloat[Settings_TypeIndex_GPS[3]]       // destination longitute
+  #define SETTINGS_GPS_POSITION_TOLERANCE       Settings_TypeFloat[Settings_TypeIndex_GPS[0]]       // position tolerance
+  #define SETTINGS_GPS_DESTINATION_LATITUDE     Settings_TypeFloat[Settings_TypeIndex_GPS[1]]       // destination latitude
+  #define SETTINGS_GPS_DESTINATION_LONGITUDE    Settings_TypeFloat[Settings_TypeIndex_GPS[2]]       // destination longitute
 
   #define SETTINGS_DISPLAY_TIMEOUT              Settings_TypeULong[Settings_TypeIndex_Display[0]]        // timeout
   #define SETTINGS_DISPLAY_BRIGHTNESS           Settings_TypeUInt[Settings_TypeIndex_Display[1]]         // brightness
@@ -293,14 +296,18 @@ const char version[] = __DATE__ " " __TIME__;
   void applyDefaultsToSettings(){
     Serial.println(F("Applying defaults to settings..."));
 
-    SETTINGS_APRS_BEACON_FREQUENCY = 60000;
+    SETTINGS_APRS_BEACON_ENABLED = true;
+    
+    SETTINGS_APRS_BEACON_DISTANCE = 0.5000;
+
+    SETTINGS_APRS_BEACON_IDLE_TIME = 60000;
 
     char strTemp1[] = {"HamMessenger!"};
     for (int i=0; i<sizeof(strTemp1);i++) {
       SETTINGS_APRS_RAW_PACKET[i] = strTemp1[i];
     }
 
-    char strTemp2[] = {"Testing HamMessenger!"};
+    char strTemp2[] = {"https://github.com/dalethomas81/HamMessenger"};
     for (int i=0; i<sizeof(strTemp2);i++) {
       SETTINGS_APRS_COMMENT[i] = strTemp2[i];
     }
@@ -355,20 +362,18 @@ const char version[] = __DATE__ " " __TIME__;
 
     SETTINGS_APRS_TAIL = 80;
 
-    SETTINGS_APRS_RETRY_COUNT = 5;
+    SETTINGS_APRS_RETRY_COUNT = 2;
 
     SETTINGS_APRS_RETRY_INTERVAL = 10000;
     
-    // London  LAT:51.508131     LNG:-0.128002
-    SETTINGS_GPS_UPDATE_FREQUENCY = 5000; // how often we care about updates from the GPS unit
-
     SETTINGS_GPS_POSITION_TOLERANCE = 0.01;  // unit is in degrees
 
+    // London  LAT:51.508131     LNG:-0.128002
     SETTINGS_GPS_DESTINATION_LATITUDE = 51.508131;
 
     SETTINGS_GPS_DESTINATION_LONGITUDE = -0.128002;
     
-    SETTINGS_DISPLAY_TIMEOUT = 15000;
+    SETTINGS_DISPLAY_TIMEOUT = 120000;
 
     SETTINGS_DISPLAY_BRIGHTNESS = 100;
 
@@ -663,230 +668,295 @@ const char version[] = __DATE__ " " __TIME__;
   // http://ember2ash.com/lat.htm
   float currentLatDeg = 0;
   float currentLngDeg = 0;
-  //float positionTolerance = 0.00001;
   float lastLatDeg = 0.0;
   float lastLngDeg = 0.0;
+  float lastLatDegSmartBeacon = 0.0;
+  float lastLngDegSmartBeacon = 0.0;
+  float smartBeaconDistanceLast = 0.0;
   char currentLat[9] = {'0','0','0','0','.','0','0','N','\0'};
   char currentLng[10] = {'0','0','0','0','0','.','0','0','N','\0'};
   bool modemCmdFlag_Lat=false, modemCmdFlag_Lng=false;
-  unsigned long gps_report_timer, destination_report_timer;
+  unsigned long gps_report_timer, destination_report_timer, gps_initializing_timer;
   bool gpsInitialized = false; // we can set this when we get our first coordinate
+  bool gpsInitializing;
+  bool gpsSmartBeaconDistanceConditionMet = false;
+  bool gpsLocationHasChanged = false;
+  float smartBeaconDistance = 0.0;
+  unsigned long currentIdleTime = 0.0;
 
   // London                                 LAT:51.508131     LNG:-0.128002
   //double DESTINATION_LAT = 51.508131, DESTINATION_LON = -0.128002;
+    
+  #define EARTH_RADIUS_MI 3958.8 // Earth's radius in miles
+  float haversineMiles(float lat1, float lon1, float lat2, float lon2) {
+    float toRad = PI / 180.0;
+    float dLat = (lat2 - lat1) * toRad;
+    float dLon = (lon2 - lon1) * toRad;
+
+    float a = sin(dLat/2) * sin(dLat/2) +
+              cos(lat1 * toRad) * cos(lat2 * toRad) *
+              sin(dLon/2) * sin(dLon/2);
+    float c = 2 * atan2(sqrt(a), sqrt(1 - a));
+    return EARTH_RADIUS_MI * c;
+  }
+  float parseAprsLat(const char *aprsLat) {
+    // Extract degrees (first 2 chars)
+    uint8_t degrees = (aprsLat[0] - '0') * 10 + (aprsLat[1] - '0');
+
+    // Extract minutes (next chars until hemisphere)
+    float minutes = atof(&aprsLat[2]);
+
+    // Hemisphere (N/S is at position 7 for 8-char string)
+    char hemisphere = aprsLat[7];
+
+    float decimalDegrees = degrees + (minutes / 60.0);
+
+    if (hemisphere == 'S') decimalDegrees = -decimalDegrees;
+
+    return decimalDegrees;
+  }
+  float parseAprsLon(const char *aprsLon) {
+    // Extract degrees (first 3 chars)
+    uint16_t degrees = (aprsLon[0] - '0') * 100 +
+                      (aprsLon[1] - '0') * 10 +
+                      (aprsLon[2] - '0');
+
+    // Extract minutes (next chars until hemisphere)
+    float minutes = atof(&aprsLon[3]);
+
+    // Hemisphere (E/W is at position 8 for 9-char string)
+    char hemisphere = aprsLon[8];
+
+    float decimalDegrees = degrees + (minutes / 60.0);
+
+    if (hemisphere == 'W') decimalDegrees = -decimalDegrees;
+
+    return decimalDegrees;
+  }
 
   void readGPS(){
- 
-  while (Serial2.available() > 0)
+    // monitor the serial port for data from the GPS
+    while (Serial2.available() > 0){
+      gps.encode(Serial2.read());
+    }
+    
+    // blink display controls to indicate the GPS is still initializing
+    if ((!gps.location.isUpdated() || !gps.location.isValid()) && millis() - gps_initializing_timer > 250){
+      gps_initializing_timer = millis();
+      gpsInitializing = !gpsInitializing;
+    }
 
-  gps.encode(Serial2.read());
-      
-  if ( millis() - gps_report_timer > SETTINGS_GPS_UPDATE_FREQUENCY){
-      // reset timer
-      gps_report_timer = millis();
-      if (gps.location.isUpdated())
-      {
-        gpsInitialized = true;
-        //Serial.print(F("LOCATION   Fix Age="));
-        //Serial.print(gps.location.age());
-        //Serial.print(F("ms Raw Lat="));
-        //Serial.print(gps.location.rawLat().negative ? "-" : "+");
-        //Serial.print(gps.location.rawLat().deg);
-        //Serial.print("[+");
-        //Serial.print(gps.location.rawLat().billionths);
-        //Serial.print(F(" billionths],  Raw Long="));
-        //Serial.print(gps.location.rawLng().negative ? "-" : "+");
-        //Serial.print(gps.location.rawLng().deg);
-        //Serial.print("[+");
-        //Serial.print(gps.location.rawLng().billionths);
-        //Serial.print(F(" billionths],  Lat="));
-        //Serial.print(F(" Lat="));
-        //Serial.print(gps.location.lat(), 6);
-        //Serial.print(F(" Long="));
-        //Serial.print(gps.location.lng(), 6);
-        
-        // DDMM.MM http://ember2ash.com/lat.htm
-        //Serial.print(F(" Lat2="));
-        currentLatDeg = gps.location.rawLat().deg*100.0 + gps.location.rawLat().billionths*0.000000001*60.0;
-        dtostrf(currentLatDeg, 8, 3, currentLat);
-        currentLat[7] = gps.location.rawLat().negative ? 'S' : 'N';
-        for (byte i = 0; i < sizeof(currentLat) - 1; i++) {
-          if (currentLat[i] == ' ') currentLat[i] = '0';
-        }
-        if (currentLatDeg > lastLatDeg + SETTINGS_GPS_POSITION_TOLERANCE  ||
-              currentLatDeg < lastLatDeg - SETTINGS_GPS_POSITION_TOLERANCE) {
-          modemCmdFlag_Lat=true;
-          lastLatDeg = currentLatDeg;
-        }
-        
-        //Serial.print(F(" Long2="));
-        currentLngDeg = gps.location.rawLng().deg*100.0 + gps.location.rawLng().billionths*0.000000001*60.0;
-        dtostrf(currentLngDeg, 9, 3, currentLng);
-        currentLng[8] = gps.location.rawLng().negative ? 'W' : 'E';
-        for (byte i = 0; i < sizeof(currentLng) - 1; i++) {
-          if (currentLng[i] == ' ') currentLng[i] = '0';
-        }
-        if (currentLngDeg > lastLngDeg + SETTINGS_GPS_POSITION_TOLERANCE ||
-              currentLngDeg < lastLngDeg - SETTINGS_GPS_POSITION_TOLERANCE) {
-          modemCmdFlag_Lng=true;
-          lastLngDeg = currentLngDeg;
-        }
-        
-      }
-      if (gps.date.isUpdated())
-      {
-        /*
-        Serial.print(F("DATE       Fix Age="));
-        Serial.print(gps.date.age());
-        Serial.print(F("ms Raw="));
-        Serial.print(gps.date.value());
-        Serial.print(F(" Year="));
-        Serial.print(gps.date.year());
-        Serial.print(F(" Month="));
-        Serial.print(gps.date.month());
-        Serial.print(F(" Day="));
-        Serial.println(gps.date.day());
-        */
-        GPSData.Date.Day = gps.date.day();
-        GPSData.Date.Month = gps.date.month();
-        GPSData.Date.Year = gps.date.year();
-        GPSData.Date.DateInt = gps.date.value();
-      }
-      if (gps.time.isUpdated())
-      {
-        /*
-        Serial.print(F("TIME       Fix Age="));
-        Serial.print(gps.time.age());
-        Serial.print(F("ms Raw="));
-        Serial.print(gps.time.value());
-        Serial.print(F(" Hour="));
-        Serial.print(gps.time.hour());
-        Serial.print(F(" Minute="));
-        Serial.print(gps.time.minute());
-        Serial.print(F(" Second="));
-        Serial.print(gps.time.second());
-        Serial.print(F(" Hundredths="));
-        Serial.println(gps.time.centisecond());
-        */
-        GPSData.Time.Hour = gps.time.hour();
-        GPSData.Time.Minute = gps.time.minute();
-        GPSData.Time.Second = gps.time.second();
-        GPSData.Time.CentiSecond = gps.time.centisecond();
-        GPSData.Time.TimeInt = gps.time.value();
-      }
-      if (gps.speed.isUpdated())
-      {
-        /*
-        Serial.print(F("SPEED      Fix Age="));
-        Serial.print(gps.speed.age());
-        Serial.print(F("ms Raw="));
-        Serial.print(gps.speed.value());
-        Serial.print(F(" Knots="));
-        Serial.print(gps.speed.knots());
-        Serial.print(F(" MPH="));
-        Serial.print(gps.speed.mph());
-        Serial.print(F(" m/s="));
-        Serial.print(gps.speed.mps());
-        Serial.print(F(" km/h="));
-        Serial.println(gps.speed.kmph());
-        */
-      }
-      if (gps.course.isUpdated())
-      {
-        /*
-        Serial.print(F("COURSE     Fix Age="));
-        Serial.print(gps.course.age());
-        Serial.print(F("ms Raw="));
-        Serial.print(gps.course.value());
-        Serial.print(F(" Deg="));
-        Serial.println(gps.course.deg());
-        */
-      }
-      if (gps.altitude.isUpdated())
-      {
-        /*
-        Serial.print(F("ALTITUDE   Fix Age="));
-        Serial.print(gps.altitude.age());
-        Serial.print(F("ms Raw="));
-        Serial.print(gps.altitude.value());
-        Serial.print(F(" Meters="));
-        Serial.print(gps.altitude.meters());
-        Serial.print(F(" Miles="));
-        Serial.print(gps.altitude.miles());
-        Serial.print(F(" KM="));
-        Serial.print(gps.altitude.kilometers());
-        Serial.print(F(" Feet="));
-        Serial.println(gps.altitude.feet());
-        */
-      }
-      if (gps.satellites.isUpdated())
-      {
-        /*
-        Serial.print(F("SATELLITES Fix Age="));
-        Serial.print(gps.satellites.age());
-        Serial.print(F("ms Value="));
-        Serial.println(gps.satellites.value());
-        */
-        GPSData.Satellites = gps.satellites.value();
-      }
-      if (gps.hdop.isUpdated())
-      {
-        /*
-        Serial.print(F("HDOP       Fix Age="));
-        Serial.print(gps.hdop.age());
-        Serial.print(F("ms raw="));
-        Serial.print(gps.hdop.value());
-        Serial.print(F(" hdop="));
-        Serial.println(gps.hdop.hdop());
-        */
-      }
-      if (millis() - destination_report_timer > DESTINATION_REPORT_FREQUENCY)
-      {/*
-        Serial.println();
-        if (gps.location.isValid())
+    // 
+    if ( millis() - gps_report_timer > 1000){
+        // reset timer
+        gps_report_timer = millis();
+
+        //
+        if (gps.location.isUpdated() && gps.location.isValid())
         {
-          double distanceToDestination =
-            TinyGPSPlus::distanceBetween(
-              gps.location.lat(),
-              gps.location.lng(),
-              DESTINATION_LAT, 
-              DESTINATION_LON);
-          double courseToDestination =
-            TinyGPSPlus::courseTo(
-              gps.location.lat(),
-              gps.location.lng(),
-              SETTINGS_GPS_DESTINATION_LATITUDE, 
-              SETTINGS_GPS_DESTINATION_LONGITUDE);
-    
-          Serial.print(F("DESTINATION     Distance="));
-          Serial.print((distanceToDestination/1000.0)*0.621371, 6); // mile factor 0.621371
-          Serial.print(F(" mi Course-to="));
-          Serial.print(courseToDestination, 6);
-          Serial.print(F(" degrees ["));
-          Serial.print(TinyGPSPlus::cardinal(courseToDestination));
-          Serial.println(F("]"));
+          gpsInitialized = true;
+        /*Serial.print(F("LOCATION   Fix Age="));
+          Serial.print(gps.location.age());
+          Serial.print(F("ms Raw Lat="));
+          Serial.print(gps.location.rawLat().negative ? "-" : "+");
+          Serial.print(gps.location.rawLat().deg);
+          Serial.print("[+");
+          Serial.print(gps.location.rawLat().billionths);
+          Serial.print(F(" billionths],  Raw Long="));
+          Serial.print(gps.location.rawLng().negative ? "-" : "+");
+          Serial.print(gps.location.rawLng().deg);
+          Serial.print("[+");
+          Serial.print(gps.location.rawLng().billionths);
+          Serial.print(F(" billionths],  Lat="));
+          Serial.print(F(" Lat="));
+          Serial.print(gps.location.lat(), 6);
+          Serial.print(F(" Long="));
+          Serial.print(gps.location.lng(), 6); */
+          
+          // DDMM.MM http://ember2ash.com/lat.htm
+          //Serial.print(F(" Lat2="));
+          currentLatDeg = gps.location.rawLat().deg*100.0 + gps.location.rawLat().billionths*0.000000001*60.0;
+          dtostrf(currentLatDeg, 8, 3, currentLat);
+          currentLat[7] = gps.location.rawLat().negative ? 'S' : 'N';
+          for (byte i = 0; i < sizeof(currentLat) - 1; i++) {
+            if (currentLat[i] == ' ') currentLat[i] = '0';
+          }
+          if (currentLatDeg > lastLatDeg + abs(SETTINGS_GPS_POSITION_TOLERANCE)  ||
+                currentLatDeg < lastLatDeg - abs(SETTINGS_GPS_POSITION_TOLERANCE)) {
+            modemCmdFlag_Lat=true;
+            gpsLocationHasChanged = true;
+            lastLatDeg = currentLatDeg;
+          }
+          
+          //Serial.print(F(" Long2="));
+          currentLngDeg = gps.location.rawLng().deg*100.0 + gps.location.rawLng().billionths*0.000000001*60.0;
+          dtostrf(currentLngDeg, 9, 3, currentLng);
+          currentLng[8] = gps.location.rawLng().negative ? 'W' : 'E';
+          for (byte i = 0; i < sizeof(currentLng) - 1; i++) {
+            if (currentLng[i] == ' ') currentLng[i] = '0';
+          }
+          if (currentLngDeg > lastLngDeg + abs(SETTINGS_GPS_POSITION_TOLERANCE) ||
+                currentLngDeg < lastLngDeg - abs(SETTINGS_GPS_POSITION_TOLERANCE)) {
+            modemCmdFlag_Lng=true;
+            gpsLocationHasChanged = true;
+            lastLngDeg = currentLngDeg;
+          }
+          
         }
-        
-        /*
-        Serial.print(F("DIAGS      Chars="));
-        Serial.print(gps.charsProcessed());
-        Serial.print(F(" Sentences-with-Fix="));
-        Serial.print(gps.sentencesWithFix());
-        Serial.print(F(" Failed-checksum="));
-        Serial.print(gps.failedChecksum());
-        Serial.print(F(" Passed-checksum="));
-        Serial.println(gps.passedChecksum());
-        */
-    /*
-        if (gps.charsProcessed() < 10)
-          Serial.println(F("WARNING: No GPS data.  Check wiring."));
-    
-        destination_report_timer = millis();
-        Serial.println();*/
-      }
+        if (gps.date.isUpdated())
+        {
+          /*
+          Serial.print(F("DATE       Fix Age="));
+          Serial.print(gps.date.age());
+          Serial.print(F("ms Raw="));
+          Serial.print(gps.date.value());
+          Serial.print(F(" Year="));
+          Serial.print(gps.date.year());
+          Serial.print(F(" Month="));
+          Serial.print(gps.date.month());
+          Serial.print(F(" Day="));
+          Serial.println(gps.date.day());
+          */
+          GPSData.Date.Day = gps.date.day();
+          GPSData.Date.Month = gps.date.month();
+          GPSData.Date.Year = gps.date.year();
+          GPSData.Date.DateInt = gps.date.value();
+        }
+        if (gps.time.isUpdated())
+        {
+          /*
+          Serial.print(F("TIME       Fix Age="));
+          Serial.print(gps.time.age());
+          Serial.print(F("ms Raw="));
+          Serial.print(gps.time.value());
+          Serial.print(F(" Hour="));
+          Serial.print(gps.time.hour());
+          Serial.print(F(" Minute="));
+          Serial.print(gps.time.minute());
+          Serial.print(F(" Second="));
+          Serial.print(gps.time.second());
+          Serial.print(F(" Hundredths="));
+          Serial.println(gps.time.centisecond());
+          */
+          GPSData.Time.Hour = gps.time.hour();
+          GPSData.Time.Minute = gps.time.minute();
+          GPSData.Time.Second = gps.time.second();
+          GPSData.Time.CentiSecond = gps.time.centisecond();
+          GPSData.Time.TimeInt = gps.time.value();
+        }
+        if (gps.speed.isUpdated())
+        {
+          /*
+          Serial.print(F("SPEED      Fix Age="));
+          Serial.print(gps.speed.age());
+          Serial.print(F("ms Raw="));
+          Serial.print(gps.speed.value());
+          Serial.print(F(" Knots="));
+          Serial.print(gps.speed.knots());
+          Serial.print(F(" MPH="));
+          Serial.print(gps.speed.mph());
+          Serial.print(F(" m/s="));
+          Serial.print(gps.speed.mps());
+          Serial.print(F(" km/h="));
+          Serial.println(gps.speed.kmph());
+          */
+        }
+        if (gps.course.isUpdated())
+        {
+          /*
+          Serial.print(F("COURSE     Fix Age="));
+          Serial.print(gps.course.age());
+          Serial.print(F("ms Raw="));
+          Serial.print(gps.course.value());
+          Serial.print(F(" Deg="));
+          Serial.println(gps.course.deg());
+          */
+        }
+        if (gps.altitude.isUpdated())
+        {
+          /*
+          Serial.print(F("ALTITUDE   Fix Age="));
+          Serial.print(gps.altitude.age());
+          Serial.print(F("ms Raw="));
+          Serial.print(gps.altitude.value());
+          Serial.print(F(" Meters="));
+          Serial.print(gps.altitude.meters());
+          Serial.print(F(" Miles="));
+          Serial.print(gps.altitude.miles());
+          Serial.print(F(" KM="));
+          Serial.print(gps.altitude.kilometers());
+          Serial.print(F(" Feet="));
+          Serial.println(gps.altitude.feet());
+          */
+        }
+        if (gps.satellites.isUpdated())
+        {
+          /*
+          Serial.print(F("SATELLITES Fix Age="));
+          Serial.print(gps.satellites.age());
+          Serial.print(F("ms Value="));
+          Serial.println(gps.satellites.value());
+          */
+          GPSData.Satellites = gps.satellites.value();
+        }
+        if (gps.hdop.isUpdated())
+        {
+          /*
+          Serial.print(F("HDOP       Fix Age="));
+          Serial.print(gps.hdop.age());
+          Serial.print(F("ms raw="));
+          Serial.print(gps.hdop.value());
+          Serial.print(F(" hdop="));
+          Serial.println(gps.hdop.hdop());
+          */
+        }
+        if (millis() - destination_report_timer > DESTINATION_REPORT_FREQUENCY)
+        {/*
+          Serial.println();
+          if (gps.location.isValid())
+          {
+            double distanceToDestination =
+              TinyGPSPlus::distanceBetween(
+                gps.location.lat(),
+                gps.location.lng(),
+                DESTINATION_LAT, 
+                DESTINATION_LON);
+            double courseToDestination =
+              TinyGPSPlus::courseTo(
+                gps.location.lat(),
+                gps.location.lng(),
+                SETTINGS_GPS_DESTINATION_LATITUDE, 
+                SETTINGS_GPS_DESTINATION_LONGITUDE);
+      
+            Serial.print(F("DESTINATION     Distance="));
+            Serial.print((distanceToDestination/1000.0)*0.621371, 6); // mile factor 0.621371
+            Serial.print(F(" mi Course-to="));
+            Serial.print(courseToDestination, 6);
+            Serial.print(F(" degrees ["));
+            Serial.print(TinyGPSPlus::cardinal(courseToDestination));
+            Serial.println(F("]"));
+          }
+          
+          /*
+          Serial.print(F("DIAGS      Chars="));
+          Serial.print(gps.charsProcessed());
+          Serial.print(F(" Sentences-with-Fix="));
+          Serial.print(gps.sentencesWithFix());
+          Serial.print(F(" Failed-checksum="));
+          Serial.print(gps.failedChecksum());
+          Serial.print(F(" Passed-checksum="));
+          Serial.println(gps.passedChecksum());
+          */
+      /*
+          if (gps.charsProcessed() < 10)
+            Serial.println(F("WARNING: No GPS data.  Check wiring."));
+      
+          destination_report_timer = millis();
+          Serial.println();*/
+        }
 
+    }
   }
-}
 
 #pragma endregion
 
@@ -895,7 +965,7 @@ const char version[] = __DATE__ " " __TIME__;
   #include <Adafruit_GFX.h>
   #include <Adafruit_SH1106.h>
 
-  #define DISPLAY_REFRESH_RATE                  100
+  #define DISPLAY_REFRESH_RATE                  100 // 33 is ~30fps | 100 is ~ 10fps
   #define DISPLAY_REFRESH_RATE_SCROLL           80  // during testing, i found that anything less than 60 causes performance issues
   #define DISPLAY_BLINK_RATE                    500
   #define UI_DISPLAY_HOME                       0
@@ -907,14 +977,15 @@ const char version[] = __DATE__ " " __TIME__;
   #define UI_DISPLAY_SETTINGS_GPS               6
   #define UI_DISPLAY_SETTINGS_DISPLAY           7
   #define UI_DISPLAY_SETTINGS_SAVE              8
+  #define UI_DISPLAY_DEBUG                      9
 
   #define UI_DISPLAY_ROW_TOP                    0
-  #define UI_DISPLAY_ROW_01                     8
-  #define UI_DISPLAY_ROW_02                     16
-  #define UI_DISPLAY_ROW_03                     24
-  #define UI_DISPLAY_ROW_04                     32
-  #define UI_DISPLAY_ROW_05                     40
-  #define UI_DISPLAY_ROW_06                     48
+  #define UI_DISPLAY_ROW_01                     12 // 8
+  #define UI_DISPLAY_ROW_02                     22 // 16
+  #define UI_DISPLAY_ROW_03                     30 // 14
+  #define UI_DISPLAY_ROW_04                     38 // 32
+  #define UI_DISPLAY_ROW_05                     46 // 40
+  #define UI_DISPLAY_ROW_06                     54 // 48
   #define UI_DISPLAY_ROW_BOTTOM                 56
 
   unsigned char currentDisplay = UI_DISPLAY_HOME;
@@ -966,6 +1037,78 @@ const char version[] = __DATE__ " " __TIME__;
         number /= 10;
     }
     return count;
+  }
+
+  const uint8_t minBrightness = 32;
+  const uint8_t maxBrightness = 255;
+  const float breathingSpeedHz = 0.2;
+  uint8_t calculateBreathingBrightness() {
+    float t = millis() / 1000.0;  // Seconds
+    float wave = (sin(2 * PI * breathingSpeedHz * t) + 1.0) / 2.0; // [0, 1]
+    return map(wave * 100, 0, 100, minBrightness, maxBrightness);
+  }
+  void drawDitheredHeader(const String& text, uint8_t level) {
+    // Assume cursor has already been set externally
+    int startX = display.getCursorX();
+    int startY = display.getCursorY();
+
+    // Draw the text
+    display.setTextColor(WHITE);
+    display.print(text);
+
+    // Width of text in pixels (6 px per char with default font)
+    int textWidth = text.length() * 6;
+    int textHeight = 8; // For default font height
+
+    // Overlay a simulated dimming mask
+    if (level < 255) {
+      for (int y = 0; y < textHeight; y++) {
+        for (int x = 0; x < textWidth; x++) {
+          // 50% dither mask if brightness is low
+          if (((x + y) % 2 == 0) && level < 128) {
+            display.drawPixel(startX + x, startY + y, BLACK);
+          }
+          // 25% dither if brightness is very low
+          else if (((x + y) % 4 == 0) && level < 64) {
+            display.drawPixel(startX + x, startY + y, BLACK);
+          }
+        }
+      }
+    }
+  }
+
+  // x bitmap
+  const uint8_t noGpsIcon[8] = {
+    0b10000001,
+    0b01000010,
+    0b00100100,
+    0b00011000,
+    0b00011000,
+    0b00100100,
+    0b01000010,
+    0b10000001
+  };
+
+  void drawNoGpsIcon(int x, int y) {
+    display.drawBitmap(x, y, noGpsIcon, 8, 8, WHITE);
+  }
+
+  void drawGpsStatusText(bool gpsConnected, uint32_t satellites, int16_t x, int16_t y) {
+    display.setCursor(x, y);
+    display.print("GPS-");
+
+    //
+    int textWidth = 6 * 4;    // 6px per char, 4 letters: G P S |
+    if (!gpsConnected) {
+      // Strikethrough the word "GPS"
+      int _x = x;                // Cursor X where "G" starts
+      int _y = y + 3;           // Middle of text height (for strikethrough)
+      display.drawLine(_x, _y, _x + textWidth - 1, _y, WHITE);
+    }
+
+    //
+    display.setCursor(x + textWidth, y);
+    display.print(satellites);
   }
 
   // while in edit mode, this method is used to edit a temporary character array that will later be
@@ -1282,6 +1425,7 @@ const char version[] = __DATE__ " " __TIME__;
   // the setting displayed is a character array to make it easier to work with while editing.
   void handleDisplay_PrintTempVal(){
     Settings_EditValueSize = sizeof(Settings_TempDispCharArr) - 1;
+    display.setCursor(0,UI_DISPLAY_ROW_BOTTOM-1);
     display.print(Settings_TempDispCharArr);
     cursorPosition_X = strlen(Settings_TempDispCharArr);
   }
@@ -1394,6 +1538,9 @@ const char version[] = __DATE__ " " __TIME__;
       case UI_DISPLAY_SETTINGS_SAVE:
         handleDisplay_Settings_Save();
         break;
+      case UI_DISPLAY_DEBUG:
+        handleDisplay_Debug();
+        break;
       default:
         handleDisplay_Home();
         break;
@@ -1437,62 +1584,14 @@ const char version[] = __DATE__ " " __TIME__;
     display.println(SETTINGS_APRS_CALLSIGN);
     
     display.display();
-    delay(5000);
+    delay(3000);
   }
 
-  // this method handles all of the global objects of the display. any objects that are common between
-  // the displays will go here. things such as voltage, scan time, latitude/longitude, etc all are 
-  // added to the display buffer here. each of the displays will call this method when building its
-  // own display.
-  void handleDisplay_Global(){
-    //
-    if (digitalRead(rxPin) == HIGH){
-      display.setCursor(0,UI_DISPLAY_ROW_TOP);
-      display.print(F("Rx"));
-    }
-    if (digitalRead(txPin) == HIGH){
-      display.setCursor(20,UI_DISPLAY_ROW_TOP);
-      display.print(F("Tx"));
-    }
-
-    /* TODO add this object and manage unread messages so that the user is notified
-    if (UnreadMessages){
-      display.setCursor(40,UI_DISPLAY_ROW_TOP);
-      display.print(F("Msg"));
-    }
-    */
-
-    //
-    display.setCursor(65,UI_DISPLAY_ROW_TOP);
-    display.print(String((float)Voltage/1000.0,1) + F("V"));
-    
-    //
-    display.setCursor(100,UI_DISPLAY_ROW_TOP);
-    display.print(String(scanTime) + F("ms"));
-
-    //
-    if (SETTINGS_DISPLAY_SHOW_POSITION) {
-      display.setCursor(0,UI_DISPLAY_ROW_BOTTOM);
-      display.print(F("LT:"));
-      
-      display.setCursor(0+18,UI_DISPLAY_ROW_BOTTOM);
-      display.print(currentLatDeg);
-      
-      display.setCursor(62,UI_DISPLAY_ROW_BOTTOM);
-      display.print(F("LG:"));
-      
-      display.setCursor(62+18,UI_DISPLAY_ROW_BOTTOM);
-      display.print(currentLngDeg);
-    }
-  }
-
-  // this is the upper most level display and is mostly used for navigation.
-  void handleDisplay_Home(){
+  void handleDisplay_Debug(){
     // the displayInitialized variable gets cleared each time a display changes. this signals to the
     // display method that it is in "on first show" and needs to initialize. this is where we clear and 
     // initalize critical variables such as cursor positions.
     if (!displayInitialized){
-      displayInitialized = true;
       cursorPosition_X = 0;
       cursorPosition_Y = 0;
       cursorPosition_X_Last = 0;
@@ -1516,11 +1615,152 @@ const char version[] = __DATE__ " " __TIME__;
     if (keyboardInputChar == KEYBOARD_LEFT_KEY){
     }
     if (keyboardInputChar == KEYBOARD_RIGHT_KEY){
-      if (cursorPosition_Y == 0){
-        // send message if the right arrow is pressed while messages is highlighted.
-        // this is a temporary solution until a proper messaging screen can be developed.
-        //sendMessage = true;
+    }
+    if (keyboardInputChar == KEYBOARD_ENTER_KEY){
+    }
+    if (keyboardInputChar == KEYBOARD_ESCAPE_KEY){
+      currentDisplay = UI_DISPLAY_HOME;
+    }      
+    // build display
+    if (displayRefresh_Global){
+      // clear the buffer
+      display.clearDisplay();
+      
+      // add global objects to buffer
+      handleDisplay_Global();
+
+      // handle cursor
+      //int selectionRow = handleDisplay_GetSelectionRow(cursorPosition_Y+1);
+      //display.setCursor(0,selectionRow);
+      //display.print(F(">"));
+
+      // handle header
+      display.setCursor(6,UI_DISPLAY_ROW_01);
+      display.print(F("[       ]"));
+      if(displayBlink || !displayInitialized){
+        display.setCursor(6,UI_DISPLAY_ROW_01);
+        display.print(F("[ DEBUG ]"));
       }
+      
+      // handle body
+      display.setCursor(6,UI_DISPLAY_ROW_02);
+      display.print(F("Idle:"));
+      display.setCursor(36,UI_DISPLAY_ROW_02); // 6 pixels + 6 pixels * 5 chars = 36
+      display.print(currentIdleTime);
+
+      display.setCursor(6,UI_DISPLAY_ROW_03);
+      display.print(F("Dist:"));
+      display.setCursor(36,UI_DISPLAY_ROW_03); // 6 pixels + 6 pixels * 5 chars = 36
+      display.print(smartBeaconDistance);
+
+      display.setCursor(6,UI_DISPLAY_ROW_04);
+      display.print(F("Loc:"));
+      display.setCursor(30,UI_DISPLAY_ROW_04); // 6 pixels + 6 pixels * 4 chars = 30
+      display.print((gpsLocationHasChanged ? "True" : "False"));
+
+      display.setCursor(6,UI_DISPLAY_ROW_05);
+      display.print(F("Spd:"));
+      display.setCursor(30,UI_DISPLAY_ROW_05); // 6 pixels + 6 pixels * 4 chars = 30
+      display.print(gps.speed.mph());
+
+      display.setCursor(66,UI_DISPLAY_ROW_05); // 30 pixels + 6 pixels * 6 chars = 66
+      display.print(F("hdop:"));
+      display.setCursor(96,UI_DISPLAY_ROW_05); // 66 pixels + 6 pixels * 5 chars = 96
+      display.print(gps.hdop.value());
+
+      
+      // display all content from buffer
+      display.display();
+
+      //
+      displayInitialized = true;
+    }
+  }
+
+  // this method handles all of the global objects of the display. any objects that are common between
+  // the displays will go here. things such as voltage, scan time, latitude/longitude, etc all are 
+  // added to the display buffer here. each of the displays will call this method when building its
+  // own display.
+  void handleDisplay_Global(){
+    //
+    if (digitalRead(rxPin) == HIGH){
+      display.setCursor(0,UI_DISPLAY_ROW_TOP);
+      display.print(F("Rx"));
+    }
+    if (digitalRead(txPin) == HIGH){
+      display.setCursor(13,UI_DISPLAY_ROW_TOP);
+      display.print(F("Tx"));
+    }
+    if (gpsInitializing || gps.location.isValid()){
+      //display.setCursor(31,UI_DISPLAY_ROW_TOP);
+      //display.print(F("GPS"));
+      drawGpsStatusText(gps.location.isValid(), gps.satellites.value(), 26, UI_DISPLAY_ROW_TOP);
+    }
+    /* TODO add this object and manage unread messages so that the user is notified
+    if (UnreadMessages){
+      display.setCursor(40,UI_DISPLAY_ROW_TOP);
+      display.print(F("Msg"));
+    }
+    */
+
+    // display the voltage
+    display.setCursor(65,UI_DISPLAY_ROW_TOP);
+    display.print(String((float)Voltage/1000.0,1) + F("V"));
+    
+    // display the cpu scan time
+    display.setCursor(93,UI_DISPLAY_ROW_TOP);
+    if (scanTime >= 10000) {
+        float timeMs = scanTime / 1000.0;
+        display.print(timeMs, 1);  // One decimal place
+        display.print(F("ms"));
+    } else {
+        display.print(scanTime);
+        display.print(F("us"));
+    }
+
+    // display gps location
+    if (SETTINGS_DISPLAY_SHOW_POSITION) {
+      int x_lat = 13;
+      display.setCursor(x_lat,UI_DISPLAY_ROW_BOTTOM);
+      display.print(currentLat); // DDMM.mmN
+
+      int x_lng = x_lat + (8 * 6) + 5; // 8 letters times 6 pixels wide plus a gap of 3 (0000.00N)
+      display.setCursor(x_lng, UI_DISPLAY_ROW_BOTTOM);
+      display.print(currentLng); // DDDMM.mmW
+    }
+  }
+
+  // this is the upper most level display and is mostly used for navigation.
+  void handleDisplay_Home(){
+    // the displayInitialized variable gets cleared each time a display changes. this signals to the
+    // display method that it is in "on first show" and needs to initialize. this is where we clear and 
+    // initalize critical variables such as cursor positions.
+    if (!displayInitialized){
+      cursorPosition_X = 0;
+      cursorPosition_Y = 0;
+      cursorPosition_X_Last = 0;
+      cursorPosition_Y_Last = 0;
+    }
+    // handle button context for current display
+    if (keyboardInputChar == KEYBOARD_UP_KEY){
+      if (cursorPosition_Y > 0){
+        cursorPosition_Y--;
+      } else {
+        cursorPosition_Y=2;
+      }
+    }
+    if (keyboardInputChar == KEYBOARD_DOWN_KEY){ 
+      if (cursorPosition_Y < 2){
+        cursorPosition_Y++;
+      } else {
+        cursorPosition_Y=0;
+      }
+    }
+    if (keyboardInputChar == KEYBOARD_LEFT_KEY){
+      currentDisplay = UI_DISPLAY_DEBUG;
+      previousDisplay = UI_DISPLAY_HOME;
+    }
+    if (keyboardInputChar == KEYBOARD_RIGHT_KEY){
     }
     if (keyboardInputChar == KEYBOARD_ENTER_KEY){
       switch (cursorPosition_Y){
@@ -1545,37 +1785,36 @@ const char version[] = __DATE__ " " __TIME__;
     if (displayRefresh_Global){
       // clear the buffer
       display.clearDisplay();
+      
       // add global objects to buffer
       handleDisplay_Global();
-      int selectionRow = 0;
-      switch (cursorPosition_Y) {
-        case 0:
-          selectionRow = UI_DISPLAY_ROW_02;
-          break;
-        case 1:
-          selectionRow = UI_DISPLAY_ROW_03;
-          break;
-        case 2:
-          selectionRow = UI_DISPLAY_ROW_04;
-          break;
-        default:
-          selectionRow = UI_DISPLAY_ROW_02;
-          break;
-      }
+
+      // handle cursor
+      int selectionRow = handleDisplay_GetSelectionRow(cursorPosition_Y+1);
       display.setCursor(0,selectionRow);
       display.print(F(">"));
+
+      // handle header
+      display.setCursor(6,UI_DISPLAY_ROW_01);
+      display.print(F("[      ]"));
+      if(displayBlink || !displayInitialized){
+        display.setCursor(6,UI_DISPLAY_ROW_01);
+        display.print(F("[ MAIN ]"));
+      }
       
-      display.setCursor(6,UI_DISPLAY_ROW_02);                    // 0 pixels right, 25 pixels down
+      // handle body
+      display.setCursor(6,UI_DISPLAY_ROW_02);
       display.print(F("Messages"));
-      
       display.setCursor(6,UI_DISPLAY_ROW_03);
       display.print(F("Live Feed"));
-      
       display.setCursor(6,UI_DISPLAY_ROW_04);
       display.print(F("Settings"));
       
       // display all content from buffer
       display.display();
+
+      //
+      displayInitialized = true;
     }
   }
 
@@ -1590,7 +1829,6 @@ const char version[] = __DATE__ " " __TIME__;
     // display method that it is in "on first show" and needs to initialize. this is where we clear and 
     // initalize critical variables such as cursor positions.
     if (!displayInitialized){
-      displayInitialized = true;
       cursorPosition_X = 0;
       cursorPosition_Y = 0;
       cursorPosition_X_Last = cursorPosition_X;
@@ -1639,11 +1877,16 @@ const char version[] = __DATE__ " " __TIME__;
       currentDisplay = previousDisplay;
       return;
     }
+
     // build display
     if (displayRefresh_Scroll || keyboardInputChar != 0){
       if (cursorPosition_Y != cursorPosition_Y_Last){ // changed to new record (index)
-        cursorPosition_Y_Last = cursorPosition_Y; 
+        cursorPosition_Y_Last = cursorPosition_Y;
+
+        //
         MsgDataRecordCount = getMsgDataRecord(cursorPosition_Y + 1, MsgData); // adding 1 here because cursorPosition_Y is zero indexed but getMsgDataRecord is not
+        
+        //
         int dataLen = strlen(MsgData.msg);
         ScrollingIndex_MessageFeed_minX = -10 * dataLen; // 10 = 5 pixels/character * text size 2
         if (!SETTINGS_DISPLAY_SCROLL_MESSAGES) {
@@ -1651,11 +1894,16 @@ const char version[] = __DATE__ " " __TIME__;
         } else {
           ScrollingIndex_MessageFeed = display.width(); // starting point for text 
         }
+
       }
+
       // clear the buffer
       display.clearDisplay();
+
       // add global objects to buffer
       handleDisplay_Global();
+
+      //
       if (MsgDataRecordCount > 0){
         char to_from[24] = {'\0'};
         byte index = 0;
@@ -1713,6 +1961,9 @@ const char version[] = __DATE__ " " __TIME__;
       }
       // display all content from buffer
       display.display();
+
+      //
+      displayInitialized = true;
     }
     // timeout and leave
     if (millis() - leave_display_timer > SETTINGS_DISPLAY_TIMEOUT && leaveDisplay_MessageFeed){
@@ -1731,9 +1982,8 @@ const char version[] = __DATE__ " " __TIME__;
     // display method that it is in "on first show" and needs to initialize. this is where we clear and 
     // initalize critical variables such as cursor positions.
     if (!displayInitialized){
-      displayInitialized = true;
       cursorPosition_X = 0;
-      cursorPosition_Y = 3; // 3, 4, and 5 are message, recipient callsign, and recipient SSID
+      cursorPosition_Y = 5; // 5, 6, and 7 are message, recipient callsign, and recipient SSID
       cursorPosition_X_Last = cursorPosition_X;
       cursorPosition_Y_Last = -1;
       editMode_Settings = false;
@@ -1743,23 +1993,28 @@ const char version[] = __DATE__ " " __TIME__;
       if (editMode_Settings){
         handleDisplay_TempVarDisplay(Settings_Type_APRS[cursorPosition_Y]);
       } else if (keyboardInputChar == KEYBOARD_UP_KEY) {
-        if (cursorPosition_Y > 3) { // 3 is message
+        if (cursorPosition_Y > 5) { // 5 is message
           cursorPosition_Y--;
         } else {
-          cursorPosition_Y = 5; // 5 is recipient ID
+          cursorPosition_Y = 7; // 7 is recipient ID
         }
       } else if (keyboardInputChar == KEYBOARD_DOWN_KEY) {
-        if (cursorPosition_Y < 5) { // 5 is recipient ID
+        if (cursorPosition_Y < 7) { // 7 is recipient ID
           cursorPosition_Y++;
         } else {
-          cursorPosition_Y = 3; // 3 is message
+          cursorPosition_Y = 5; // 5 is message
         }
       }
     }
     if (keyboardInputChar == KEYBOARD_ENTER_KEY){
       if (editMode_Settings) {
+        //
         editMode_Settings = false;
         handleDisplay_TempVarApply(Settings_Type_APRS[cursorPosition_Y],Settings_TypeIndex_APRS[cursorPosition_Y]);
+        if (cursorPosition_Y == 5){
+          // trigger a message send
+          sendMessage = true;
+        }
       } else {
         // enable edit mode
         editMode_Settings = true;
@@ -1769,8 +2024,10 @@ const char version[] = __DATE__ " " __TIME__;
     if (keyboardInputChar == KEYBOARD_LEFT_KEY){
     }
     if (keyboardInputChar == KEYBOARD_RIGHT_KEY){
-      // trigger a message send
-      sendMessage = true;
+      if (!editMode_Settings) {
+        // trigger a message send
+        sendMessage = true;
+      }
     }
     if (keyboardInputChar == KEYBOARD_ESCAPE_KEY){
       editMode_Settings = false;
@@ -1791,45 +2048,45 @@ const char version[] = __DATE__ " " __TIME__;
       handleDisplay_Global();
       SETTINGS_DISPLAY_SHOW_POSITION = showPositionMemory; // put it back to what it was
 
-      //
+      // handle cursor
+      int selectionRow = handleDisplay_GetSelectionRow(cursorPosition_Y - 4);
+      display.setCursor(0,selectionRow);
+      display.print(F(">"));
+
+      // handle header
+      display.setCursor(6,UI_DISPLAY_ROW_01);
+      display.print(F("[             ]"));
+      if(displayBlink || !displayInitialized){
+        display.setCursor(6,UI_DISPLAY_ROW_01);
+        display.print(F("[ NEW MESSAGE ]"));
+      }
+      
+      // handle body
+      display.setCursor(6,UI_DISPLAY_ROW_02);
+      display.print(MenuItems_Settings_APRS[5]);
+      display.setCursor(6,UI_DISPLAY_ROW_03);
+      display.print(MenuItems_Settings_APRS[6]);
+      display.setCursor(6,UI_DISPLAY_ROW_04);
+      display.print(MenuItems_Settings_APRS[7]);
+
+      // handle edit field
+      display.setCursor(cursorPosition_X*6,UI_DISPLAY_ROW_BOTTOM);
       if (editMode_Settings) {
         if (displayBlink) {
-          display.setCursor(cursorPosition_X*6,UI_DISPLAY_ROW_BOTTOM);
           display.print('_');
         }
       }
-
-      // place the cursor
-      display.setCursor(0,UI_DISPLAY_ROW_BOTTOM-1);
-
-      // print values to oled
       if (editMode_Settings) {
         handleDisplay_PrintTempVal();
       } else {
         handleDisplay_PrintValStoredInMem(Settings_Type_APRS[cursorPosition_Y],Settings_TypeIndex_APRS[cursorPosition_Y]);
       }
-
-      // place the cursor
-      int selectionRow = handleDisplay_GetSelectionRow(cursorPosition_Y - 2);
-      display.setCursor(0,selectionRow);
-      display.print(F(">"));
-
-      //
-      display.setCursor(6,UI_DISPLAY_ROW_01);
-      display.print("New Message");
-      
-      display.setCursor(6,UI_DISPLAY_ROW_02);
-      display.print(MenuItems_Settings_APRS[3]);
-
-      display.setCursor(6,UI_DISPLAY_ROW_03);
-      display.print(MenuItems_Settings_APRS[4]);
-
-      display.setCursor(6,UI_DISPLAY_ROW_04);
-      display.print(MenuItems_Settings_APRS[5]);
       
       // display all content from buffer
       display.display();
 
+      //
+      displayInitialized = true;
     }
   }
 
@@ -1840,7 +2097,6 @@ const char version[] = __DATE__ " " __TIME__;
     // display method that it is in "on first show" and needs to initialize. this is where we clear and 
     // initalize critical variables such as cursor positions.
     if (!displayInitialized){
-      displayInitialized = true;
       cursorPosition_X = 0;
       cursorPosition_Y = 0;
       cursorPosition_X_Last = cursorPosition_X;
@@ -1941,8 +2197,12 @@ const char version[] = __DATE__ " " __TIME__;
           leave_display_timer = millis();
         }
       }
+
       // display all content from buffer
       display.display();
+
+      //
+      displayInitialized = true;
     }
     // timeout and leave
     if (millis() - leave_display_timer > SETTINGS_DISPLAY_TIMEOUT && leaveDisplay_LiveFeed){
@@ -1957,7 +2217,6 @@ const char version[] = __DATE__ " " __TIME__;
     // display method that it is in "on first show" and needs to initialize. this is where we clear and 
     // initalize critical variables such as cursor positions.
     if (!displayInitialized){
-      displayInitialized= true;
       cursorPosition_X = 0;
       cursorPosition_Y = 0;
       cursorPosition_X_Last = 0;
@@ -1996,25 +2255,22 @@ const char version[] = __DATE__ " " __TIME__;
     if (displayRefresh_Global){
       // clear the buffer
       display.clearDisplay();
+
+      // add global objects to buffer
+      handleDisplay_Global();
       
-      int selectionRow = 0;
-      switch (cursorPosition_Y) {
-        case 0:
-          selectionRow = UI_DISPLAY_ROW_02; // no
-          break;
-        case 1:
-          selectionRow = UI_DISPLAY_ROW_03; // yes
-          break;
-        default:
-          selectionRow = UI_DISPLAY_ROW_02;
-          break;
-      }
-        
+      // handle cursor
+      int selectionRow = handleDisplay_GetSelectionRow(cursorPosition_Y+1);
       display.setCursor(0,selectionRow);
       display.print(F(">"));
-      
+
+      // handle question
       display.setCursor(6,UI_DISPLAY_ROW_01);
-      display.print(F("Save changes?"));
+      display.print(F("[               ]"));
+      if(displayBlink || !displayInitialized){
+        display.setCursor(6,UI_DISPLAY_ROW_01);
+        display.print(F("[ Save changes? ]"));
+      }
       
       display.setCursor(6,UI_DISPLAY_ROW_02);
       display.print(F("No"));
@@ -2024,6 +2280,9 @@ const char version[] = __DATE__ " " __TIME__;
 
       // display all content from buffer
       display.display();
+
+      //
+      displayInitialized= true;
     }
   }
 
@@ -2032,7 +2291,6 @@ const char version[] = __DATE__ " " __TIME__;
     // display method that it is in "on first show" and needs to initialize. this is where we clear and 
     // initalize critical variables such as cursor positions.
     if (!displayInitialized){
-      displayInitialized = true;
       cursorPosition_X = 0;
       cursorPosition_Y = 0;
       cursorPosition_X_Last = 0;
@@ -2043,11 +2301,11 @@ const char version[] = __DATE__ " " __TIME__;
       if (cursorPosition_Y > 0){
         cursorPosition_Y--;
       } else {
-        cursorPosition_Y=ARRAY_SIZE(MenuItems_Settings) - 1;
+        cursorPosition_Y=ARRAY_SIZE(MenuItems_Settings)-1;
       }
     }
     if (keyboardInputChar == KEYBOARD_DOWN_KEY){
-      if (cursorPosition_Y < ARRAY_SIZE(MenuItems_Settings) - 1){ // Size of array / size of array element
+      if (cursorPosition_Y < ARRAY_SIZE(MenuItems_Settings)-1){ // Size of array / size of array element
         cursorPosition_Y++;
       } else {
         cursorPosition_Y=0;
@@ -2078,35 +2336,43 @@ const char version[] = __DATE__ " " __TIME__;
     if (displayRefresh_Global){
       // clear the buffer
       display.clearDisplay();
+
       // add global objects to buffer
       handleDisplay_Global();
-      // determine the row
-      int selectionRow = handleDisplay_GetSelectionRow(cursorPosition_Y);
-        
-      display.setCursor(0,selectionRow);
-      display.print(F(">"));
-
-      int NumOfSettings = ARRAY_SIZE(MenuItems_Settings);
       
-      if (NumOfSettings >= 1) {
+      // handle cursor
+      int selectionRow = handleDisplay_GetSelectionRow(cursorPosition_Y+1);
+      display.setCursor(0,selectionRow);
+      display.print(F(">"));      
+      
+      // handle header
+      display.setCursor(6,UI_DISPLAY_ROW_01);
+      display.print(F("[          ]"));
+      if(displayBlink || !displayInitialized){
         display.setCursor(6,UI_DISPLAY_ROW_01);
-        display.print(MenuItems_Settings[cursorPosition_Y>3 ? cursorPosition_Y-3 : 0]);
+        display.print(F("[ SETTINGS ]"));
+      }
+
+      // handle body
+      int NumOfSettings = ARRAY_SIZE(MenuItems_Settings);
+      if (NumOfSettings >= 1) {
+        display.setCursor(6,UI_DISPLAY_ROW_02);
+        display.print(MenuItems_Settings[cursorPosition_Y>2 ? cursorPosition_Y-2 : 0]);
       }
       if (NumOfSettings >= 2) {
-        display.setCursor(6,UI_DISPLAY_ROW_02);
-        display.print(MenuItems_Settings[cursorPosition_Y>3 ? cursorPosition_Y-2 : 1]);
+        display.setCursor(6,UI_DISPLAY_ROW_03);
+        display.print(MenuItems_Settings[cursorPosition_Y>2 ? cursorPosition_Y-1 : 1]);
       }
       if (NumOfSettings >= 3) {
-        display.setCursor(6,UI_DISPLAY_ROW_03);
-        display.print(MenuItems_Settings[cursorPosition_Y>3 ? cursorPosition_Y-1 : 2]);
-      }
-      if (NumOfSettings >= 4) {
         display.setCursor(6,UI_DISPLAY_ROW_04);
-        display.print(MenuItems_Settings[cursorPosition_Y>3 ? cursorPosition_Y-0 : 3]);
+        display.print(MenuItems_Settings[cursorPosition_Y>2 ? cursorPosition_Y-0 : 2]);
       }
 
       // display all content from buffer
       display.display();
+
+      //
+      displayInitialized = true;
     }
   }
 
@@ -2115,7 +2381,6 @@ const char version[] = __DATE__ " " __TIME__;
     // display method that it is in "on first show" and needs to initialize. this is where we clear and 
     // initalize critical variables such as cursor positions.
     if (!displayInitialized){
-      displayInitialized = true;
       cursorPosition_X = 0;
       cursorPosition_Y = 0;
       cursorPosition_X_Last = 0;
@@ -2139,10 +2404,10 @@ const char version[] = __DATE__ " " __TIME__;
         if (cursorPosition_Y > 0) {
           cursorPosition_Y--;
         } else {
-          cursorPosition_Y=ARRAY_SIZE(MenuItems_Settings_APRS) - 1;
+          cursorPosition_Y=ARRAY_SIZE(MenuItems_Settings_APRS)-1;
         }
       } else if (keyboardInputChar == KEYBOARD_DOWN_KEY) {
-        if (cursorPosition_Y < ARRAY_SIZE(MenuItems_Settings_APRS) - 1) {
+        if (cursorPosition_Y < ARRAY_SIZE(MenuItems_Settings_APRS)-1) {
           cursorPosition_Y++;
         } else {
           cursorPosition_Y=0;
@@ -2178,47 +2443,59 @@ const char version[] = __DATE__ " " __TIME__;
     if (displayRefresh_Global){
       // clear the buffer
       display.clearDisplay();
+      
+      // add global objects to buffer
+      bool showPositionMemory = SETTINGS_DISPLAY_SHOW_POSITION;
+      SETTINGS_DISPLAY_SHOW_POSITION = false; // we dont want to show the lat long while editing
+      handleDisplay_Global();
+      SETTINGS_DISPLAY_SHOW_POSITION = showPositionMemory; // put it back to what it was
+
+      // handle cursor
+      int selectionRow = handleDisplay_GetSelectionRow(cursorPosition_Y+1);
+      display.setCursor(0,selectionRow);
+      display.print(F(">"));
+      
+      // handle header
+      display.setCursor(6,UI_DISPLAY_ROW_01);
+      display.print(F("[      ]"));
+      if(displayBlink || !displayInitialized){
+        display.setCursor(6,UI_DISPLAY_ROW_01);
+        display.print(F("[ APRS ]"));
+      }
+
+      // handle body
+      int NumOfSettings = ARRAY_SIZE(MenuItems_Settings_APRS);
+      if (NumOfSettings >= 1) {
+        display.setCursor(6,UI_DISPLAY_ROW_02);
+        display.print(MenuItems_Settings_APRS[cursorPosition_Y>2 ? cursorPosition_Y-2 : 0]);
+      }
+      if (NumOfSettings >= 2) {
+        display.setCursor(6,UI_DISPLAY_ROW_03);
+        display.print(MenuItems_Settings_APRS[cursorPosition_Y>2 ? cursorPosition_Y-1 : 1]);
+      }
+      if (NumOfSettings >= 3) {
+        display.setCursor(6,UI_DISPLAY_ROW_04);
+        display.print(MenuItems_Settings_APRS[cursorPosition_Y>2 ? cursorPosition_Y-0 : 2]);
+      }
+
+      // handle edit field
+      display.setCursor(cursorPosition_X*6,UI_DISPLAY_ROW_BOTTOM);
       if (editMode_Settings) {
         if (displayBlink) {
-          display.setCursor(cursorPosition_X*6,UI_DISPLAY_ROW_BOTTOM);
           display.print('_');
         }
       }
-      // place the cursor
-      display.setCursor(0,UI_DISPLAY_ROW_BOTTOM-1);
-      // print values to oled
       if (editMode_Settings) {
         handleDisplay_PrintTempVal();
       } else {
         handleDisplay_PrintValStoredInMem(Settings_Type_APRS[cursorPosition_Y],Settings_TypeIndex_APRS[cursorPosition_Y]);
       }
-      // determine the row
-      int selectionRow = handleDisplay_GetSelectionRow(cursorPosition_Y);
-        
-      display.setCursor(0,selectionRow);
-      display.print(F(">"));
-
-      int NumOfSettings = ARRAY_SIZE(MenuItems_Settings_APRS);
-      
-      if (NumOfSettings >= 1) {
-        display.setCursor(6,UI_DISPLAY_ROW_01);
-        display.print(MenuItems_Settings_APRS[cursorPosition_Y>3 ? cursorPosition_Y-3 : 0]);
-      }
-      if (NumOfSettings >= 2) {
-        display.setCursor(6,UI_DISPLAY_ROW_02);
-        display.print(MenuItems_Settings_APRS[cursorPosition_Y>3 ? cursorPosition_Y-2 : 1]);
-      }
-      if (NumOfSettings >= 3) {
-        display.setCursor(6,UI_DISPLAY_ROW_03);
-        display.print(MenuItems_Settings_APRS[cursorPosition_Y>3 ? cursorPosition_Y-1 : 2]);
-      }
-      if (NumOfSettings >= 4) {
-        display.setCursor(6,UI_DISPLAY_ROW_04);
-        display.print(MenuItems_Settings_APRS[cursorPosition_Y>3 ? cursorPosition_Y-0 : 3]);
-      }
 
       // display all content from buffer
       display.display();
+
+      //
+      displayInitialized = true;
     }
   }
 
@@ -2227,7 +2504,6 @@ const char version[] = __DATE__ " " __TIME__;
     // display method that it is in "on first show" and needs to initialize. this is where we clear and 
     // initalize critical variables such as cursor positions.
     if (!displayInitialized){
-      displayInitialized = true;
       cursorPosition_X = 0;
       cursorPosition_Y = 0;
       cursorPosition_X_Last = 0;
@@ -2251,10 +2527,10 @@ const char version[] = __DATE__ " " __TIME__;
         if (cursorPosition_Y > 0) {
           cursorPosition_Y--;
         } else {
-          cursorPosition_Y=ARRAY_SIZE(MenuItems_Settings_GPS) - 1;
+          cursorPosition_Y=ARRAY_SIZE(MenuItems_Settings_GPS)-1;
         }
       } else if (keyboardInputChar == KEYBOARD_DOWN_KEY) {
-        if (cursorPosition_Y < ARRAY_SIZE(MenuItems_Settings_GPS) - 1) {
+        if (cursorPosition_Y < ARRAY_SIZE(MenuItems_Settings_GPS)-1) {
           cursorPosition_Y++;
         } else {
           cursorPosition_Y=0;
@@ -2290,47 +2566,59 @@ const char version[] = __DATE__ " " __TIME__;
     if (displayRefresh_Global){
       // clear the buffer
       display.clearDisplay();
+
+      // add global objects to buffer
+      bool showPositionMemory = SETTINGS_DISPLAY_SHOW_POSITION;
+      SETTINGS_DISPLAY_SHOW_POSITION = false; // we dont want to show the lat long while editing
+      handleDisplay_Global();
+      SETTINGS_DISPLAY_SHOW_POSITION = showPositionMemory; // put it back to what it was
+
+      // handle cursor
+      int selectionRow = handleDisplay_GetSelectionRow(cursorPosition_Y+1);
+      display.setCursor(0,selectionRow);
+      display.print(F(">"));
+
+      // handle header
+      display.setCursor(6,UI_DISPLAY_ROW_01);
+      display.print(F("[     ]"));
+      if(displayBlink || !displayInitialized){
+        display.setCursor(6,UI_DISPLAY_ROW_01);
+        display.print(F("[ GPS ]"));
+      }
+
+      // handle body
+      int NumOfSettings = ARRAY_SIZE(MenuItems_Settings_GPS);
+      if (NumOfSettings >= 1) {
+        display.setCursor(6,UI_DISPLAY_ROW_02);
+        display.print(MenuItems_Settings_GPS[cursorPosition_Y>2 ? cursorPosition_Y-2 : 0]);
+      }
+      if (NumOfSettings >= 2) {
+        display.setCursor(6,UI_DISPLAY_ROW_03);
+        display.print(MenuItems_Settings_GPS[cursorPosition_Y>2 ? cursorPosition_Y-1 : 1]);
+      }
+      if (NumOfSettings >= 3) {
+        display.setCursor(6,UI_DISPLAY_ROW_04);
+        display.print(MenuItems_Settings_GPS[cursorPosition_Y>2 ? cursorPosition_Y-0 : 2]);
+      }
+
+      // handle edit field
+      display.setCursor(cursorPosition_X*6,UI_DISPLAY_ROW_BOTTOM);
       if (editMode_Settings) {
         if (displayBlink) {
-          display.setCursor(cursorPosition_X*6,UI_DISPLAY_ROW_BOTTOM);
           display.print('_');
         }
       }
-      // place the cursor
-      display.setCursor(0,UI_DISPLAY_ROW_BOTTOM-1);
-      // print values to oled
       if (editMode_Settings) {
         handleDisplay_PrintTempVal();
       } else {
         handleDisplay_PrintValStoredInMem(Settings_Type_GPS[cursorPosition_Y],Settings_TypeIndex_GPS[cursorPosition_Y]);
       }
-      // determine the row
-      int selectionRow = handleDisplay_GetSelectionRow(cursorPosition_Y);
-        
-      display.setCursor(0,selectionRow);
-      display.print(F(">"));
-
-      int NumOfSettings = ARRAY_SIZE(MenuItems_Settings_GPS);
-      
-      if (NumOfSettings >= 1) {
-        display.setCursor(6,UI_DISPLAY_ROW_01);
-        display.print(MenuItems_Settings_GPS[cursorPosition_Y>3 ? cursorPosition_Y-3 : 0]);
-      }
-      if (NumOfSettings >= 2) {
-        display.setCursor(6,UI_DISPLAY_ROW_02);
-        display.print(MenuItems_Settings_GPS[cursorPosition_Y>3 ? cursorPosition_Y-2 : 1]);
-      }
-      if (NumOfSettings >= 3) {
-        display.setCursor(6,UI_DISPLAY_ROW_03);
-        display.print(MenuItems_Settings_GPS[cursorPosition_Y>3 ? cursorPosition_Y-1 : 2]);
-      }
-      if (NumOfSettings >= 4) {
-        display.setCursor(6,UI_DISPLAY_ROW_04);
-        display.print(MenuItems_Settings_GPS[cursorPosition_Y>3 ? cursorPosition_Y-0 : 3]);
-      }
 
       // display all content from buffer
       display.display();
+
+      //
+      displayInitialized = true;
     } 
   }
 
@@ -2339,7 +2627,6 @@ const char version[] = __DATE__ " " __TIME__;
     // display method that it is in "on first show" and needs to initialize. this is where we clear and 
     // initalize critical variables such as cursor positions.
     if (!displayInitialized){
-      displayInitialized = true;
       cursorPosition_X = 0;
       cursorPosition_Y = 0;
       cursorPosition_X_Last = 0;
@@ -2363,10 +2650,10 @@ const char version[] = __DATE__ " " __TIME__;
         if (cursorPosition_Y > 0) {
           cursorPosition_Y--;
         } else {
-          cursorPosition_Y=ARRAY_SIZE(MenuItems_Settings_Display) - 1;
+          cursorPosition_Y=ARRAY_SIZE(MenuItems_Settings_Display)-1;
         }
       } else if (keyboardInputChar == KEYBOARD_DOWN_KEY) {
-        if (cursorPosition_Y < ARRAY_SIZE(MenuItems_Settings_Display) - 1) {
+        if (cursorPosition_Y < ARRAY_SIZE(MenuItems_Settings_Display)-1) {
           cursorPosition_Y++;
         } else {
           cursorPosition_Y=0;
@@ -2402,47 +2689,59 @@ const char version[] = __DATE__ " " __TIME__;
     if (displayRefresh_Global){
       // clear the buffer
       display.clearDisplay();
+
+      // add global objects to buffer
+      bool showPositionMemory = SETTINGS_DISPLAY_SHOW_POSITION;
+      SETTINGS_DISPLAY_SHOW_POSITION = false; // we dont want to show the lat long while editing
+      handleDisplay_Global();
+      SETTINGS_DISPLAY_SHOW_POSITION = showPositionMemory; // put it back to what it was
+
+      // handle cursor
+      int selectionRow = handleDisplay_GetSelectionRow(cursorPosition_Y+1);
+      display.setCursor(0,selectionRow);
+      display.print(F(">"));
+
+      // handle header
+      display.setCursor(6,UI_DISPLAY_ROW_01);
+      display.print(F("[         ]"));
+      if(displayBlink || !displayInitialized){
+        display.setCursor(6,UI_DISPLAY_ROW_01);
+        display.print(F("[ DISPLAY ]"));
+      }
+
+      // handle body
+      int NumOfSettings = ARRAY_SIZE(MenuItems_Settings_Display);
+      if (NumOfSettings >= 1) {
+        display.setCursor(6,UI_DISPLAY_ROW_02);
+        display.print(MenuItems_Settings_Display[cursorPosition_Y>2 ? cursorPosition_Y-2 : 0]);
+      }
+      if (NumOfSettings >= 2) {
+        display.setCursor(6,UI_DISPLAY_ROW_03);
+        display.print(MenuItems_Settings_Display[cursorPosition_Y>2 ? cursorPosition_Y-1 : 1]);
+      }
+      if (NumOfSettings >= 3) {
+        display.setCursor(6,UI_DISPLAY_ROW_04);
+        display.print(MenuItems_Settings_Display[cursorPosition_Y>2 ? cursorPosition_Y-0 : 2]);
+      }
+      
+      // handle edit field
+      display.setCursor(cursorPosition_X*6,UI_DISPLAY_ROW_BOTTOM);
       if (editMode_Settings) {
         if (displayBlink) {
-          display.setCursor(cursorPosition_X*6,UI_DISPLAY_ROW_BOTTOM);
           display.print('_');
         }
       }
-      // place the cursor
-      display.setCursor(0,UI_DISPLAY_ROW_BOTTOM-1);
-      // print values to oled
       if (editMode_Settings) {
         handleDisplay_PrintTempVal();
       } else {
         handleDisplay_PrintValStoredInMem(Settings_Type_Display[cursorPosition_Y],Settings_TypeIndex_Display[cursorPosition_Y]);
       }
-      // determine the row
-      int selectionRow = handleDisplay_GetSelectionRow(cursorPosition_Y);
-        
-      display.setCursor(0,selectionRow);
-      display.print(F(">"));
-
-      int NumOfSettings = ARRAY_SIZE(MenuItems_Settings_Display);
-      
-      if (NumOfSettings >= 1) {
-        display.setCursor(6,UI_DISPLAY_ROW_01);
-        display.print(MenuItems_Settings_Display[cursorPosition_Y>3 ? cursorPosition_Y-3 : 0]);
-      }
-      if (NumOfSettings >= 2) {
-        display.setCursor(6,UI_DISPLAY_ROW_02);
-        display.print(MenuItems_Settings_Display[cursorPosition_Y>3 ? cursorPosition_Y-2 : 1]);
-      }
-      if (NumOfSettings >= 3) {
-        display.setCursor(6,UI_DISPLAY_ROW_03);
-        display.print(MenuItems_Settings_Display[cursorPosition_Y>3 ? cursorPosition_Y-1 : 2]);
-      }
-      if (NumOfSettings >= 4) {
-        display.setCursor(6,UI_DISPLAY_ROW_04);
-        display.print(MenuItems_Settings_Display[cursorPosition_Y>3 ? cursorPosition_Y-0 : 3]);
-      }
 
       // display all content from buffer
       display.display();
+
+      //
+      displayInitialized = true;
     } 
   }
 
@@ -2454,19 +2753,60 @@ const char version[] = __DATE__ " " __TIME__;
 
   bool modemCmdFlag_Raw=false, modemCmdFlag_Cmt=false, modemCmdFlag_Msg=false;
   bool modemCmdFlag_MsgRecipient=false, modemCmdFlag_MsgRecipientSSID=false;
-  bool aprsAutomaticCommentEnabled = true;
   unsigned char sendMessage_Seq=0, sendMessage_Retrys;
   #define MAXIMUM_MODEM_COMMAND_RATE 100        // maximum rate that commands can be sent to modem
-  unsigned long modem_command_timer, aprs_beacon_timer;
+  unsigned long modem_command_timer, aprs_beacon_timer, smart_beacon_timer;
   unsigned long message_retry_timer;
 
   void handleAprsBeacon(){
-    if ( millis() - aprs_beacon_timer > SETTINGS_APRS_BEACON_FREQUENCY ){
-      if (aprsAutomaticCommentEnabled==true){
-        modemCmdFlag_Cmt=true;
+    
+    if (millis() - smart_beacon_timer > 0){ 
+      smart_beacon_timer = millis();
+
+      // move inside else when done debugging
+      currentIdleTime = millis() - aprs_beacon_timer;
+      float i = parseAprsLat(currentLat);
+      float j = parseAprsLon(currentLng);
+      smartBeaconDistance = haversineMiles(i, j, lastLatDegSmartBeacon, lastLngDegSmartBeacon);
+
+      // smart beaconing
+      if (!gpsLocationHasChanged){
+        aprs_beacon_timer = millis();
+
+      } else {
+        // as long as we are moving, reset the beacon timer
+        if (modemCmdFlag_Lat || modemCmdFlag_Lng){
+          aprs_beacon_timer = millis();
+        }
+        // if the beacon distance is satisfied we set the flag to beacon
+        if (smartBeaconDistance > smartBeaconDistanceLast + abs(SETTINGS_APRS_BEACON_DISTANCE)
+            || smartBeaconDistance < smartBeaconDistanceLast - abs(SETTINGS_APRS_BEACON_DISTANCE)) {
+                // internal variables
+                smartBeaconDistanceLast = smartBeaconDistance;
+                lastLatDegSmartBeacon = i;
+                lastLngDegSmartBeacon = j;
+                // set flag
+                gpsSmartBeaconDistanceConditionMet = true;
+                // reset the beacon timer
+                //aprs_beacon_timer = millis();
+        }
+        // if the beacon flag is set or the timer expires, we beacon
+        if ((currentIdleTime > SETTINGS_APRS_BEACON_IDLE_TIME || gpsSmartBeaconDistanceConditionMet) && gps.location.isValid()==true){
+          gpsSmartBeaconDistanceConditionMet = false;
+          //
+          gpsLocationHasChanged = false;
+          //
+          smartBeaconDistanceLast = smartBeaconDistance;
+          lastLatDegSmartBeacon = i;
+          lastLngDegSmartBeacon = j;
+          //
+          if (SETTINGS_APRS_BEACON_ENABLED==true) modemCmdFlag_Cmt=true;
+        }
+
       }
-      aprs_beacon_timer = millis();
+
     }
+
   }
 
   void handleSendMessage(){  
@@ -2520,7 +2860,7 @@ const char version[] = __DATE__ " " __TIME__;
       }
       // send location
       // dont send if we dont have valid coordinates (modemCmdFlag_Cmt will remain true so we send when we get coordinates)
-      if (modemCmdFlag_Cmt==true && gpsInitialized==true){
+      if (modemCmdFlag_Cmt==true){
         if (sendModemCommand("@", 1, SETTINGS_APRS_COMMENT, strlen(SETTINGS_APRS_COMMENT)) == -1){
           modemCmdFlag_Cmt=false;
         }
@@ -2715,7 +3055,7 @@ const char version[] = __DATE__ " " __TIME__;
     if (Serial1.available()){
       memset(modemData,'\0',sizeof(modemData));
       int len = Serial1.readBytesUntil('\n', modemData, sizeof(modemData));
-      modemData[len] = '\0';  // Null-terminate manually
+      modemData[len-1] = '\0';  // Null-terminate manually
       Serial.print("Modem Raw:");Serial.println(modemData);
       gotFormatRaw = true;
     }
@@ -2978,32 +3318,33 @@ const char version[] = __DATE__ " " __TIME__;
     Serial.println();
     Serial.println(F("Current Settings"));
     Serial.println(F("APRS:"));
-    Serial.print(MenuItems_Settings_APRS[0]); Serial.print("="); Serial.println(SETTINGS_APRS_BEACON_FREQUENCY);
-    Serial.print(MenuItems_Settings_APRS[1]); Serial.print("="); Serial.println(SETTINGS_APRS_RAW_PACKET);
-    Serial.print(MenuItems_Settings_APRS[2]); Serial.print("="); Serial.println(SETTINGS_APRS_COMMENT);
-    Serial.print(MenuItems_Settings_APRS[3]); Serial.print("="); Serial.println(SETTINGS_APRS_MESSAGE);
-    Serial.print(MenuItems_Settings_APRS[4]); Serial.print("="); Serial.println(SETTINGS_APRS_RECIPIENT_CALL);
-    Serial.print(MenuItems_Settings_APRS[5]); Serial.print("="); Serial.println(SETTINGS_APRS_RECIPIENT_SSID);
-    Serial.print(MenuItems_Settings_APRS[6]); Serial.print("="); Serial.println(SETTINGS_APRS_CALLSIGN);
-    Serial.print(MenuItems_Settings_APRS[7]); Serial.print("="); Serial.println(SETTINGS_APRS_CALLSIGN_SSID);
-    Serial.print(MenuItems_Settings_APRS[8]); Serial.print("="); Serial.println(SETTINGS_APRS_DESTINATION_CALL);
-    Serial.print(MenuItems_Settings_APRS[9]); Serial.print("="); Serial.println(SETTINGS_APRS_DESTINATION_SSID);
-    Serial.print(MenuItems_Settings_APRS[10]); Serial.print("="); Serial.println(SETTINGS_APRS_PATH1_CALL);
-    Serial.print(MenuItems_Settings_APRS[11]); Serial.print("="); Serial.println(SETTINGS_APRS_PATH1_SSID);
-    Serial.print(MenuItems_Settings_APRS[12]); Serial.print("="); Serial.println(SETTINGS_APRS_PATH2_CALL);
-    Serial.print(MenuItems_Settings_APRS[13]); Serial.print("="); Serial.println(SETTINGS_APRS_PATH2_SSID);
-    Serial.print(MenuItems_Settings_APRS[14]); Serial.print("="); Serial.println(SETTINGS_APRS_SYMBOL);
-    Serial.print(MenuItems_Settings_APRS[15]); Serial.print("="); Serial.println(SETTINGS_APRS_SYMBOL_TABLE);
-    Serial.print(MenuItems_Settings_APRS[16]); Serial.print("="); Serial.println(SETTINGS_APRS_AUTOMATIC_ACK);
-    Serial.print(MenuItems_Settings_APRS[17]); Serial.print("="); Serial.println(SETTINGS_APRS_PREAMBLE);
-    Serial.print(MenuItems_Settings_APRS[18]); Serial.print("="); Serial.println(SETTINGS_APRS_TAIL);
-    Serial.print(MenuItems_Settings_APRS[19]); Serial.print("="); Serial.println(SETTINGS_APRS_RETRY_COUNT);
-    Serial.print(MenuItems_Settings_APRS[20]); Serial.print("="); Serial.println(SETTINGS_APRS_RETRY_INTERVAL);
+    Serial.print(MenuItems_Settings_APRS[0]); Serial.print("="); Serial.println(SETTINGS_APRS_BEACON_ENABLED);
+    Serial.print(MenuItems_Settings_APRS[1]); Serial.print("="); Serial.println(SETTINGS_APRS_BEACON_DISTANCE);
+    Serial.print(MenuItems_Settings_APRS[2]); Serial.print("="); Serial.println(SETTINGS_APRS_BEACON_IDLE_TIME);
+    Serial.print(MenuItems_Settings_APRS[3]); Serial.print("="); Serial.println(SETTINGS_APRS_RAW_PACKET);
+    Serial.print(MenuItems_Settings_APRS[4]); Serial.print("="); Serial.println(SETTINGS_APRS_COMMENT);
+    Serial.print(MenuItems_Settings_APRS[5]); Serial.print("="); Serial.println(SETTINGS_APRS_MESSAGE);
+    Serial.print(MenuItems_Settings_APRS[6]); Serial.print("="); Serial.println(SETTINGS_APRS_RECIPIENT_CALL);
+    Serial.print(MenuItems_Settings_APRS[7]); Serial.print("="); Serial.println(SETTINGS_APRS_RECIPIENT_SSID);
+    Serial.print(MenuItems_Settings_APRS[8]); Serial.print("="); Serial.println(SETTINGS_APRS_CALLSIGN);
+    Serial.print(MenuItems_Settings_APRS[9]); Serial.print("="); Serial.println(SETTINGS_APRS_CALLSIGN_SSID);
+    Serial.print(MenuItems_Settings_APRS[10]); Serial.print("="); Serial.println(SETTINGS_APRS_DESTINATION_CALL);
+    Serial.print(MenuItems_Settings_APRS[11]); Serial.print("="); Serial.println(SETTINGS_APRS_DESTINATION_SSID);
+    Serial.print(MenuItems_Settings_APRS[12]); Serial.print("="); Serial.println(SETTINGS_APRS_PATH1_CALL);
+    Serial.print(MenuItems_Settings_APRS[13]); Serial.print("="); Serial.println(SETTINGS_APRS_PATH1_SSID);
+    Serial.print(MenuItems_Settings_APRS[14]); Serial.print("="); Serial.println(SETTINGS_APRS_PATH2_CALL);
+    Serial.print(MenuItems_Settings_APRS[15]); Serial.print("="); Serial.println(SETTINGS_APRS_PATH2_SSID);
+    Serial.print(MenuItems_Settings_APRS[16]); Serial.print("="); Serial.println(SETTINGS_APRS_SYMBOL);
+    Serial.print(MenuItems_Settings_APRS[17]); Serial.print("="); Serial.println(SETTINGS_APRS_SYMBOL_TABLE);
+    Serial.print(MenuItems_Settings_APRS[18]); Serial.print("="); Serial.println(SETTINGS_APRS_AUTOMATIC_ACK);
+    Serial.print(MenuItems_Settings_APRS[19]); Serial.print("="); Serial.println(SETTINGS_APRS_PREAMBLE);
+    Serial.print(MenuItems_Settings_APRS[20]); Serial.print("="); Serial.println(SETTINGS_APRS_TAIL);
+    Serial.print(MenuItems_Settings_APRS[21]); Serial.print("="); Serial.println(SETTINGS_APRS_RETRY_COUNT);
+    Serial.print(MenuItems_Settings_APRS[22]); Serial.print("="); Serial.println(SETTINGS_APRS_RETRY_INTERVAL);
     Serial.println(F("GPS:"));
-    Serial.print(MenuItems_Settings_GPS[0]); Serial.print("="); Serial.println(SETTINGS_GPS_UPDATE_FREQUENCY);
-    Serial.print(MenuItems_Settings_GPS[1]); Serial.print("="); Serial.println(SETTINGS_GPS_POSITION_TOLERANCE, 2);
-    Serial.print(MenuItems_Settings_GPS[2]); Serial.print("="); Serial.println(SETTINGS_GPS_DESTINATION_LATITUDE, 6);
-    Serial.print(MenuItems_Settings_GPS[3]); Serial.print("="); Serial.println(SETTINGS_GPS_DESTINATION_LONGITUDE, 6);
+    Serial.print(MenuItems_Settings_GPS[0]); Serial.print("="); Serial.println(SETTINGS_GPS_POSITION_TOLERANCE, 2);
+    Serial.print(MenuItems_Settings_GPS[1]); Serial.print("="); Serial.println(SETTINGS_GPS_DESTINATION_LATITUDE, 6);
+    Serial.print(MenuItems_Settings_GPS[2]); Serial.print("="); Serial.println(SETTINGS_GPS_DESTINATION_LONGITUDE, 6);
     Serial.println(F("Display:"));
     Serial.print(MenuItems_Settings_Display[0]); Serial.print("="); Serial.println(SETTINGS_DISPLAY_TIMEOUT);
     Serial.print(MenuItems_Settings_Display[1]); Serial.print("="); Serial.println(SETTINGS_DISPLAY_BRIGHTNESS);
@@ -3169,7 +3510,36 @@ const char version[] = __DATE__ " " __TIME__;
             i++; j_s_APRS++;
           }
           i++; // i should be sitting at the ':'. go ahead and skip that.
-          if (strstr(Setting, MenuItems_Settings_APRS[0]) != NULL) { // "Beacon Frequency"
+          if (strstr(Setting, MenuItems_Settings_APRS[0]) != NULL) { // "Beacon Enabled"
+            while (inData[i] != '\n' && inData[i] != '\0') {
+              inData_Value[k] = inData[i];
+              i++; k++;
+            }
+            //Serial.print(DataEntered);Serial.println(inData_Value); 
+            if (inData_Value[0]=='1' || inData_Value[0]=='T' || inData_Value[0]=='t'){
+              SETTINGS_APRS_BEACON_ENABLED = true;
+            } else if (inData_Value[0]=='0' || inData_Value[0]=='F' || inData_Value[0]=='f'){
+              SETTINGS_APRS_BEACON_ENABLED = false;
+            } else {
+              Serial.println(InvalidData_TrueFalse);
+            }
+          } else if (strstr(Setting, MenuItems_Settings_APRS[1]) != NULL) { // "Beacon Distance"
+            while (inData[i] != '\n' && inData[i] != '\0') {
+              if (k>40) { // float would be no longer than 40 digits (this is ridiculous)
+                Serial.print(InvalidData_Float);Serial.println(inData_Value);
+                return;
+              }
+              if (!isDigit(inData[i]) && !'.' && !'-') {
+                Serial.print(InvalidData_Float);Serial.println(inData[i]);
+                return;
+              }
+              inData_Value[k] = inData[i];
+              i++; k++;
+            }
+            //SETTINGS_APRS_BEACON_DISTANCE = strtod(inData_Value,NULL); // should we use strtod or atof? which is best?
+            SETTINGS_APRS_BEACON_DISTANCE = atof(inData_Value);
+
+          } else if (strstr(Setting, MenuItems_Settings_APRS[2]) != NULL) { // "Beacon Idle Time"
             while (inData[i] != '\n' && inData[i] != '\0') {
               if (k>9) { // unsigned long would be no longer than 10 digits
                 Serial.print(InvalidData_UnsignedLong);Serial.println(inData_Value);
@@ -3183,9 +3553,9 @@ const char version[] = __DATE__ " " __TIME__;
               i++; k++;
             }
             //Serial.print(DataEntered);Serial.println(inData_Value);
-            SETTINGS_APRS_BEACON_FREQUENCY = atol(inData_Value);
+            SETTINGS_APRS_BEACON_IDLE_TIME = atol(inData_Value);
             
-          } else if (strstr(Setting, MenuItems_Settings_APRS[1]) != NULL) { // "Raw Packet"
+          } else if (strstr(Setting, MenuItems_Settings_APRS[3]) != NULL) { // "Raw Packet"
             while (inData[i] != '\n' && inData[i] != '\0') {
               inData_Value[k] = inData[i];
               i++; k++;
@@ -3196,7 +3566,7 @@ const char version[] = __DATE__ " " __TIME__;
               SETTINGS_APRS_RAW_PACKET[i] = inData_Value[i];
             }
             
-          } else if (strstr(Setting, MenuItems_Settings_APRS[2]) != NULL) { // "Comment"
+          } else if (strstr(Setting, MenuItems_Settings_APRS[4]) != NULL) { // "Comment"
             while (inData[i] != '\n' && inData[i] != '\0') {
               inData_Value[k] = inData[i];
               i++; k++;
@@ -3207,7 +3577,7 @@ const char version[] = __DATE__ " " __TIME__;
               SETTINGS_APRS_COMMENT[i] = inData_Value[i];
             }
             
-          } else if (strstr(Setting, MenuItems_Settings_APRS[3]) != NULL) { // "Message"
+          } else if (strstr(Setting, MenuItems_Settings_APRS[5]) != NULL) { // "Message"
             while (inData[i] != '\n' && inData[i] != '\0') {
               inData_Value[k] = inData[i];
               i++; k++;
@@ -3218,7 +3588,7 @@ const char version[] = __DATE__ " " __TIME__;
               SETTINGS_APRS_MESSAGE[i] = inData_Value[i];
             }
             
-          } else if (strstr(Setting, MenuItems_Settings_APRS[4]) != NULL) { // "Recipient Callsign"
+          } else if (strstr(Setting, MenuItems_Settings_APRS[6]) != NULL) { // "Recipient Callsign"
             while (inData[i] != '\n' && inData[i] != '\0') {
               inData_Value[k] = inData[i];
               i++; k++;
@@ -3229,7 +3599,7 @@ const char version[] = __DATE__ " " __TIME__;
               SETTINGS_APRS_RECIPIENT_CALL[i] = inData_Value[i]; 
             }
             
-          } else if (strstr(Setting, MenuItems_Settings_APRS[5]) != NULL) { // "Recipient SSID"
+          } else if (strstr(Setting, MenuItems_Settings_APRS[7]) != NULL) { // "Recipient SSID"
             while (inData[i] != '\n' && inData[i] != '\0') {
               inData_Value[k] = inData[i];
               i++; k++;
@@ -3241,7 +3611,7 @@ const char version[] = __DATE__ " " __TIME__;
               SETTINGS_APRS_RECIPIENT_SSID[i] = inData_Value[i]; 
             }
             
-          } else if (strstr(Setting, MenuItems_Settings_APRS[6]) != NULL) { // "My Callsign"
+          } else if (strstr(Setting, MenuItems_Settings_APRS[8]) != NULL) { // "My Callsign"
             while (inData[i] != '\n' && inData[i] != '\0') {
               inData_Value[k] = inData[i];
               i++; k++;
@@ -3252,7 +3622,7 @@ const char version[] = __DATE__ " " __TIME__;
               SETTINGS_APRS_CALLSIGN[i] = inData_Value[i]; 
             }
             
-          } else if (strstr(Setting, MenuItems_Settings_APRS[7]) != NULL) { // "Callsign SSID"
+          } else if (strstr(Setting, MenuItems_Settings_APRS[9]) != NULL) { // "Callsign SSID"
             while (inData[i] != '\n' && inData[i] != '\0') {
               inData_Value[k] = inData[i];
               i++; k++;
@@ -3264,7 +3634,7 @@ const char version[] = __DATE__ " " __TIME__;
               SETTINGS_APRS_CALLSIGN_SSID[i] = inData_Value[i]; 
             }
             
-          } else if (strstr(Setting, MenuItems_Settings_APRS[8]) != NULL) { // "Destination Callsign"
+          } else if (strstr(Setting, MenuItems_Settings_APRS[10]) != NULL) { // "Destination Callsign"
             while (inData[i] != '\n' && inData[i] != '\0') {
               inData_Value[k] = inData[i];
               i++; k++;
@@ -3275,7 +3645,7 @@ const char version[] = __DATE__ " " __TIME__;
               SETTINGS_APRS_DESTINATION_CALL[i] = inData_Value[i]; 
             }
             
-          } else if (strstr(Setting, MenuItems_Settings_APRS[9]) != NULL) { // "Destination SSID"
+          } else if (strstr(Setting, MenuItems_Settings_APRS[11]) != NULL) { // "Destination SSID"
             while (inData[i] != '\n' && inData[i] != '\0') {
               inData_Value[k] = inData[i];
               i++; k++;
@@ -3287,7 +3657,7 @@ const char version[] = __DATE__ " " __TIME__;
               SETTINGS_APRS_DESTINATION_SSID[i] = inData_Value[i]; 
             }
             
-          } else if (strstr(Setting, MenuItems_Settings_APRS[10]) != NULL) { // "PATH1 Callsign"
+          } else if (strstr(Setting, MenuItems_Settings_APRS[12]) != NULL) { // "PATH1 Callsign"
             while (inData[i] != '\n' && inData[i] != '\0') {
               inData_Value[k] = inData[i];
               i++; k++;
@@ -3298,7 +3668,7 @@ const char version[] = __DATE__ " " __TIME__;
               SETTINGS_APRS_PATH1_CALL[i] = inData_Value[i]; 
             }
             
-          } else if (strstr(Setting, MenuItems_Settings_APRS[11]) != NULL) { // "PATH1 SSID"
+          } else if (strstr(Setting, MenuItems_Settings_APRS[13]) != NULL) { // "PATH1 SSID"
             while (inData[i] != '\n' && inData[i] != '\0') {
               inData_Value[k] = inData[i];
               i++; k++;
@@ -3310,7 +3680,7 @@ const char version[] = __DATE__ " " __TIME__;
               SETTINGS_APRS_PATH1_SSID[i] = inData_Value[i]; 
             }
             
-          } else if (strstr(Setting, MenuItems_Settings_APRS[12]) != NULL) { // "PATH2 Callsign"
+          } else if (strstr(Setting, MenuItems_Settings_APRS[14]) != NULL) { // "PATH2 Callsign"
             while (inData[i] != '\n' && inData[i] != '\0') {
               inData_Value[k] = inData[i];
               i++; k++;
@@ -3321,7 +3691,7 @@ const char version[] = __DATE__ " " __TIME__;
               SETTINGS_APRS_PATH2_CALL[i] = inData_Value[i]; 
             }
             
-          } else if (strstr(Setting, MenuItems_Settings_APRS[13]) != NULL) { // "PATH2 SSID"
+          } else if (strstr(Setting, MenuItems_Settings_APRS[15]) != NULL) { // "PATH2 SSID"
             while (inData[i] != '\n' && inData[i] != '\0') {
               inData_Value[k] = inData[i];
               i++; k++;
@@ -3333,7 +3703,7 @@ const char version[] = __DATE__ " " __TIME__;
               SETTINGS_APRS_PATH2_SSID[i] = inData_Value[i]; 
             }
             
-          } else if (strstr(Setting, MenuItems_Settings_APRS[14]) != NULL) { // "Symbol"
+          } else if (strstr(Setting, MenuItems_Settings_APRS[16]) != NULL) { // "Symbol"
             while (inData[i] != '\n' && inData[i] != '\0') {
               inData_Value[k] = inData[i];
               i++; k++;
@@ -3345,7 +3715,7 @@ const char version[] = __DATE__ " " __TIME__;
               SETTINGS_APRS_SYMBOL[i] = inData_Value[i]; 
             }
             
-          } else if (strstr(Setting, MenuItems_Settings_APRS[15]) != NULL) { // "Table"
+          } else if (strstr(Setting, MenuItems_Settings_APRS[17]) != NULL) { // "Table"
             while (inData[i] != '\n' && inData[i] != '\0') {
               inData_Value[k] = inData[i];
               i++; k++;
@@ -3359,7 +3729,7 @@ const char version[] = __DATE__ " " __TIME__;
               Serial.println(InvalidData_TrueFalse);
             }
             
-          } else if (strstr(Setting, MenuItems_Settings_APRS[16]) != NULL) { // "Automatic ACK"
+          } else if (strstr(Setting, MenuItems_Settings_APRS[18]) != NULL) { // "Automatic ACK"
             while (inData[i] != '\n' && inData[i] != '\0') {
               inData_Value[k] = inData[i];
               i++; k++;
@@ -3373,7 +3743,7 @@ const char version[] = __DATE__ " " __TIME__;
               Serial.println(InvalidData_TrueFalse);
             }
             
-          } else if (strstr(Setting, MenuItems_Settings_APRS[17]) != NULL) { // "Preamble"
+          } else if (strstr(Setting, MenuItems_Settings_APRS[19]) != NULL) { // "Preamble"
             while (inData[i] != '\n' && inData[i] != '\0') {
               if (k>4) { // unsigned int would be no longer than 5 digits
                 Serial.print(InvalidData_UnsignedInt);Serial.println(inData_Value);
@@ -3389,7 +3759,7 @@ const char version[] = __DATE__ " " __TIME__;
             //Serial.print(DataEntered);Serial.println(inData_Value);
             SETTINGS_APRS_PREAMBLE = atoi(inData_Value);
             
-          } else if (strstr(Setting, MenuItems_Settings_APRS[18]) != NULL) { // "Tail"
+          } else if (strstr(Setting, MenuItems_Settings_APRS[20]) != NULL) { // "Tail"
             while (inData[i] != '\n' && inData[i] != '\0') {
               if (k>4) { // unsigned int would be no longer than 5 digits
                 Serial.print(InvalidData_UnsignedInt);Serial.println(inData_Value);
@@ -3404,7 +3774,8 @@ const char version[] = __DATE__ " " __TIME__;
             }
             //Serial.print(DataEntered);Serial.println(inData_Value);
             SETTINGS_APRS_TAIL = atoi(inData_Value);
-          } else if (strstr(Setting, MenuItems_Settings_APRS[19]) != NULL) { // "Retry Count"
+
+          } else if (strstr(Setting, MenuItems_Settings_APRS[21]) != NULL) { // "Retry Count"
             while (inData[i] != '\n' && inData[i] != '\0') {
               if (k>4) { // unsigned int would be no longer than 5 digits
                 Serial.print(InvalidData_UnsignedInt);Serial.println(inData_Value);
@@ -3419,7 +3790,8 @@ const char version[] = __DATE__ " " __TIME__;
             }
             //Serial.print(DataEntered);Serial.println(inData_Value);
             SETTINGS_APRS_RETRY_COUNT = atoi(inData_Value);
-          } else if (strstr(Setting, MenuItems_Settings_APRS[20]) != NULL) { // "Retry Interval"
+
+          } else if (strstr(Setting, MenuItems_Settings_APRS[22]) != NULL) { // "Retry Interval"
             while (inData[i] != '\n' && inData[i] != '\0') {
               if (k>4) { // unsigned int would be no longer than 5 digits
                 Serial.print(InvalidData_UnsignedInt);Serial.println(inData_Value);
@@ -3434,6 +3806,7 @@ const char version[] = __DATE__ " " __TIME__;
             }
             //Serial.print(DataEntered);Serial.println(inData_Value);
             SETTINGS_APRS_RETRY_INTERVAL = atoi(inData_Value);
+
           } else {
             Serial.println(InvalidCommand);
           }
@@ -3446,22 +3819,7 @@ const char version[] = __DATE__ " " __TIME__;
             i++; j_s_GPS++;
           }
           i++; // i should be sitting at the ':'. go ahead and skip that.
-          if (strstr(Setting, MenuItems_Settings_GPS[0]) != NULL) { // Update Frequency
-            // SETTINGS_GPS_UPDATE_FREQUENCY 
-            while (inData[i] != '\n' && inData[i] != '\0') {
-              if (k>9) { // unsigned long would be no longer than 10 digits
-                Serial.print(InvalidData_UnsignedLong);Serial.println(inData_Value);
-                return;
-              }
-              if (!isDigit(inData[i])) {
-                Serial.print(InvalidData_UnsignedLong);Serial.println(inData[i]);
-                return;
-              }
-              inData_Value[k] = inData[i];
-              i++; k++;
-            }
-            SETTINGS_GPS_UPDATE_FREQUENCY = atol(inData_Value);
-          } else if (strstr(Setting, MenuItems_Settings_GPS[1]) != NULL) { // Position Tolerance"
+          if (strstr(Setting, MenuItems_Settings_GPS[0]) != NULL) { // Position Tolerance"
             while (inData[i] != '\n' && inData[i] != '\0') {
               if (k>40) { // float would be no longer than 40 digits (this is ridiculous)
                 Serial.print(InvalidData_Float);Serial.println(inData_Value);
@@ -3476,7 +3834,8 @@ const char version[] = __DATE__ " " __TIME__;
             }
             //SETTINGS_GPS_POSITION_TOLERANCE = strtod(inData_Value,NULL); // should we use strtod or atof? which is best?
             SETTINGS_GPS_POSITION_TOLERANCE = atof(inData_Value);
-          } else if (strstr(Setting, MenuItems_Settings_GPS[2]) != NULL) { // Destination Latitude
+
+          } else if (strstr(Setting, MenuItems_Settings_GPS[1]) != NULL) { // Destination Latitude
             while (inData[i] != '\n' && inData[i] != '\0') {
               if (k>40) { // float would be no longer than 40 digits (this is ridiculous)
                 Serial.print(InvalidData_Float);Serial.println(inData_Value);
@@ -3491,7 +3850,8 @@ const char version[] = __DATE__ " " __TIME__;
             }
             //SETTINGS_GPS_DESTINATION_LATITUDE = strtod(inData_Value,NULL); // should we use strtod or atof? which is best?
             SETTINGS_GPS_DESTINATION_LATITUDE = atof(inData_Value);
-          } else if (strstr(Setting, MenuItems_Settings_GPS[3]) != NULL) { // Destination Longitude
+
+          } else if (strstr(Setting, MenuItems_Settings_GPS[2]) != NULL) { // Destination Longitude
             while (inData[i] != '\n' && inData[i] != '\0') {
               if (k>40) { // float would be no longer than 40 digits (this is ridiculous)
                 Serial.print(InvalidData_Float);Serial.println(inData_Value);
@@ -3506,6 +3866,7 @@ const char version[] = __DATE__ " " __TIME__;
             }
             //SETTINGS_GPS_DESTINATION_LONGITUDE = strtod(inData_Value,NULL); // should we use strtod or atof? which is best?
             SETTINGS_GPS_DESTINATION_LONGITUDE = atof(inData_Value);
+
           } else {
             Serial.println(InvalidCommand);
           }
@@ -3593,6 +3954,7 @@ const char version[] = __DATE__ " " __TIME__;
             }
             //Serial.print(DataEntered);Serial.println(inData_Value);
             SETTINGS_DISPLAY_SCROLL_SPEED = atoi(inData_Value);
+
           } else if (strstr(Setting, MenuItems_Settings_Display[5]) != NULL) { // "Invert"
             while (inData[i] != '\n' && inData[i] != '\0') {
               inData_Value[k] = inData[i];

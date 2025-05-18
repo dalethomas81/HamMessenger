@@ -22,8 +22,11 @@ from tkintermapview import TkinterMapView
 from queue import Queue
 message_queue = Queue()
 
-# pip install pyserial
-# pip install tkintermapview
+# python -m pip install pyserial
+# python -m pip install tkintermapview
+# python -m pip install bitstring
+# python -m pip install aprspy
+
 
 # ---------- Path Setup ----------
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
