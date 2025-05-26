@@ -1,0 +1,3 @@
+aprspy==0.4.0
+pyserial==3.5
+tkintermapview==1.29

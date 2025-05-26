@@ -1,5 +1,11 @@
 // devs
+//≈
+// outputs all installed requirments
 pip freeze > requirements.txt
+// to only output the requirments used in GUI
+pip install pipreqs
+(windows) pipreqs --force --encoding=utf-8 --savepath requirements-windows.txt
+(mac) pipreqs --force --encoding=utf-8 --savepath requirements-macos.txt
 
 // cross-platform
 1) python -m venv venv

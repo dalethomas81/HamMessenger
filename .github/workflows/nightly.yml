@@ -91,7 +91,7 @@ jobs:
 
       - name: Install Python dependencies
         run: |
-          pip install -r Source/GUI/requirements.txt
+          pip install -r Source/GUI/requirements-windows.txt
           pip install pyinstaller
 
       - name: Build GUI with PyInstaller
@@ -128,7 +128,7 @@ jobs:
 
       - name: Install dependencies
         run: |
-          pip install -r Source/GUI/requirements.txt
+          pip install -r Source/GUI/requirements-macos.txt
           pip install pyinstaller
 
       - name: Build macOS GUI with PyInstaller
