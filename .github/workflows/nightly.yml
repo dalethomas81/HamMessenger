@@ -131,10 +131,14 @@ jobs:
           pip install -r Source/GUI/requirements-macos.txt
           pip install pyinstaller
 
+      - name: Verify tkinter is available
+        run: |
+          python -c "import tkinter; print('Tkinter OK:', tkinter.TkVersion)"
+
       - name: Build macOS GUI with PyInstaller
         run: |
           cd Source/GUI
-          python3 -m PyInstaller --windowed --name HamMessenger --onefile Main.py
+          python -m PyInstaller --windowed --name HamMessenger --onefile Main.py
 
       - name: Copy macOS app to output folder
         run: |

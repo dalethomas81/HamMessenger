@@ -1,5 +1,6 @@
 // devs
-//≈
+// install python with tk support
+brew install python-tk
 // outputs all installed requirments
 pip freeze > requirements.txt
 // to only output the requirments used in GUI
