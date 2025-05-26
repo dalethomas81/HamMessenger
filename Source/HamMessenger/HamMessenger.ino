@@ -991,6 +991,7 @@ const char version[] = __DATE__ " " __TIME__;
   unsigned char currentDisplay = UI_DISPLAY_HOME;
   unsigned char currentDisplayLast = currentDisplay;
   unsigned char previousDisplay = UI_DISPLAY_HOME;
+  short int indexPosition_X = 0, indexPosition_X_Last = 0;
   uint32_t cursorPosition_X = 0, cursorPosition_X_Last = 0;
   uint32_t cursorPosition_Y = 0, cursorPosition_Y_Last = 0;
   short int ScrollingIndex_LiveFeed, ScrollingIndex_LiveFeed_minX;
@@ -1367,6 +1368,9 @@ const char version[] = __DATE__ " " __TIME__;
   // this method is used to print the current value of a setting onto the display for reference
   // while scrolling through the settings menu.
   void handleDisplay_PrintValStoredInMem(int SettingsType, int SettingsTypeIndex){
+    //
+    display.setCursor(cursorPosition_X*6,UI_DISPLAY_ROW_BOTTOM);
+    //
     switch (SettingsType) {
       case SETTINGS_EDIT_TYPE_ALT1:
         Settings_EditValueSize = 0;
@@ -1424,10 +1428,18 @@ const char version[] = __DATE__ " " __TIME__;
   // while in edit mode, this method is used to temporarily display and edit a setting on the oled using a keyboard.
   // the setting displayed is a character array to make it easier to work with while editing.
   void handleDisplay_PrintTempVal(){
+    //
     Settings_EditValueSize = sizeof(Settings_TempDispCharArr) - 1;
-    display.setCursor(0,UI_DISPLAY_ROW_BOTTOM-1);
+    //
+    display.setCursor(indexPosition_X*6,UI_DISPLAY_ROW_BOTTOM-1);
     display.print(Settings_TempDispCharArr);
     cursorPosition_X = strlen(Settings_TempDispCharArr);
+
+    //
+    if (displayBlink) {
+      display.setCursor((cursorPosition_X*6)+(indexPosition_X*6),UI_DISPLAY_ROW_BOTTOM);
+      display.print('_');
+    }
   }
 
   // this method is used to determine the currently selected row based on the cursor position.
@@ -1982,6 +1994,8 @@ const char version[] = __DATE__ " " __TIME__;
     // display method that it is in "on first show" and needs to initialize. this is where we clear and 
     // initalize critical variables such as cursor positions.
     if (!displayInitialized){
+      indexPosition_X = 0;
+      indexPosition_X_Last = indexPosition_X;
       cursorPosition_X = 0;
       cursorPosition_Y = 5; // 5, 6, and 7 are message, recipient callsign, and recipient SSID
       cursorPosition_X_Last = cursorPosition_X;
@@ -2018,16 +2032,20 @@ const char version[] = __DATE__ " " __TIME__;
       } else {
         // enable edit mode
         editMode_Settings = true;
+        indexPosition_X = 0;
         handleDisplay_TempVarCopy(Settings_Type_APRS[cursorPosition_Y],Settings_TypeIndex_APRS[cursorPosition_Y]);
       }
     }
     if (keyboardInputChar == KEYBOARD_LEFT_KEY){
+      if(indexPosition_X < 0){
+        indexPosition_X++;
+      }
     }
     if (keyboardInputChar == KEYBOARD_RIGHT_KEY){
-      if (!editMode_Settings) {
-        // trigger a message send
-        sendMessage = true;
-      }
+      short int len = strlen(Settings_TempDispCharArr) * -1;
+      if(indexPosition_X > len){
+        indexPosition_X--;
+      }  
     }
     if (keyboardInputChar == KEYBOARD_ESCAPE_KEY){
       editMode_Settings = false;
@@ -2070,12 +2088,6 @@ const char version[] = __DATE__ " " __TIME__;
       display.print(MenuItems_Settings_APRS[7]);
 
       // handle edit field
-      display.setCursor(cursorPosition_X*6,UI_DISPLAY_ROW_BOTTOM);
-      if (editMode_Settings) {
-        if (displayBlink) {
-          display.print('_');
-        }
-      }
       if (editMode_Settings) {
         handleDisplay_PrintTempVal();
       } else {
@@ -2381,6 +2393,8 @@ const char version[] = __DATE__ " " __TIME__;
     // display method that it is in "on first show" and needs to initialize. this is where we clear and 
     // initalize critical variables such as cursor positions.
     if (!displayInitialized){
+      indexPosition_X = 0;
+      indexPosition_X_Last = indexPosition_X;
       cursorPosition_X = 0;
       cursorPosition_Y = 0;
       cursorPosition_X_Last = 0;
@@ -2421,8 +2435,20 @@ const char version[] = __DATE__ " " __TIME__;
       } else {
         // enable edit mode
         editMode_Settings = true;
+        indexPosition_X = 0;
         handleDisplay_TempVarCopy(Settings_Type_APRS[cursorPosition_Y],Settings_TypeIndex_APRS[cursorPosition_Y]);
       }
+    }
+    if (keyboardInputChar == KEYBOARD_LEFT_KEY){
+      if(indexPosition_X < 0){
+        indexPosition_X++;
+      }
+    }
+    if (keyboardInputChar == KEYBOARD_RIGHT_KEY){
+      short int len = strlen(Settings_TempDispCharArr) * -1;
+      if(indexPosition_X > len){
+        indexPosition_X--;
+      }  
     }
     if (keyboardInputChar == KEYBOARD_ESCAPE_KEY){
       if (editMode_Settings) {
@@ -2479,12 +2505,6 @@ const char version[] = __DATE__ " " __TIME__;
       }
 
       // handle edit field
-      display.setCursor(cursorPosition_X*6,UI_DISPLAY_ROW_BOTTOM);
-      if (editMode_Settings) {
-        if (displayBlink) {
-          display.print('_');
-        }
-      }
       if (editMode_Settings) {
         handleDisplay_PrintTempVal();
       } else {
@@ -2504,6 +2524,8 @@ const char version[] = __DATE__ " " __TIME__;
     // display method that it is in "on first show" and needs to initialize. this is where we clear and 
     // initalize critical variables such as cursor positions.
     if (!displayInitialized){
+      indexPosition_X = 0;
+      indexPosition_X_Last = indexPosition_X;
       cursorPosition_X = 0;
       cursorPosition_Y = 0;
       cursorPosition_X_Last = 0;
@@ -2544,8 +2566,20 @@ const char version[] = __DATE__ " " __TIME__;
       } else {
         // enable edit mode
         editMode_Settings = true;
+        indexPosition_X = 0;
         handleDisplay_TempVarCopy(Settings_Type_GPS[cursorPosition_Y],Settings_TypeIndex_GPS[cursorPosition_Y]);
       }
+    }
+    if (keyboardInputChar == KEYBOARD_LEFT_KEY){
+      if(indexPosition_X < 0){
+        indexPosition_X++;
+      }
+    }
+    if (keyboardInputChar == KEYBOARD_RIGHT_KEY){
+      short int len = strlen(Settings_TempDispCharArr) * -1;
+      if(indexPosition_X > len){
+        indexPosition_X--;
+      }  
     }
     if (keyboardInputChar == KEYBOARD_ESCAPE_KEY){
       if (editMode_Settings) {
@@ -2602,12 +2636,6 @@ const char version[] = __DATE__ " " __TIME__;
       }
 
       // handle edit field
-      display.setCursor(cursorPosition_X*6,UI_DISPLAY_ROW_BOTTOM);
-      if (editMode_Settings) {
-        if (displayBlink) {
-          display.print('_');
-        }
-      }
       if (editMode_Settings) {
         handleDisplay_PrintTempVal();
       } else {
@@ -2627,6 +2655,8 @@ const char version[] = __DATE__ " " __TIME__;
     // display method that it is in "on first show" and needs to initialize. this is where we clear and 
     // initalize critical variables such as cursor positions.
     if (!displayInitialized){
+      indexPosition_X = 0;
+      indexPosition_X_Last = indexPosition_X;
       cursorPosition_X = 0;
       cursorPosition_Y = 0;
       cursorPosition_X_Last = 0;
@@ -2667,8 +2697,20 @@ const char version[] = __DATE__ " " __TIME__;
       } else {
         // enable edit mode
         editMode_Settings = true;
+        indexPosition_X = 0;
         handleDisplay_TempVarCopy(Settings_Type_Display[cursorPosition_Y],Settings_TypeIndex_Display[cursorPosition_Y]);
       }
+    }
+    if (keyboardInputChar == KEYBOARD_LEFT_KEY){
+      if(indexPosition_X < 0){
+        indexPosition_X++;
+      }
+    }
+    if (keyboardInputChar == KEYBOARD_RIGHT_KEY){
+      short int len = strlen(Settings_TempDispCharArr) * -1;
+      if(indexPosition_X > len){
+        indexPosition_X--;
+      }  
     }
     if (keyboardInputChar == KEYBOARD_ESCAPE_KEY){
       if (editMode_Settings) {
@@ -2725,12 +2767,6 @@ const char version[] = __DATE__ " " __TIME__;
       }
       
       // handle edit field
-      display.setCursor(cursorPosition_X*6,UI_DISPLAY_ROW_BOTTOM);
-      if (editMode_Settings) {
-        if (displayBlink) {
-          display.print('_');
-        }
-      }
       if (editMode_Settings) {
         handleDisplay_PrintTempVal();
       } else {
