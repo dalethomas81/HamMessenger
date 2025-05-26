@@ -45,6 +45,10 @@ jobs:
             --libraries custom-libraries \
             Source/HamMessenger
 
+      - name: List everything in build output
+        run: |
+          find Source/HamMessenger/build
+
       - name: List all .hex files
         run: |
           find . -name "*.hex"
