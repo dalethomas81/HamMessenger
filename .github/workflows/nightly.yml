@@ -47,9 +47,9 @@ jobs:
             --output-dir build-out \
             Source/HamMessenger
 
-      - name: List everything in build output
-        run: |
-          find Source/HamMessenger/build-out
+      #- name: List everything in build output
+      #  run: |
+      #    find Source/HamMessenger/build-out
 
       - name: List all .hex files
         run: |
@@ -63,8 +63,8 @@ jobs:
       - name: Generate changelog from recent commits
         run: |
           git log -n 20 --pretty=format:"- %s" > release-notes.txt
-          #git log $(git describe --tags --abbrev=0)..HEAD --pretty=format:"- %s" # changelog between the last nightly and now
-          #git log -n 20 --pretty=format:"- %s (%an, %ad)" --date=short # include author names or dates
+        #  git log $(git describe --tags --abbrev=0)..HEAD --pretty=format:"- %s" # changelog between the last nightly and now
+        #  git log -n 20 --pretty=format:"- %s (%an, %ad)" --date=short # include author names or dates
           
       - name: Upload nightly firmware to release
         uses: ncipollo/release-action@v1
