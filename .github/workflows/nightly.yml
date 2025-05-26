@@ -27,11 +27,12 @@ jobs:
         run: |
           arduino-cli lib install "Adafruit GFX Library"
 
-      - name: Clone SH1106 and TinyGPSPlus libraries
+      - name: Clone SH1106, TinyGPSPlus, and Base64 libraries
         run: |
           mkdir -p custom-libraries
           git clone https://github.com/wonho-maker/Adafruit_SH1106 custom-libraries/Adafruit_SH1106
           git clone https://github.com/mikalhart/TinyGPSPlus custom-libraries/TinyGPSPlus
+          git clone https://github.com/Xander-Electronics/Base64 custom-libraries/Base64
 
       - name: Compile sketch for Arduino Mega 2560
         run: |
