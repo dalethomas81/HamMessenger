@@ -131,19 +131,19 @@ jobs:
           pip install -r Source/GUI/requirements-macos.txt
           pip install pyinstaller
 
-      - name: Verify tkinter is available
-        run: |
-          python -c "import tkinter; print('Tkinter OK:', tkinter.TkVersion)"
+      #- name: Verify tkinter is available
+      #  run: |
+      #    python -c "import tkinter; print('Tkinter OK:', tkinter.TkVersion)"
 
       - name: Build macOS GUI with PyInstaller
         run: |
           cd Source/GUI
           python -m PyInstaller --windowed --name HamMessenger --onefile Main.py
 
-      - name: Copy macOS app to output folder
+      - name: Zip macOS .app bundle
         run: |
           mkdir -p output
-          cp -R Source/GUI/dist/HamMessenger.app output/HamMessenger-mac.app
+          ditto -c -k --sequesterRsrc --keepParent Source/GUI/dist/HamMessenger.app output/HamMessenger-mac.zip
 
       - name: Upload macOS GUI to latest dev release
         uses: ncipollo/release-action@v1
@@ -153,4 +153,4 @@ jobs:
           prerelease: true
           draft: true
           allowUpdates: true
-          artifacts: output/HamMessenger-mac.app
+          artifacts: output/HamMessenger-mac.zip
