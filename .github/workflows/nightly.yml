@@ -49,7 +49,7 @@ jobs:
 
       - name: List everything in build output
         run: |
-          find Source/HamMessenger/build
+          find Source/HamMessenger/build-out
 
       - name: List all .hex files
         run: |
@@ -60,11 +60,19 @@ jobs:
           mkdir -p output
           cp build-out/HamMessenger.ino.hex output/HamMessenger-mega2560.hex
 
+      - name: Generate changelog from recent commits
+        run: |
+          git log -n 20 --pretty=format:"- %s" > release-notes.txt
+          #git log $(git describe --tags --abbrev=0)..HEAD --pretty=format:"- %s" # changelog between the last nightly and now
+          #git log -n 20 --pretty=format:"- %s (%an, %ad)" --date=short # include author names or dates
+          
       - name: Upload nightly firmware to release
         uses: ncipollo/release-action@v1
         with:
           tag: nightly
           name: Nightly Build
           prerelease: true
+          draft: true
           allowUpdates: true
           artifacts: output/HamMessenger-mega2560.hex
+          bodyFile: release-notes.txt
