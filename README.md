@@ -51,9 +51,15 @@ I will add some videos and pictures of the device in action asap. Please feel fr
 
 Full instructions on how to operate HamMessenger will go here. For now, just a couple notes :)  
 
-HamMessenger will beacon your location and comment according to the 'Beacon Frequency' settings in APRS Settings.  
+HamMessenger will beacon your location and comment according to the 'Beacon' settings in `APRS` Settings.  
+- `Beacon Distance` is the distance in miles that will trigger a beacon.  
+- `Beacon Idle Time` is the time in milliseconds that the station must be in the same location after having moved from the last beacon location before a beacon will be sent.
+- `Position Tolerance` under `GPS` settings is the +/- value that will trigger a location update.  
 
-To send a direct message to a station, select 'Messages' on the home screen and press the right arrow on the keyboard. A message will be sent according to the settings in APRS Settings.  
+To send a direct message to a station, select `Messages` on the `HOME` screen and press `Enter` on the keyboard. This will open the `NEW MESSAGE` screen.  
+- `Message Text` is the message that will be sent.  
+- `Recipient Callsign` is the callsign of the station that will recieve the message. Example 'NOCALL-ID'  
+- `Recipient SSID` is the ID of the station that will recieve the message. Example 'NOCALL-ID'  
 
 Screen navigation information can be found [here](https://github.com/dalethomas81/HamMessenger/blob/master/Documentation/Operating%20Instructions/Screen%20Navigation.md).  
 
