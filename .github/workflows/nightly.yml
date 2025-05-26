@@ -4,6 +4,9 @@ on:
   push:
     branches:
       - master
+  pull_request:
+    branches:
+      - master
 
 jobs:
   build:
@@ -49,5 +52,4 @@ jobs:
           name: Nightly Build
           prerelease: true
           allowUpdates: true
-          artifacts: Source/HamMessenger/build/arduino.avr.mega/HamMessenger.ino.hex
-
+          artifacts: Source/HamMessenger/build/**/HamMessenger.ino.hex
