@@ -72,7 +72,7 @@ jobs:
           tag: dev
           name: Development Build
           prerelease: true
-          draft: true
+          draft: false
           allowUpdates: true
           artifacts: output/HamMessenger-mega2560.hex
           bodyFile: release-notes.txt
@@ -110,7 +110,7 @@ jobs:
           tag: dev
           name: Development Build
           prerelease: true
-          draft: true
+          draft: false
           allowUpdates: true
           artifacts: output/HamMessenger-windows.exe
 
@@ -168,7 +168,7 @@ jobs:
           tag: dev
           name: Development Build
           prerelease: true
-          draft: true
+          draft: false
           allowUpdates: true
           #artifacts: output/HamMessenger-mac.zip
           artifacts: output/HamMessenger-mac.dmg
