@@ -76,3 +76,40 @@ jobs:
           allowUpdates: true
           artifacts: output/HamMessenger-mega2560.hex
           bodyFile: release-notes.txt
+
+  gui-build:
+    runs-on: windows-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.10'
+
+      - name: Install Python dependencies
+        run: |
+          pip install -r Source/GUI/requirements.txt
+          pip install pyinstaller
+
+      - name: Build GUI with PyInstaller
+        run: |
+          cd Source/GUI
+          pyinstaller --noconfirm --windowed --name HamMessenger --onefile Main.py
+
+      - name: Copy built GUI executable
+        run: |
+          mkdir output
+          copy Source\GUI\dist\HamMessenger.exe output\HamMessenger-GUI.exe
+
+      - name: Upload GUI to nightly release
+        uses: ncipollo/release-action@v1
+        with:
+          tag: nightly
+          name: Nightly Build
+          prerelease: true
+          draft: true
+          allowUpdates: true
+          artifacts: output/HamMessenger-GUI.exe
