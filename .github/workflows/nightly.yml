@@ -140,10 +140,27 @@ jobs:
           cd Source/GUI
           python -m PyInstaller --windowed --name HamMessenger --onefile Main.py
 
-      - name: Zip macOS .app bundle
+      - name: Install create-dmg
+        run: brew install create-dmg
+
+      - name: Create DMG
         run: |
-          mkdir -p output
-          ditto -c -k --sequesterRsrc --keepParent Source/GUI/dist/HamMessenger.app output/HamMessenger-mac.zip
+          mkdir dmg-out
+          create-dmg \
+            --volname "HamMessenger" \
+            --window-pos 200 120 \
+            --window-size 800 400 \
+            --icon-size 100 \
+            --icon "HamMessenger.app" 200 190 \
+            --hide-extension "HamMessenger.app" \
+            --app-drop-link 600 185 \
+            "output/HamMessenger-mac.dmg" \
+            "Source/GUI/dist/HamMessenger.app"
+
+      #- name: Zip macOS .app bundle
+      #  run: |
+      #    mkdir -p output
+      #    ditto -c -k --sequesterRsrc --keepParent Source/GUI/dist/HamMessenger.app output/HamMessenger-mac.zip
 
       - name: Upload macOS GUI to latest dev release
         uses: ncipollo/release-action@v1
@@ -153,4 +170,5 @@ jobs:
           prerelease: true
           draft: true
           allowUpdates: true
-          artifacts: output/HamMessenger-mac.zip
+          #artifacts: output/HamMessenger-mac.zip
+          artifacts: output/HamMessenger-mac.dmg
