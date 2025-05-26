@@ -3,10 +3,10 @@ name: Development Build
 on:
   push:
     branches:
-      - master
+      - development
   pull_request:
     branches:
-      - master
+      - development
 
 jobs:
   build:
@@ -51,9 +51,9 @@ jobs:
       #  run: |
       #    find Source/HamMessenger/build-out
 
-      - name: List all .hex files
-        run: |
-          find . -name "*.hex"
+      #- name: List all .hex files
+      #  run: |
+      #    find . -name "*.hex"
 
       - name: Rename firmware file for release
         run: |
@@ -66,7 +66,7 @@ jobs:
         #  git log $(git describe --tags --abbrev=0)..HEAD --pretty=format:"- %s" # changelog between the last nightly and now
         #  git log -n 20 --pretty=format:"- %s (%an, %ad)" --date=short # include author names or dates
           
-      - name: Upload nightly firmware to release
+      - name: Upload latest dev firmware to release
         uses: ncipollo/release-action@v1
         with:
           tag: dev
@@ -104,7 +104,7 @@ jobs:
           mkdir output
           copy Source\GUI\dist\HamMessenger.exe output\HamMessenger-GUI.exe
 
-      - name: Upload GUI to nightly release
+      - name: Upload GUI to latest dev release
         uses: ncipollo/release-action@v1
         with:
           tag: dev
@@ -141,7 +141,7 @@ jobs:
           mkdir output
           cp Source/GUI/dist/HamMessenger output/HamMessenger-mac
 
-      - name: Upload macOS GUI to nightly release
+      - name: Upload macOS GUI to latest dev release
         uses: ncipollo/release-action@v1
         with:
           tag: dev
