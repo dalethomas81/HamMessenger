@@ -138,8 +138,8 @@ jobs:
 
       - name: Copy macOS app to output folder
         run: |
-          mkdir output
-          cp Source/GUI/dist/HamMessenger.app output/HamMessenger-mac.app
+          mkdir -p output
+          cp -R Source/GUI/dist/HamMessenger.app output/HamMessenger-mac.app
 
       - name: Upload macOS GUI to latest dev release
         uses: ncipollo/release-action@v1
