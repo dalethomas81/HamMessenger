@@ -87,12 +87,12 @@ jobs:
       - name: Set up Python
         uses: actions/setup-python@v5
         with:
-          python-version: '3.10'
+          python-version: '3.11'
 
       - name: Install Python dependencies
         run: |
           pip install -r Source/GUI/requirements-windows.txt
-          pip install pyinstaller
+          pip install -U pyinstaller
 
       - name: Build GUI with PyInstaller
         run: |
@@ -124,12 +124,12 @@ jobs:
       - name: Set up Python
         uses: actions/setup-python@v5
         with:
-          python-version: '3.10'
+          python-version: '3.11'
 
       - name: Install dependencies
         run: |
           pip install -r Source/GUI/requirements-macos.txt
-          pip install pyinstaller
+          pip install -U pyinstaller
 
       #- name: Verify tkinter is available
       #  run: |
