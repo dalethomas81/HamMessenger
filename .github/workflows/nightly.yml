@@ -102,7 +102,7 @@ jobs:
       - name: Copy built GUI executable
         run: |
           mkdir output
-          copy Source\GUI\dist\HamMessenger.exe output\HamMessenger-GUI.exe
+          copy Source\GUI\dist\HamMessenger.exe output\HamMessenger-windows.exe
 
       - name: Upload GUI to latest dev release
         uses: ncipollo/release-action@v1
@@ -112,7 +112,7 @@ jobs:
           prerelease: true
           draft: true
           allowUpdates: true
-          artifacts: output/HamMessenger-GUI.exe
+          artifacts: output/HamMessenger-windows.exe
 
   gui-mac-build:
     runs-on: macos-latest
@@ -139,7 +139,7 @@ jobs:
       - name: Copy macOS app to output folder
         run: |
           mkdir output
-          cp Source/GUI/dist/HamMessenger output/HamMessenger-mac
+          cp Source/GUI/dist/HamMessenger.app output/HamMessenger-mac.app
 
       - name: Upload macOS GUI to latest dev release
         uses: ncipollo/release-action@v1
@@ -149,4 +149,4 @@ jobs:
           prerelease: true
           draft: true
           allowUpdates: true
-          artifacts: output/HamMessenger-mac
+          artifacts: output/HamMessenger-mac.app

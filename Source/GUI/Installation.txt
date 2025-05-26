@@ -8,10 +8,11 @@ pip install pipreqs
 (mac) pipreqs --force --encoding=utf-8 --savepath requirements-macos.txt
 
 // cross-platform
-1) python -m venv venv
+1) python3 -m venv venv
 2) source venv/bin/activate  # macOS/Linux or venv\\Scripts\\activate on Windows
-3) pip install -r requirements.txt
-4) python Main.py
+3) (windows) python -m pip install -r requirements-windows.txt
+   (mac) python3 -m pip install -r requirements-macos.txt
+4) python3 Main.py
 
 // build
 1) pip install pyinstaller
