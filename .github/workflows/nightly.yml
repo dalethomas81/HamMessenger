@@ -45,6 +45,10 @@ jobs:
             --libraries custom-libraries \
             Source/HamMessenger
 
+      - name: List all .hex files
+        run: |
+          find . -name "*.hex"
+
       - name: Upload nightly firmware to release
         uses: ncipollo/release-action@v1
         with:
