@@ -26,6 +26,7 @@ jobs:
       - name: Install Adafruit GFX Library (via Library Manager)
         run: |
           arduino-cli lib install "Adafruit GFX Library"
+          arduino-cli lib install "SD"
 
       - name: Clone SH1106, TinyGPSPlus, and Base64 libraries
         run: |
