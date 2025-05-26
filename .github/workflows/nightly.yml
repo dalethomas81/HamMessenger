@@ -1,0 +1,51 @@
+name: Nightly Arduino Build
+
+on:
+  push:
+    branches:
+      - master
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Install Arduino CLI
+        run: |
+          curl -fsSL https://raw.githubusercontent.com/arduino/arduino-cli/master/install.sh | sh
+          sudo mv bin/arduino-cli /usr/local/bin/
+
+      - name: Set up Arduino CLI
+        run: |
+          arduino-cli config init
+          arduino-cli core update-index
+          arduino-cli core install arduino:avr
+
+      - name: Install Adafruit GFX Library (via Library Manager)
+        run: |
+          arduino-cli lib install "Adafruit GFX Library"
+
+      - name: Clone SH1106 and TinyGPSPlus libraries
+        run: |
+          mkdir -p custom-libraries
+          git clone https://github.com/wonho-maker/Adafruit_SH1106 custom-libraries/Adafruit_SH1106
+          git clone https://github.com/mikalhart/TinyGPSPlus custom-libraries/TinyGPSPlus
+
+      - name: Compile sketch for Arduino Mega 2560
+        run: |
+          arduino-cli compile \
+            --fqbn arduino:avr:mega \
+            --libraries custom-libraries \
+            Source/HamMessenger
+
+      - name: Upload nightly firmware to release
+        uses: ncipollo/release-action@v1
+        with:
+          tag: nightly
+          name: Nightly Build
+          prerelease: true
+          allowUpdates: true
+          artifacts: Source/HamMessenger/build/arduino.avr.mega/HamMessenger.ino.hex
+
