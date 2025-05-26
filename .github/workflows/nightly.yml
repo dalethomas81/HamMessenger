@@ -145,7 +145,7 @@ jobs:
 
       - name: Create DMG
         run: |
-          mkdir dmg-out
+          mkdir -p output
           create-dmg \
             --volname "HamMessenger" \
             --window-pos 200 120 \
@@ -154,8 +154,8 @@ jobs:
             --icon "HamMessenger.app" 200 190 \
             --hide-extension "HamMessenger.app" \
             --app-drop-link 600 185 \
-            "output/HamMessenger-mac.dmg" \
-            "Source/GUI/dist/HamMessenger.app"
+            output/HamMessenger-mac.dmg \
+            Source/GUI/dist/HamMessenger.app
 
       #- name: Zip macOS .app bundle
       #  run: |
