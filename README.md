@@ -41,7 +41,7 @@ I will add some videos and pictures of the device in action asap. Please feel fr
       <sub>Component Layout</sub>
     </td>
     <td align="center">
-      <img src="https://github.com/dalethomas81/HamMessenger/blob/master/Media/CAD/Enclosure2.png" alt="Screenshot 2" width="300px" style="border:1px solid #ccc; border-radius:8px;" /><br/>
+      <img src="https://github.com/dalethomas81/HamMessenger/blob/master/Media/CAD/Enclosure2.jpeg" alt="Screenshot 2" width="300px" style="border:1px solid #ccc; border-radius:8px;" /><br/>
       <sub>CAD Isometric</sub>
     </td>
   </tr>
