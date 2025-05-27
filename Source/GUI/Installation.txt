@@ -19,3 +19,12 @@ pip install pipreqs
 1) pip install pyinstaller
 2) (windows) pyinstaller --noconfirm --windowed --name HamMessenger --onefile Main.py
    (mac) /usr/local/bin/python3 -m PyInstaller --windowed --name HamMessenger --onefile Main.py 
+
+
+// python virtual environment example
+python -m venv /path/to/myenv
+
+source venv/bin/activate      # macOS/Linux
+.\venv\Scripts\activate       # Windows
+
+deactivate                    # Exits the environment
