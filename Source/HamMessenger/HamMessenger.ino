@@ -166,7 +166,7 @@ const char version[] = __DATE__ " " __TIME__;
 
   #include <EEPROM.h>
 
-  const char Initialized[] = {"Initialized 2025MAY26"}; // change this to something unique if you want to re-init the EEPROM during flashing. useful when there has been a change to a settings array.
+  const char Initialized[] = {"Initialized 2025MAY27"}; // change this to something unique if you want to re-init the EEPROM during flashing. useful when there has been a change to a settings array.
 
   #define EEPROM_SETTINGS_START_ADDR      1000
   #define SETTINGS_EDIT_TYPE_NONE         0
@@ -176,27 +176,32 @@ const char version[] = __DATE__ " " __TIME__;
   #define SETTINGS_EDIT_TYPE_LONG         4
   #define SETTINGS_EDIT_TYPE_ULONG        5
   #define SETTINGS_EDIT_TYPE_FLOAT        6
-  #define SETTINGS_EDIT_TYPE_STRING3      7
-  #define SETTINGS_EDIT_TYPE_STRING7      8
-  #define SETTINGS_EDIT_TYPE_STRING100    9
+  #define SETTINGS_EDIT_TYPE_STRING2      7
+  #define SETTINGS_EDIT_TYPE_STRING3      8
+  #define SETTINGS_EDIT_TYPE_STRING7      9
+  #define SETTINGS_EDIT_TYPE_STRING100    10
   #define SETTINGS_EDIT_TYPE_ALT1         21
   #define SETTINGS_EDIT_TYPE_ALT2         22
   #define SETTINGS_EDIT_TYPE_ALT3         23
                           
   const char *MenuItems_Settings[] = {"APRS","GPS","Display"};
-  const char *MenuItems_Settings_APRS[] = {"Beacon Enabled","Beacon Distance","Beacon Idle Time","Raw Packet","Comment","Message Text","Recipient Callsign","Recipient SSID","My Callsign","My Callsign SSID", 
+  const char *MenuItems_Settings_APRS[] = {"Beacon Enabled", "Beacon Distance", "Beacon Idle Time", "Raw Packet", "Comment",
+                                          "Message Text", "Recipient Callsign", "Recipient SSID", "My Callsign", "My Callsign SSID", 
                                           "Dest Callsign", "Dest SSID", "PATH1 Callsign", "PATH1 SSID", "PATH2 Callsign", "PATH2 SSID",
                                           "Symbol", "Table", "Automatic ACK", "Preamble", "Tail", "Retry Count", "Retry Interval"};
   const char *MenuItems_Settings_GPS[] = {"Pos Tolerance", "Dest Latitude", "Dest Longitude"};
   const char *MenuItems_Settings_Display[] = {"Timeout", "Brightness", "Show Position", "Scroll Messages", "Scroll Speed", "Invert"};
 
-  unsigned char Settings_Type_APRS[] = {SETTINGS_EDIT_TYPE_BOOLEAN,SETTINGS_EDIT_TYPE_FLOAT,SETTINGS_EDIT_TYPE_ULONG,SETTINGS_EDIT_TYPE_STRING100,SETTINGS_EDIT_TYPE_STRING100,
-                                        SETTINGS_EDIT_TYPE_STRING100,SETTINGS_EDIT_TYPE_STRING7,SETTINGS_EDIT_TYPE_STRING3,SETTINGS_EDIT_TYPE_STRING7,SETTINGS_EDIT_TYPE_STRING3,
-                                        SETTINGS_EDIT_TYPE_STRING7,SETTINGS_EDIT_TYPE_STRING3,SETTINGS_EDIT_TYPE_STRING7,SETTINGS_EDIT_TYPE_STRING3,SETTINGS_EDIT_TYPE_STRING7,SETTINGS_EDIT_TYPE_STRING3,
-                                        SETTINGS_EDIT_TYPE_STRING3,SETTINGS_EDIT_TYPE_ALT1,SETTINGS_EDIT_TYPE_BOOLEAN,SETTINGS_EDIT_TYPE_UINT,SETTINGS_EDIT_TYPE_UINT,SETTINGS_EDIT_TYPE_UINT,SETTINGS_EDIT_TYPE_UINT};
-  unsigned char Settings_Type_GPS[] = {SETTINGS_EDIT_TYPE_FLOAT,SETTINGS_EDIT_TYPE_FLOAT,SETTINGS_EDIT_TYPE_FLOAT};
+  unsigned char Settings_Type_APRS[] = {SETTINGS_EDIT_TYPE_BOOLEAN, SETTINGS_EDIT_TYPE_FLOAT, SETTINGS_EDIT_TYPE_ULONG, SETTINGS_EDIT_TYPE_STRING100, SETTINGS_EDIT_TYPE_STRING100,
+                                        SETTINGS_EDIT_TYPE_STRING100, SETTINGS_EDIT_TYPE_STRING7, SETTINGS_EDIT_TYPE_STRING3, SETTINGS_EDIT_TYPE_STRING7, SETTINGS_EDIT_TYPE_STRING3,
+                                        SETTINGS_EDIT_TYPE_STRING7, SETTINGS_EDIT_TYPE_STRING3, SETTINGS_EDIT_TYPE_STRING7, SETTINGS_EDIT_TYPE_STRING3, SETTINGS_EDIT_TYPE_STRING7, SETTINGS_EDIT_TYPE_STRING3,
+                                        SETTINGS_EDIT_TYPE_STRING2, SETTINGS_EDIT_TYPE_ALT1, SETTINGS_EDIT_TYPE_BOOLEAN, SETTINGS_EDIT_TYPE_UINT, SETTINGS_EDIT_TYPE_UINT, SETTINGS_EDIT_TYPE_UINT, SETTINGS_EDIT_TYPE_UINT};
+  unsigned char Settings_Type_GPS[] = {SETTINGS_EDIT_TYPE_FLOAT, SETTINGS_EDIT_TYPE_FLOAT, SETTINGS_EDIT_TYPE_FLOAT};
   unsigned char Settings_Type_Display[] = {SETTINGS_EDIT_TYPE_ULONG, SETTINGS_EDIT_TYPE_UINT, SETTINGS_EDIT_TYPE_BOOLEAN, SETTINGS_EDIT_TYPE_BOOLEAN, SETTINGS_EDIT_TYPE_UINT, SETTINGS_EDIT_TYPE_BOOLEAN};
-  unsigned char Settings_TypeIndex_APRS[] = {0,0,0,0,1,2,0,0,1,1,2,2,3,3,4,4,5,6,3,1,2,4,5}; // this is the index in the array of the data arrays below
+  unsigned char Settings_TypeIndex_APRS[] = { 0,0,0,0,1,
+                                              2,0,0,1,1,
+                                              2,2,3,3,4,4,
+                                              0,1,3,1,2,4,5}; // this is the index in the array of the data arrays below
   unsigned char Settings_TypeIndex_GPS[] = {1,2,3};
   unsigned char Settings_TypeIndex_Display[] = {1,0,1,2,3,4};
   // data arrays
@@ -206,7 +211,8 @@ const char version[] = __DATE__ " " __TIME__;
   long Settings_TypeLong[0] = {};
   unsigned long Settings_TypeULong[2] = {300000, 2000}; // aprs beacon Idle Time, display timeout
   float Settings_TypeFloat[4] = {1.00000,0.00001,34.790040,-82.790672}; // aprs beacon distance, gps position tolerance, gps latitude, gps longitude
-  char Settings_TypeString3[7][3] = {'0','0','\0'};
+  char Settings_TypeString2[2][2] = {'n','\0'};
+  char Settings_TypeString3[6][3] = {'0','0','\0'};
   char Settings_TypeString7[5][7] = {'N','O','C','A','L','L','\0'};
   char Settings_TypeString100[3][100] = {'T','e','s','t','\0'};
   char Settings_TempDispCharArr[100];
@@ -227,8 +233,8 @@ const char version[] = __DATE__ " " __TIME__;
   #define SETTINGS_APRS_PATH1_SSID              Settings_TypeString3[Settings_TypeIndex_APRS[13]]     // PATH1 SSID
   #define SETTINGS_APRS_PATH2_CALL              Settings_TypeString7[Settings_TypeIndex_APRS[14]]     // PATH2 Callsign
   #define SETTINGS_APRS_PATH2_SSID              Settings_TypeString3[Settings_TypeIndex_APRS[15]]     // PATH2 SSID
-  #define SETTINGS_APRS_SYMBOL                  Settings_TypeString3[Settings_TypeIndex_APRS[16]]     // Symbol
-  #define SETTINGS_APRS_SYMBOL_TABLE            Settings_TypeString3[Settings_TypeIndex_APRS[17]]     // Symbol Table
+  #define SETTINGS_APRS_SYMBOL                  Settings_TypeString2[Settings_TypeIndex_APRS[16]]     // Symbol
+  #define SETTINGS_APRS_SYMBOL_TABLE            Settings_TypeString2[Settings_TypeIndex_APRS[17]]     // Symbol Table
   #define SETTINGS_APRS_AUTOMATIC_ACK           Settings_TypeBool[Settings_TypeIndex_APRS[18]]        // Automatic ACK
   #define SETTINGS_APRS_PREAMBLE                Settings_TypeUInt[Settings_TypeIndex_APRS[19]]        // Preamble
   #define SETTINGS_APRS_TAIL                    Settings_TypeUInt[Settings_TypeIndex_APRS[20]]        // Tail
@@ -428,8 +434,15 @@ const char version[] = __DATE__ " " __TIME__;
       EEPROM.put(address, Settings_TypeFloat[i]);
       address = address + sizeof(Settings_TypeFloat[i]);
     }
-    for (int i=0;i<ARRAY_SIZE(Settings_TypeString3);i++){
+    for (int i=0;i<ARRAY_SIZE(Settings_TypeString2);i++){
       //Serial.print(F("Settings_TypeString2:"));Serial.println(address);
+      for (int j=0;j<sizeof(Settings_TypeString2[i]);j++){
+        EEPROM.put(address, Settings_TypeString2[i][j]);
+        address = address + sizeof(Settings_TypeString2[i][j]);
+      }
+    }
+    for (int i=0;i<ARRAY_SIZE(Settings_TypeString3);i++){
+      //Serial.print(F("Settings_TypeString3:"));Serial.println(address);
       for (int j=0;j<sizeof(Settings_TypeString3[i]);j++){
         EEPROM.put(address, Settings_TypeString3[i][j]);
         address = address + sizeof(Settings_TypeString3[i][j]);
@@ -488,6 +501,13 @@ const char version[] = __DATE__ " " __TIME__;
       //Serial.print(F("float:"));Serial.println(address);
       EEPROM.get(address, Settings_TypeFloat[i]);
       address = address + sizeof(Settings_TypeFloat[i]);
+    }
+    for (int i=0;i<ARRAY_SIZE(Settings_TypeString2);i++){
+      //Serial.print(F("Settings_TypeString2:"));Serial.println(address);
+      for (int j=0;j<sizeof(Settings_TypeString2[i]);j++){
+        EEPROM.get(address, Settings_TypeString2[i][j]);
+        address = address + sizeof(Settings_TypeString2[i][j]);
+      }
     }
     for (int i=0;i<ARRAY_SIZE(Settings_TypeString3);i++){
       //Serial.print(F("Settings_TypeString3:"));Serial.println(address);
@@ -1243,6 +1263,17 @@ const char version[] = __DATE__ " " __TIME__;
             dtostrf(tempDouble,3,6,Settings_TempDispCharArr); // https://www.programmingelectronics.com/dtostrf/
           }
         break;
+      case SETTINGS_EDIT_TYPE_STRING2:
+        if (characterDelete) {
+          if (cursorPosition_X >= 0) {
+            Settings_TempDispCharArr[cursorPosition_X] = '\0';
+          }
+        } else if KEYBOARD_PRINTABLE_CHARACTERS {
+          if (cursorPosition_X < sizeof(Settings_TypeString2[0]) - 1) {
+            Settings_TempDispCharArr[cursorPosition_X] = keyboardInputChar;
+          }
+        }
+        break;
       case SETTINGS_EDIT_TYPE_STRING3:
         if (characterDelete) {
           if (cursorPosition_X >= 0) {
@@ -1295,11 +1326,11 @@ const char version[] = __DATE__ " " __TIME__;
     switch (SettingsType) {
       case SETTINGS_EDIT_TYPE_ALT1:
         if (Settings_TempDispCharArr[0] == 'S' || Settings_TempDispCharArr[0] == 's') {
-          Settings_TypeString3[SettingsTypeIndex][0] = 's';
+          Settings_TypeString2[SettingsTypeIndex][0] = 's';
         } else {
-          Settings_TypeString3[SettingsTypeIndex][0] = 'a';
+          Settings_TypeString2[SettingsTypeIndex][0] = 'a';
         }
-        Settings_TypeString3[SettingsTypeIndex][1] = '\0';
+        Settings_TypeString2[SettingsTypeIndex][1] = '\0';
         break;
       case SETTINGS_EDIT_TYPE_BOOLEAN:
         if (Settings_TempDispCharArr[0] == 'T' || Settings_TempDispCharArr[0] == 't' || Settings_TempDispCharArr[0] == '1') {
@@ -1322,6 +1353,11 @@ const char version[] = __DATE__ " " __TIME__;
         break;
       case SETTINGS_EDIT_TYPE_FLOAT:
           Settings_TypeFloat[SettingsTypeIndex] = atof(Settings_TempDispCharArr);
+        break;
+      case SETTINGS_EDIT_TYPE_STRING2:
+        for (int i=0; i<sizeof(Settings_TypeString2[SettingsTypeIndex]);i++) {
+          Settings_TypeString2[SettingsTypeIndex][i] = Settings_TempDispCharArr[i];       
+        }
         break;
       case SETTINGS_EDIT_TYPE_STRING3:
         for (int i=0; i<sizeof(Settings_TypeString3[SettingsTypeIndex]);i++) {
@@ -1354,7 +1390,7 @@ const char version[] = __DATE__ " " __TIME__;
     // copy data to temp variable
     switch (SettingsType) {
       case SETTINGS_EDIT_TYPE_ALT1:
-        if (Settings_TypeString3[SettingsTypeIndex][0] == 'S' || Settings_TypeString3[SettingsTypeIndex][0] == 's') {
+        if (Settings_TypeString2[SettingsTypeIndex][0] == 'S' || Settings_TypeString2[SettingsTypeIndex][0] == 's') {
           strcpy(Settings_TempDispCharArr, "Standard");
         } else {
           strcpy(Settings_TempDispCharArr, "Alternate");
@@ -1382,6 +1418,11 @@ const char version[] = __DATE__ " " __TIME__;
         break;
       case SETTINGS_EDIT_TYPE_FLOAT:
         dtostrf(Settings_TypeFloat[SettingsTypeIndex],3,6,Settings_TempDispCharArr);
+        break;
+      case SETTINGS_EDIT_TYPE_STRING2:
+        for (int i=0; i<strlen(Settings_TypeString2[SettingsTypeIndex]);i++) {
+          Settings_TempDispCharArr[i] = Settings_TypeString2[SettingsTypeIndex][i];       
+        }
         break;
       case SETTINGS_EDIT_TYPE_STRING3:
         for (int i=0; i<strlen(Settings_TypeString3[SettingsTypeIndex]);i++) {
@@ -1412,7 +1453,7 @@ const char version[] = __DATE__ " " __TIME__;
     switch (SettingsType) {
       case SETTINGS_EDIT_TYPE_ALT1:
         Settings_EditValueSize = 0;
-        if (Settings_TypeString3[SettingsTypeIndex][0] == 'S' || Settings_TypeString3[SettingsTypeIndex][0] == 's') {
+        if (Settings_TypeString2[SettingsTypeIndex][0] == 'S' || Settings_TypeString2[SettingsTypeIndex][0] == 's') {
           display.print(F("Standard"));
         } else {
           display.print(F("Alternate"));
@@ -1445,6 +1486,10 @@ const char version[] = __DATE__ " " __TIME__;
       case SETTINGS_EDIT_TYPE_FLOAT:
         Settings_EditValueSize = numberOfDigits<float>(Settings_TypeFloat[SettingsTypeIndex]);
         display.print(Settings_TypeFloat[SettingsTypeIndex],6);
+        break;
+      case SETTINGS_EDIT_TYPE_STRING2:
+        Settings_EditValueSize = sizeof(Settings_TypeString2[SettingsTypeIndex]) - 1;
+        display.print(Settings_TypeString2[SettingsTypeIndex]);
         break;
       case SETTINGS_EDIT_TYPE_STRING3:
         Settings_EditValueSize = sizeof(Settings_TypeString3[SettingsTypeIndex]) - 1;
