@@ -269,7 +269,7 @@ const char version[] = __DATE__ " " __TIME__;
   #endif
 
   void checkInit(){
-    Serial.println(F("Checking initialization..."));
+    Serial.println(F("Checking initialization...")); // `F()` stores the string in flash memory and avoids heaps
     bool writeDefaults = false;
     for (byte i=0;i<sizeof(Initialized)-1;i++){
       if (Initialized[i] != EEPROM.read(i)) {
@@ -995,7 +995,7 @@ const char version[] = __DATE__ " " __TIME__;
   #define CHAR_WIDTH                            6 // number of pixels that one character takes up on the screen
                                                   // TODO make this dynamic by getting from the display library
 
-  #define MARGIN_LEFT                           6 // number of pixels to have as a margin on the left of the display
+  #define CURSOR_MARGIN                         6 // number of pixels to have as a margin on the left of the display
 
   #define DISPLAY_REFRESH_RATE                  100 // 33 is ~30fps | 100 is ~ 10fps
   #define DISPLAY_REFRESH_RATE_SCROLL           80  // during testing, i found that anything less than 60 causes performance issues
@@ -1108,6 +1108,16 @@ const char version[] = __DATE__ " " __TIME__;
         }
       }
     }
+  }
+
+  const char* screenNameOn = "[ HOME ]";
+  const char* screenNameOff = "[      ]";
+  uint16_t headerXPos = 0;
+  uint16_t getHeaderXPos(int16_t numHeaderChars){
+      int16_t numberOfCharsThatCanFitOnScreen = (display.width() / CHAR_WIDTH);
+      int16_t middleOfScreen = numberOfCharsThatCanFitOnScreen / 2;
+      int16_t halfOfHeaderWidth = numHeaderChars / 2;
+      return (middleOfScreen - halfOfHeaderWidth) * CHAR_WIDTH;
   }
 
   // x bitmap
@@ -1708,6 +1718,9 @@ const char version[] = __DATE__ " " __TIME__;
       cursorPosition_Y = 0;
       cursorPosition_X_Last = 0;
       cursorPosition_Y_Last = 0;
+      screenNameOn = "[ DEBUG ]";
+      screenNameOff = "[       ]";
+      headerXPos = getHeaderXPos(strlen(screenNameOn));
     }
     // handle button context for current display
     if (keyboardInputChar == KEYBOARD_UP_KEY){
@@ -1747,30 +1760,30 @@ const char version[] = __DATE__ " " __TIME__;
       //display.print(F(">"));
 
       // handle header
-      display.setCursor(MARGIN_LEFT,UI_DISPLAY_ROW_01);
-      display.print(F("[       ]"));
+      display.setCursor(headerXPos, UI_DISPLAY_ROW_01);
+      display.print(screenNameOff);
       if(displayBlink || !displayInitialized){
-        display.setCursor(MARGIN_LEFT,UI_DISPLAY_ROW_01);
-        display.print(F("[ DEBUG ]"));
+        display.setCursor(headerXPos, UI_DISPLAY_ROW_01);
+        display.print(screenNameOn);
       }
       
       // handle body
-      display.setCursor(MARGIN_LEFT, UI_DISPLAY_ROW_02);
+      display.setCursor(CURSOR_MARGIN, UI_DISPLAY_ROW_02);
       display.print(F("Idle:"));
       display.setCursor(36,UI_DISPLAY_ROW_02); // 6 pixels + 6 pixels * 5 chars = 36
       display.print(currentIdleTime);
 
-      display.setCursor(MARGIN_LEFT, UI_DISPLAY_ROW_03);
+      display.setCursor(CURSOR_MARGIN, UI_DISPLAY_ROW_03);
       display.print(F("Dist:"));
       display.setCursor(36,UI_DISPLAY_ROW_03); // 6 pixels + 6 pixels * 5 chars = 36
       display.print(smartBeaconDistance);
 
-      display.setCursor(MARGIN_LEFT, UI_DISPLAY_ROW_04);
+      display.setCursor(CURSOR_MARGIN, UI_DISPLAY_ROW_04);
       display.print(F("Loc:"));
       display.setCursor(30,UI_DISPLAY_ROW_04); // 6 pixels + 6 pixels * 4 chars = 30
       display.print((gpsLocationHasChanged ? "True" : "False"));
 
-      display.setCursor(MARGIN_LEFT, UI_DISPLAY_ROW_05);
+      display.setCursor(CURSOR_MARGIN, UI_DISPLAY_ROW_05);
       display.print(F("Spd:"));
       display.setCursor(30,UI_DISPLAY_ROW_05); // 6 pixels + 6 pixels * 4 chars = 30
       display.print(gps.speed.mph());
@@ -1852,6 +1865,9 @@ const char version[] = __DATE__ " " __TIME__;
       cursorPosition_Y = 0;
       cursorPosition_X_Last = 0;
       cursorPosition_Y_Last = 0;
+      screenNameOn = "[ HOME ]";
+      screenNameOff = "[      ]";
+      headerXPos = getHeaderXPos(strlen(screenNameOn));
     }
     // handle button context for current display
     if (keyboardInputChar == KEYBOARD_UP_KEY){
@@ -1907,20 +1923,30 @@ const char version[] = __DATE__ " " __TIME__;
       display.print(F(">"));
 
       // handle header
-      display.setCursor(MARGIN_LEFT, UI_DISPLAY_ROW_01);
-      display.print(F("[      ]"));
+      display.setCursor(headerXPos, UI_DISPLAY_ROW_01);
+      display.print(screenNameOff);
       if(displayBlink || !displayInitialized){
-        display.setCursor(MARGIN_LEFT, UI_DISPLAY_ROW_01);
-        display.print(F("[ MAIN ]"));
+        display.setCursor(headerXPos, UI_DISPLAY_ROW_01);
+        display.print(screenNameOn);
       }
       
       // handle body
-      display.setCursor(MARGIN_LEFT, UI_DISPLAY_ROW_02);
-      display.print(F("Messages"));
-      display.setCursor(MARGIN_LEFT, UI_DISPLAY_ROW_03);
-      display.print(F("Live Feed"));
-      display.setCursor(MARGIN_LEFT, UI_DISPLAY_ROW_04);
-      display.print(F("Settings"));
+      size_t charsPrinted, closeCursorPosition;
+      display.setCursor(CURSOR_MARGIN, UI_DISPLAY_ROW_02);
+      charsPrinted = display.print(F("Messages"));
+      if (selectionRow == UI_DISPLAY_ROW_02) closeCursorPosition = charsPrinted;
+
+      display.setCursor(CURSOR_MARGIN, UI_DISPLAY_ROW_03);
+      charsPrinted = display.print(F("Live Feed"));
+      if (selectionRow == UI_DISPLAY_ROW_03) closeCursorPosition = charsPrinted;
+
+      display.setCursor(CURSOR_MARGIN, UI_DISPLAY_ROW_04);
+      charsPrinted = display.print(F("Settings"));
+      if (selectionRow == UI_DISPLAY_ROW_04) closeCursorPosition = charsPrinted;
+
+      // display closing cursor
+      display.setCursor(CURSOR_MARGIN + closeCursorPosition * CHAR_WIDTH, selectionRow);
+      display.print(F("<"));  
       
       // display all content from buffer
       display.display();
@@ -2101,6 +2127,9 @@ const char version[] = __DATE__ " " __TIME__;
       cursorPosition_X_Last = cursorPosition_X;
       cursorPosition_Y_Last = -1;
       editMode_Settings = false;
+      screenNameOn = "[ NEW MESSAGE ]";
+      screenNameOff = "[             ]";
+      headerXPos = getHeaderXPos(strlen(screenNameOn));
     }
     // handle button context for current display
     if (KEYBOARD_PRINTABLE_CHARACTERS || KEYBOARD_DIRECTIONAL_KEYS || keyboardInputChar == KEYBOARD_BACKSPACE_KEY) {
@@ -2161,20 +2190,30 @@ const char version[] = __DATE__ " " __TIME__;
       display.print(F(">"));
 
       // handle header
-      display.setCursor(MARGIN_LEFT, UI_DISPLAY_ROW_01);
-      display.print(F("[             ]"));
+      display.setCursor(headerXPos, UI_DISPLAY_ROW_01);
+      display.print(screenNameOff);
       if(displayBlink || !displayInitialized){
-        display.setCursor(MARGIN_LEFT, UI_DISPLAY_ROW_01);
-        display.print(F("[ NEW MESSAGE ]"));
+        display.setCursor(headerXPos, UI_DISPLAY_ROW_01);
+        display.print(screenNameOn);
       }
       
       // handle body
-      display.setCursor(MARGIN_LEFT, UI_DISPLAY_ROW_02);
-      display.print(MenuItems_Settings_APRS[5]);
-      display.setCursor(MARGIN_LEFT, UI_DISPLAY_ROW_03);
-      display.print(MenuItems_Settings_APRS[6]);
-      display.setCursor(MARGIN_LEFT, UI_DISPLAY_ROW_04);
-      display.print(MenuItems_Settings_APRS[7]);
+      size_t charsPrinted, closeCursorPosition;
+      display.setCursor(CURSOR_MARGIN, UI_DISPLAY_ROW_02);
+      charsPrinted = display.print(MenuItems_Settings_APRS[5]);
+      if (selectionRow == UI_DISPLAY_ROW_02) closeCursorPosition = charsPrinted;
+
+      display.setCursor(CURSOR_MARGIN, UI_DISPLAY_ROW_03);
+      charsPrinted = display.print(MenuItems_Settings_APRS[6]);
+      if (selectionRow == UI_DISPLAY_ROW_03) closeCursorPosition = charsPrinted;
+
+      display.setCursor(CURSOR_MARGIN, UI_DISPLAY_ROW_04);
+      charsPrinted = display.print(MenuItems_Settings_APRS[7]);
+      if (selectionRow == UI_DISPLAY_ROW_04) closeCursorPosition = charsPrinted;
+
+      // display closing cursor
+      display.setCursor(CURSOR_MARGIN + closeCursorPosition * CHAR_WIDTH, selectionRow);
+      display.print(F("<"));  
 
       // handle edit field
       if (editMode_Settings) {
@@ -2366,17 +2405,17 @@ const char version[] = __DATE__ " " __TIME__;
       display.print(F(">"));
 
       // handle question
-      display.setCursor(MARGIN_LEFT, UI_DISPLAY_ROW_01);
+      display.setCursor(CURSOR_MARGIN, UI_DISPLAY_ROW_01);
       display.print(F("[               ]"));
       if(displayBlink || !displayInitialized){
-        display.setCursor(MARGIN_LEFT, UI_DISPLAY_ROW_01);
+        display.setCursor(CURSOR_MARGIN, UI_DISPLAY_ROW_01);
         display.print(F("[ Save changes? ]"));
       }
       
-      display.setCursor(MARGIN_LEFT, UI_DISPLAY_ROW_02);
+      display.setCursor(CURSOR_MARGIN, UI_DISPLAY_ROW_02);
       display.print(F("No"));
       
-      display.setCursor(MARGIN_LEFT, UI_DISPLAY_ROW_03);
+      display.setCursor(CURSOR_MARGIN, UI_DISPLAY_ROW_03);
       display.print(F("Yes"));
 
       // display all content from buffer
@@ -2396,6 +2435,9 @@ const char version[] = __DATE__ " " __TIME__;
       cursorPosition_Y = 0;
       cursorPosition_X_Last = 0;
       cursorPosition_Y_Last = 0;
+      screenNameOn = "[ SETTINGS ]";
+      screenNameOff = "[          ]";
+      headerXPos = getHeaderXPos(strlen(screenNameOn));
     }
     // handle button context for current display
     if (keyboardInputChar == KEYBOARD_UP_KEY){
@@ -2447,27 +2489,35 @@ const char version[] = __DATE__ " " __TIME__;
       display.print(F(">"));      
       
       // handle header
-      display.setCursor(MARGIN_LEFT, UI_DISPLAY_ROW_01);
-      display.print(F("[          ]"));
+      display.setCursor(headerXPos, UI_DISPLAY_ROW_01);
+      display.print(screenNameOff);
       if(displayBlink || !displayInitialized){
-        display.setCursor(MARGIN_LEFT, UI_DISPLAY_ROW_01);
-        display.print(F("[ SETTINGS ]"));
+        display.setCursor(headerXPos, UI_DISPLAY_ROW_01);
+        display.print(screenNameOn);
       }
 
       // handle body
+      size_t charsPrinted, closeCursorPosition;
       int NumOfSettings = ARRAY_SIZE(MenuItems_Settings);
       if (NumOfSettings >= 1) {
-        display.setCursor(MARGIN_LEFT, UI_DISPLAY_ROW_02);
-        display.print(MenuItems_Settings[cursorPosition_Y>2 ? cursorPosition_Y-2 : 0]);
+        display.setCursor(CURSOR_MARGIN, UI_DISPLAY_ROW_02);
+        charsPrinted = display.print(MenuItems_Settings[cursorPosition_Y>2 ? cursorPosition_Y-2 : 0]);
+        if (selectionRow == UI_DISPLAY_ROW_02) closeCursorPosition = charsPrinted;
       }
       if (NumOfSettings >= 2) {
-        display.setCursor(MARGIN_LEFT, UI_DISPLAY_ROW_03);
-        display.print(MenuItems_Settings[cursorPosition_Y>2 ? cursorPosition_Y-1 : 1]);
+        display.setCursor(CURSOR_MARGIN, UI_DISPLAY_ROW_03);
+        charsPrinted = display.print(MenuItems_Settings[cursorPosition_Y>2 ? cursorPosition_Y-1 : 1]);
+        if (selectionRow == UI_DISPLAY_ROW_03) closeCursorPosition = charsPrinted;
       }
       if (NumOfSettings >= 3) {
-        display.setCursor(MARGIN_LEFT, UI_DISPLAY_ROW_04);
-        display.print(MenuItems_Settings[cursorPosition_Y>2 ? cursorPosition_Y-0 : 2]);
+        display.setCursor(CURSOR_MARGIN, UI_DISPLAY_ROW_04);
+        charsPrinted = display.print(MenuItems_Settings[cursorPosition_Y>2 ? cursorPosition_Y-0 : 2]);
+        if (selectionRow == UI_DISPLAY_ROW_04) closeCursorPosition = charsPrinted;
       }
+
+      // display closing cursor
+      display.setCursor(CURSOR_MARGIN + closeCursorPosition * CHAR_WIDTH, selectionRow);
+      display.print(F("<"));  
 
       // display all content from buffer
       display.display();
@@ -2494,6 +2544,9 @@ const char version[] = __DATE__ " " __TIME__;
       for (int i=0; i<sizeof(Settings_TempDispCharArr);i++) {
         Settings_TempDispCharArr[i] = '\0';
       }
+      screenNameOn = "[ APRS ]";
+      screenNameOff = "[      ]";
+      headerXPos = getHeaderXPos(strlen(screenNameOn));
     }
     // monitor for changes
     if (editMode_Settings) {
@@ -2560,27 +2613,35 @@ const char version[] = __DATE__ " " __TIME__;
       display.print(F(">"));
       
       // handle header
-      display.setCursor(MARGIN_LEFT, UI_DISPLAY_ROW_01);
-      display.print(F("[      ]"));
+      display.setCursor(headerXPos, UI_DISPLAY_ROW_01);
+      display.print(screenNameOff);
       if(displayBlink || !displayInitialized){
-        display.setCursor(MARGIN_LEFT, UI_DISPLAY_ROW_01);
-        display.print(F("[ APRS ]"));
+        display.setCursor(headerXPos, UI_DISPLAY_ROW_01);
+        display.print(screenNameOn);
       }
 
       // handle body
+      size_t charsPrinted, closeCursorPosition;
       int NumOfSettings = ARRAY_SIZE(MenuItems_Settings_APRS);
       if (NumOfSettings >= 1) {
-        display.setCursor(MARGIN_LEFT, UI_DISPLAY_ROW_02);
-        display.print(MenuItems_Settings_APRS[cursorPosition_Y>2 ? cursorPosition_Y-2 : 0]);
+        display.setCursor(CURSOR_MARGIN, UI_DISPLAY_ROW_02);
+        charsPrinted = display.print(MenuItems_Settings_APRS[cursorPosition_Y>2 ? cursorPosition_Y-2 : 0]);
+        if (selectionRow == UI_DISPLAY_ROW_02) closeCursorPosition = charsPrinted;
       }
       if (NumOfSettings >= 2) {
-        display.setCursor(MARGIN_LEFT, UI_DISPLAY_ROW_03);
-        display.print(MenuItems_Settings_APRS[cursorPosition_Y>2 ? cursorPosition_Y-1 : 1]);
+        display.setCursor(CURSOR_MARGIN, UI_DISPLAY_ROW_03);
+        charsPrinted = display.print(MenuItems_Settings_APRS[cursorPosition_Y>2 ? cursorPosition_Y-1 : 1]);
+        if (selectionRow == UI_DISPLAY_ROW_03) closeCursorPosition = charsPrinted;
       }
       if (NumOfSettings >= 3) {
-        display.setCursor(MARGIN_LEFT, UI_DISPLAY_ROW_04);
-        display.print(MenuItems_Settings_APRS[cursorPosition_Y>2 ? cursorPosition_Y-0 : 2]);
+        display.setCursor(CURSOR_MARGIN, UI_DISPLAY_ROW_04);
+        charsPrinted = display.print(MenuItems_Settings_APRS[cursorPosition_Y>2 ? cursorPosition_Y-0 : 2]);
+        if (selectionRow == UI_DISPLAY_ROW_04) closeCursorPosition = charsPrinted;
       }
+
+      // display closing cursor
+      display.setCursor(CURSOR_MARGIN + closeCursorPosition * CHAR_WIDTH, selectionRow);
+      display.print(F("<"));  
 
       // handle edit field
       if (editMode_Settings) {
@@ -2614,6 +2675,9 @@ const char version[] = __DATE__ " " __TIME__;
       for (int i=0; i<sizeof(Settings_TempDispCharArr);i++) {
         Settings_TempDispCharArr[i] = '\0';
       }
+      screenNameOn = "[ GPS ]";
+      screenNameOff = "[     ]";
+      headerXPos = getHeaderXPos(strlen(screenNameOn));
     }
     // monitor for changes
     if (editMode_Settings) {
@@ -2680,27 +2744,35 @@ const char version[] = __DATE__ " " __TIME__;
       display.print(F(">"));
 
       // handle header
-      display.setCursor(MARGIN_LEFT, UI_DISPLAY_ROW_01);
-      display.print(F("[     ]"));
+      display.setCursor(headerXPos, UI_DISPLAY_ROW_01);
+      display.print(screenNameOff);
       if(displayBlink || !displayInitialized){
-        display.setCursor(MARGIN_LEFT, UI_DISPLAY_ROW_01);
-        display.print(F("[ GPS ]"));
+        display.setCursor(headerXPos, UI_DISPLAY_ROW_01);
+        display.print(screenNameOn);
       }
 
       // handle body
+      size_t charsPrinted, closeCursorPosition;
       int NumOfSettings = ARRAY_SIZE(MenuItems_Settings_GPS);
       if (NumOfSettings >= 1) {
-        display.setCursor(MARGIN_LEFT, UI_DISPLAY_ROW_02);
-        display.print(MenuItems_Settings_GPS[cursorPosition_Y>2 ? cursorPosition_Y-2 : 0]);
+        display.setCursor(CURSOR_MARGIN, UI_DISPLAY_ROW_02);
+        charsPrinted = display.print(MenuItems_Settings_GPS[cursorPosition_Y>2 ? cursorPosition_Y-2 : 0]);
+        if (selectionRow == UI_DISPLAY_ROW_02) closeCursorPosition = charsPrinted;
       }
       if (NumOfSettings >= 2) {
-        display.setCursor(MARGIN_LEFT, UI_DISPLAY_ROW_03);
-        display.print(MenuItems_Settings_GPS[cursorPosition_Y>2 ? cursorPosition_Y-1 : 1]);
+        display.setCursor(CURSOR_MARGIN, UI_DISPLAY_ROW_03);
+        charsPrinted = display.print(MenuItems_Settings_GPS[cursorPosition_Y>2 ? cursorPosition_Y-1 : 1]);
+        if (selectionRow == UI_DISPLAY_ROW_03) closeCursorPosition = charsPrinted;
       }
       if (NumOfSettings >= 3) {
-        display.setCursor(MARGIN_LEFT, UI_DISPLAY_ROW_04);
-        display.print(MenuItems_Settings_GPS[cursorPosition_Y>2 ? cursorPosition_Y-0 : 2]);
+        display.setCursor(CURSOR_MARGIN, UI_DISPLAY_ROW_04);
+        charsPrinted = display.print(MenuItems_Settings_GPS[cursorPosition_Y>2 ? cursorPosition_Y-0 : 2]);
+        if (selectionRow == UI_DISPLAY_ROW_04) closeCursorPosition = charsPrinted;
       }
+
+      // display closing cursor
+      display.setCursor(CURSOR_MARGIN + closeCursorPosition * CHAR_WIDTH, selectionRow);
+      display.print(F("<"));  
 
       // handle edit field
       if (editMode_Settings) {
@@ -2734,6 +2806,9 @@ const char version[] = __DATE__ " " __TIME__;
       for (int i=0; i<sizeof(Settings_TempDispCharArr);i++) {
         Settings_TempDispCharArr[i] = '\0';
       }
+      screenNameOn = "[ DISPLAY ]";
+      screenNameOff = "[         ]";
+      headerXPos = getHeaderXPos(strlen(screenNameOn));
     }
     // monitor for changes
     if (editMode_Settings) {
@@ -2800,27 +2875,35 @@ const char version[] = __DATE__ " " __TIME__;
       display.print(F(">"));
 
       // handle header
-      display.setCursor(MARGIN_LEFT, UI_DISPLAY_ROW_01);
-      display.print(F("[         ]"));
+      display.setCursor(headerXPos, UI_DISPLAY_ROW_01);
+      display.print(screenNameOff);
       if(displayBlink || !displayInitialized){
-        display.setCursor(MARGIN_LEFT, UI_DISPLAY_ROW_01);
-        display.print(F("[ DISPLAY ]"));
+        display.setCursor(headerXPos, UI_DISPLAY_ROW_01);
+        display.print(screenNameOn);
       }
 
       // handle body
+      size_t charsPrinted, closeCursorPosition;
       int NumOfSettings = ARRAY_SIZE(MenuItems_Settings_Display);
       if (NumOfSettings >= 1) {
-        display.setCursor(MARGIN_LEFT, UI_DISPLAY_ROW_02);
-        display.print(MenuItems_Settings_Display[cursorPosition_Y>2 ? cursorPosition_Y-2 : 0]);
+        display.setCursor(CURSOR_MARGIN, UI_DISPLAY_ROW_02);
+        charsPrinted = display.print(MenuItems_Settings_Display[cursorPosition_Y>2 ? cursorPosition_Y-2 : 0]);
+        if (selectionRow == UI_DISPLAY_ROW_02) closeCursorPosition = charsPrinted;
       }
       if (NumOfSettings >= 2) {
-        display.setCursor(MARGIN_LEFT, UI_DISPLAY_ROW_03);
-        display.print(MenuItems_Settings_Display[cursorPosition_Y>2 ? cursorPosition_Y-1 : 1]);
+        display.setCursor(CURSOR_MARGIN, UI_DISPLAY_ROW_03);
+        charsPrinted = display.print(MenuItems_Settings_Display[cursorPosition_Y>2 ? cursorPosition_Y-1 : 1]);
+        if (selectionRow == UI_DISPLAY_ROW_03) closeCursorPosition = charsPrinted;
       }
       if (NumOfSettings >= 3) {
-        display.setCursor(MARGIN_LEFT, UI_DISPLAY_ROW_04);
-        display.print(MenuItems_Settings_Display[cursorPosition_Y>2 ? cursorPosition_Y-0 : 2]);
+        display.setCursor(CURSOR_MARGIN, UI_DISPLAY_ROW_04);
+        charsPrinted = display.print(MenuItems_Settings_Display[cursorPosition_Y>2 ? cursorPosition_Y-0 : 2]);
+        if (selectionRow == UI_DISPLAY_ROW_04) closeCursorPosition = charsPrinted;
       }
+
+      // display closing cursor
+      display.setCursor(CURSOR_MARGIN + closeCursorPosition * CHAR_WIDTH, selectionRow);
+      display.print(F("<"));  
       
       // handle edit field
       if (editMode_Settings) {
