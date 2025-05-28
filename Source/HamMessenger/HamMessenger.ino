@@ -985,6 +985,11 @@ const char version[] = __DATE__ " " __TIME__;
   #include <Adafruit_GFX.h>
   #include <Adafruit_SH1106.h>
 
+  #define CHAR_WIDTH                            6 // number of pixels that one character takes up on the screen
+                                                  // TODO make this dynamic by getting from the display library
+
+  #define MARGIN_LEFT                           6 // number of pixels to have as a margin on the left of the display
+
   #define DISPLAY_REFRESH_RATE                  100 // 33 is ~30fps | 100 is ~ 10fps
   #define DISPLAY_REFRESH_RATE_SCROLL           80  // during testing, i found that anything less than 60 causes performance issues
   #define DISPLAY_BLINK_RATE                    500
@@ -1078,7 +1083,7 @@ const char version[] = __DATE__ " " __TIME__;
     display.print(text);
 
     // Width of text in pixels (6 px per char with default font)
-    int textWidth = text.length() * 6;
+    int textWidth = text.length() * CHAR_WIDTH;
     int textHeight = 8; // For default font height
 
     // Overlay a simulated dimming mask
@@ -1119,7 +1124,7 @@ const char version[] = __DATE__ " " __TIME__;
     display.print("GPS-");
 
     //
-    int textWidth = 6 * 4;    // 6px per char, 4 letters: G P S |
+    int textWidth = CHAR_WIDTH * 4;    // 6px per char, 4 letters: G P S |
     if (!gpsConnected) {
       // Strikethrough the word "GPS"
       int _x = x;                // Cursor X where "G" starts
@@ -1305,8 +1310,8 @@ const char version[] = __DATE__ " " __TIME__;
           if (cursorPosition_X < sizeof(Settings_TypeString100[0]) - 1) {
             Settings_TempDispCharArr[cursorPosition_X] = keyboardInputChar;
           }
-          if (cursorPosition_X >= display.width() / 6 - 2) {
-            indexPosition_X = (display.width() / 6 - cursorPosition_X) - 2;
+          if (cursorPosition_X >= display.width() / CHAR_WIDTH - 2) {
+            indexPosition_X = (display.width() / CHAR_WIDTH - cursorPosition_X) - 2;
           }
         }
         break;
@@ -1448,7 +1453,7 @@ const char version[] = __DATE__ " " __TIME__;
   // while scrolling through the settings menu.
   void handleDisplay_PrintValStoredInMem(int SettingsType, int SettingsTypeIndex){
     //
-    display.setCursor(cursorPosition_X*6,UI_DISPLAY_ROW_BOTTOM);
+    display.setCursor(cursorPosition_X * CHAR_WIDTH,UI_DISPLAY_ROW_BOTTOM);
     //
     switch (SettingsType) {
       case SETTINGS_EDIT_TYPE_ALT1:
@@ -1514,12 +1519,12 @@ const char version[] = __DATE__ " " __TIME__;
     //
     Settings_EditValueSize = sizeof(Settings_TempDispCharArr) - 1;
     //
-    display.setCursor(indexPosition_X*6,UI_DISPLAY_ROW_BOTTOM-1);
+    display.setCursor(indexPosition_X * CHAR_WIDTH,UI_DISPLAY_ROW_BOTTOM - 1);
     display.print(Settings_TempDispCharArr);
     cursorPosition_X = strlen(Settings_TempDispCharArr);
     //
     if (displayBlink) {
-      display.setCursor((cursorPosition_X*6)+(indexPosition_X*6),UI_DISPLAY_ROW_BOTTOM);
+      display.setCursor((cursorPosition_X * CHAR_WIDTH) + (indexPosition_X * CHAR_WIDTH),UI_DISPLAY_ROW_BOTTOM);
       display.print('_');
     }
   }
@@ -1729,37 +1734,37 @@ const char version[] = __DATE__ " " __TIME__;
       //display.print(F(">"));
 
       // handle header
-      display.setCursor(6,UI_DISPLAY_ROW_01);
+      display.setCursor(MARGIN_LEFT,UI_DISPLAY_ROW_01);
       display.print(F("[       ]"));
       if(displayBlink || !displayInitialized){
-        display.setCursor(6,UI_DISPLAY_ROW_01);
+        display.setCursor(MARGIN_LEFT,UI_DISPLAY_ROW_01);
         display.print(F("[ DEBUG ]"));
       }
       
       // handle body
-      display.setCursor(6,UI_DISPLAY_ROW_02);
+      display.setCursor(MARGIN_LEFT, UI_DISPLAY_ROW_02);
       display.print(F("Idle:"));
       display.setCursor(36,UI_DISPLAY_ROW_02); // 6 pixels + 6 pixels * 5 chars = 36
       display.print(currentIdleTime);
 
-      display.setCursor(6,UI_DISPLAY_ROW_03);
+      display.setCursor(MARGIN_LEFT, UI_DISPLAY_ROW_03);
       display.print(F("Dist:"));
       display.setCursor(36,UI_DISPLAY_ROW_03); // 6 pixels + 6 pixels * 5 chars = 36
       display.print(smartBeaconDistance);
 
-      display.setCursor(6,UI_DISPLAY_ROW_04);
+      display.setCursor(MARGIN_LEFT, UI_DISPLAY_ROW_04);
       display.print(F("Loc:"));
       display.setCursor(30,UI_DISPLAY_ROW_04); // 6 pixels + 6 pixels * 4 chars = 30
       display.print((gpsLocationHasChanged ? "True" : "False"));
 
-      display.setCursor(6,UI_DISPLAY_ROW_05);
+      display.setCursor(MARGIN_LEFT, UI_DISPLAY_ROW_05);
       display.print(F("Spd:"));
       display.setCursor(30,UI_DISPLAY_ROW_05); // 6 pixels + 6 pixels * 4 chars = 30
       display.print(gps.speed.mph());
 
-      display.setCursor(66,UI_DISPLAY_ROW_05); // 30 pixels + 6 pixels * 6 chars = 66
+      display.setCursor(66, UI_DISPLAY_ROW_05); // 30 pixels + 6 pixels * 6 chars = 66
       display.print(F("hdop:"));
-      display.setCursor(96,UI_DISPLAY_ROW_05); // 66 pixels + 6 pixels * 5 chars = 96
+      display.setCursor(96, UI_DISPLAY_ROW_05); // 66 pixels + 6 pixels * 5 chars = 96
       display.print(gps.hdop.value());
 
       
@@ -1818,7 +1823,7 @@ const char version[] = __DATE__ " " __TIME__;
       display.setCursor(x_lat,UI_DISPLAY_ROW_BOTTOM);
       display.print(currentLat); // DDMM.mmN
 
-      int x_lng = x_lat + (8 * 6) + 5; // 8 letters times 6 pixels wide plus a gap of 3 (0000.00N)
+      int x_lng = x_lat + (8 * CHAR_WIDTH) + 5; // 8 letters times 6 pixels wide plus a gap of 5 (0000.00N)
       display.setCursor(x_lng, UI_DISPLAY_ROW_BOTTOM);
       display.print(currentLng); // DDDMM.mmW
     }
@@ -1889,19 +1894,19 @@ const char version[] = __DATE__ " " __TIME__;
       display.print(F(">"));
 
       // handle header
-      display.setCursor(6,UI_DISPLAY_ROW_01);
+      display.setCursor(MARGIN_LEFT, UI_DISPLAY_ROW_01);
       display.print(F("[      ]"));
       if(displayBlink || !displayInitialized){
-        display.setCursor(6,UI_DISPLAY_ROW_01);
+        display.setCursor(MARGIN_LEFT, UI_DISPLAY_ROW_01);
         display.print(F("[ MAIN ]"));
       }
       
       // handle body
-      display.setCursor(6,UI_DISPLAY_ROW_02);
+      display.setCursor(MARGIN_LEFT, UI_DISPLAY_ROW_02);
       display.print(F("Messages"));
-      display.setCursor(6,UI_DISPLAY_ROW_03);
+      display.setCursor(MARGIN_LEFT, UI_DISPLAY_ROW_03);
       display.print(F("Live Feed"));
-      display.setCursor(6,UI_DISPLAY_ROW_04);
+      display.setCursor(MARGIN_LEFT, UI_DISPLAY_ROW_04);
       display.print(F("Settings"));
       
       // display all content from buffer
@@ -2143,19 +2148,19 @@ const char version[] = __DATE__ " " __TIME__;
       display.print(F(">"));
 
       // handle header
-      display.setCursor(6,UI_DISPLAY_ROW_01);
+      display.setCursor(MARGIN_LEFT, UI_DISPLAY_ROW_01);
       display.print(F("[             ]"));
       if(displayBlink || !displayInitialized){
-        display.setCursor(6,UI_DISPLAY_ROW_01);
+        display.setCursor(MARGIN_LEFT, UI_DISPLAY_ROW_01);
         display.print(F("[ NEW MESSAGE ]"));
       }
       
       // handle body
-      display.setCursor(6,UI_DISPLAY_ROW_02);
+      display.setCursor(MARGIN_LEFT, UI_DISPLAY_ROW_02);
       display.print(MenuItems_Settings_APRS[5]);
-      display.setCursor(6,UI_DISPLAY_ROW_03);
+      display.setCursor(MARGIN_LEFT, UI_DISPLAY_ROW_03);
       display.print(MenuItems_Settings_APRS[6]);
-      display.setCursor(6,UI_DISPLAY_ROW_04);
+      display.setCursor(MARGIN_LEFT, UI_DISPLAY_ROW_04);
       display.print(MenuItems_Settings_APRS[7]);
 
       // handle edit field
@@ -2348,17 +2353,17 @@ const char version[] = __DATE__ " " __TIME__;
       display.print(F(">"));
 
       // handle question
-      display.setCursor(6,UI_DISPLAY_ROW_01);
+      display.setCursor(MARGIN_LEFT, UI_DISPLAY_ROW_01);
       display.print(F("[               ]"));
       if(displayBlink || !displayInitialized){
-        display.setCursor(6,UI_DISPLAY_ROW_01);
+        display.setCursor(MARGIN_LEFT, UI_DISPLAY_ROW_01);
         display.print(F("[ Save changes? ]"));
       }
       
-      display.setCursor(6,UI_DISPLAY_ROW_02);
+      display.setCursor(MARGIN_LEFT, UI_DISPLAY_ROW_02);
       display.print(F("No"));
       
-      display.setCursor(6,UI_DISPLAY_ROW_03);
+      display.setCursor(MARGIN_LEFT, UI_DISPLAY_ROW_03);
       display.print(F("Yes"));
 
       // display all content from buffer
@@ -2429,25 +2434,25 @@ const char version[] = __DATE__ " " __TIME__;
       display.print(F(">"));      
       
       // handle header
-      display.setCursor(6,UI_DISPLAY_ROW_01);
+      display.setCursor(MARGIN_LEFT, UI_DISPLAY_ROW_01);
       display.print(F("[          ]"));
       if(displayBlink || !displayInitialized){
-        display.setCursor(6,UI_DISPLAY_ROW_01);
+        display.setCursor(MARGIN_LEFT, UI_DISPLAY_ROW_01);
         display.print(F("[ SETTINGS ]"));
       }
 
       // handle body
       int NumOfSettings = ARRAY_SIZE(MenuItems_Settings);
       if (NumOfSettings >= 1) {
-        display.setCursor(6,UI_DISPLAY_ROW_02);
+        display.setCursor(MARGIN_LEFT, UI_DISPLAY_ROW_02);
         display.print(MenuItems_Settings[cursorPosition_Y>2 ? cursorPosition_Y-2 : 0]);
       }
       if (NumOfSettings >= 2) {
-        display.setCursor(6,UI_DISPLAY_ROW_03);
+        display.setCursor(MARGIN_LEFT, UI_DISPLAY_ROW_03);
         display.print(MenuItems_Settings[cursorPosition_Y>2 ? cursorPosition_Y-1 : 1]);
       }
       if (NumOfSettings >= 3) {
-        display.setCursor(6,UI_DISPLAY_ROW_04);
+        display.setCursor(MARGIN_LEFT, UI_DISPLAY_ROW_04);
         display.print(MenuItems_Settings[cursorPosition_Y>2 ? cursorPosition_Y-0 : 2]);
       }
 
@@ -2542,25 +2547,25 @@ const char version[] = __DATE__ " " __TIME__;
       display.print(F(">"));
       
       // handle header
-      display.setCursor(6,UI_DISPLAY_ROW_01);
+      display.setCursor(MARGIN_LEFT, UI_DISPLAY_ROW_01);
       display.print(F("[      ]"));
       if(displayBlink || !displayInitialized){
-        display.setCursor(6,UI_DISPLAY_ROW_01);
+        display.setCursor(MARGIN_LEFT, UI_DISPLAY_ROW_01);
         display.print(F("[ APRS ]"));
       }
 
       // handle body
       int NumOfSettings = ARRAY_SIZE(MenuItems_Settings_APRS);
       if (NumOfSettings >= 1) {
-        display.setCursor(6,UI_DISPLAY_ROW_02);
+        display.setCursor(MARGIN_LEFT, UI_DISPLAY_ROW_02);
         display.print(MenuItems_Settings_APRS[cursorPosition_Y>2 ? cursorPosition_Y-2 : 0]);
       }
       if (NumOfSettings >= 2) {
-        display.setCursor(6,UI_DISPLAY_ROW_03);
+        display.setCursor(MARGIN_LEFT, UI_DISPLAY_ROW_03);
         display.print(MenuItems_Settings_APRS[cursorPosition_Y>2 ? cursorPosition_Y-1 : 1]);
       }
       if (NumOfSettings >= 3) {
-        display.setCursor(6,UI_DISPLAY_ROW_04);
+        display.setCursor(MARGIN_LEFT, UI_DISPLAY_ROW_04);
         display.print(MenuItems_Settings_APRS[cursorPosition_Y>2 ? cursorPosition_Y-0 : 2]);
       }
 
@@ -2662,25 +2667,25 @@ const char version[] = __DATE__ " " __TIME__;
       display.print(F(">"));
 
       // handle header
-      display.setCursor(6,UI_DISPLAY_ROW_01);
+      display.setCursor(MARGIN_LEFT, UI_DISPLAY_ROW_01);
       display.print(F("[     ]"));
       if(displayBlink || !displayInitialized){
-        display.setCursor(6,UI_DISPLAY_ROW_01);
+        display.setCursor(MARGIN_LEFT, UI_DISPLAY_ROW_01);
         display.print(F("[ GPS ]"));
       }
 
       // handle body
       int NumOfSettings = ARRAY_SIZE(MenuItems_Settings_GPS);
       if (NumOfSettings >= 1) {
-        display.setCursor(6,UI_DISPLAY_ROW_02);
+        display.setCursor(MARGIN_LEFT, UI_DISPLAY_ROW_02);
         display.print(MenuItems_Settings_GPS[cursorPosition_Y>2 ? cursorPosition_Y-2 : 0]);
       }
       if (NumOfSettings >= 2) {
-        display.setCursor(6,UI_DISPLAY_ROW_03);
+        display.setCursor(MARGIN_LEFT, UI_DISPLAY_ROW_03);
         display.print(MenuItems_Settings_GPS[cursorPosition_Y>2 ? cursorPosition_Y-1 : 1]);
       }
       if (NumOfSettings >= 3) {
-        display.setCursor(6,UI_DISPLAY_ROW_04);
+        display.setCursor(MARGIN_LEFT, UI_DISPLAY_ROW_04);
         display.print(MenuItems_Settings_GPS[cursorPosition_Y>2 ? cursorPosition_Y-0 : 2]);
       }
 
@@ -2782,25 +2787,25 @@ const char version[] = __DATE__ " " __TIME__;
       display.print(F(">"));
 
       // handle header
-      display.setCursor(6,UI_DISPLAY_ROW_01);
+      display.setCursor(MARGIN_LEFT, UI_DISPLAY_ROW_01);
       display.print(F("[         ]"));
       if(displayBlink || !displayInitialized){
-        display.setCursor(6,UI_DISPLAY_ROW_01);
+        display.setCursor(MARGIN_LEFT, UI_DISPLAY_ROW_01);
         display.print(F("[ DISPLAY ]"));
       }
 
       // handle body
       int NumOfSettings = ARRAY_SIZE(MenuItems_Settings_Display);
       if (NumOfSettings >= 1) {
-        display.setCursor(6,UI_DISPLAY_ROW_02);
+        display.setCursor(MARGIN_LEFT, UI_DISPLAY_ROW_02);
         display.print(MenuItems_Settings_Display[cursorPosition_Y>2 ? cursorPosition_Y-2 : 0]);
       }
       if (NumOfSettings >= 2) {
-        display.setCursor(6,UI_DISPLAY_ROW_03);
+        display.setCursor(MARGIN_LEFT, UI_DISPLAY_ROW_03);
         display.print(MenuItems_Settings_Display[cursorPosition_Y>2 ? cursorPosition_Y-1 : 1]);
       }
       if (NumOfSettings >= 3) {
-        display.setCursor(6,UI_DISPLAY_ROW_04);
+        display.setCursor(MARGIN_LEFT, UI_DISPLAY_ROW_04);
         display.print(MenuItems_Settings_Display[cursorPosition_Y>2 ? cursorPosition_Y-0 : 2]);
       }
       
