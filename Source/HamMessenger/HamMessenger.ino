@@ -1124,7 +1124,7 @@ const char version[] = __DATE__ " " __TIME__;
       if (cursorPosition_X > 0) { 
         cursorPosition_X--;
       } else {
-        cursorPosition_X=Settings_EditValueSize;
+        cursorPosition_X=0;
       }
     }
     if (keyboardInputChar == KEYBOARD_RIGHT_KEY) {
@@ -1137,7 +1137,7 @@ const char version[] = __DATE__ " " __TIME__;
       if (cursorPosition_X < Settings_EditValueSize) { 
         cursorPosition_X++;
       } else {
-        cursorPosition_X=0;
+        cursorPosition_X=Settings_EditValueSize;
       }
     }
     bool characterDelete = false;
@@ -1181,7 +1181,9 @@ const char version[] = __DATE__ " " __TIME__;
               Settings_TempDispCharArr[cursorPosition_X] = '\0';
             }
           } else if (KEYBOARD_NUMBER_KEYS) {
-            Settings_TempDispCharArr[cursorPosition_X] = keyboardInputChar;
+            if (cursorPosition_X < 5) { // int can be 5 digits -32,768 to 32,767
+              Settings_TempDispCharArr[cursorPosition_X] = keyboardInputChar;
+            }
           } else if (keyboardInputChar == KEYBOARD_MINUS_KEY) {
             int tempInt = strtoul(Settings_TempDispCharArr,NULL,10);
             tempInt = -tempInt;
@@ -1194,7 +1196,9 @@ const char version[] = __DATE__ " " __TIME__;
               Settings_TempDispCharArr[cursorPosition_X] = '\0';
             }
           } else if (KEYBOARD_NUMBER_KEYS) {
-            Settings_TempDispCharArr[cursorPosition_X] = keyboardInputChar;
+            if (cursorPosition_X < 5) { // uint can be 5 digits 0 to 65,535
+              Settings_TempDispCharArr[cursorPosition_X] = keyboardInputChar;
+            }
           }
         break;
       case SETTINGS_EDIT_TYPE_LONG:
@@ -1204,7 +1208,9 @@ const char version[] = __DATE__ " " __TIME__;
               Settings_TempDispCharArr[cursorPosition_X] = '\0';
             }
           } else if (KEYBOARD_NUMBER_KEYS) {
-            Settings_TempDispCharArr[cursorPosition_X] = keyboardInputChar;
+            if (cursorPosition_X < 10) { // long can be 10 digits -2,147,483,648 to 2,147,483,647
+              Settings_TempDispCharArr[cursorPosition_X] = keyboardInputChar;
+            }
           } else if (keyboardInputChar == KEYBOARD_MINUS_KEY) {
             int tempInt = strtoul(Settings_TempDispCharArr,NULL,10);
             tempInt = -tempInt;
@@ -1217,7 +1223,9 @@ const char version[] = __DATE__ " " __TIME__;
               Settings_TempDispCharArr[cursorPosition_X] = '\0';
             }
           } else if (KEYBOARD_NUMBER_KEYS) {
-            Settings_TempDispCharArr[cursorPosition_X] = keyboardInputChar;
+            if (cursorPosition_X < 10) { // ulong can be 10 digits 0 to 4,294,967,295
+              Settings_TempDispCharArr[cursorPosition_X] = keyboardInputChar;
+            }
           }
         break;
       case SETTINGS_EDIT_TYPE_FLOAT:
@@ -1226,7 +1234,9 @@ const char version[] = __DATE__ " " __TIME__;
               Settings_TempDispCharArr[cursorPosition_X] = '\0';
             }
           } else if (KEYBOARD_NUMBER_KEYS || keyboardInputChar == KEYBOARD_PERIOD_KEY) {
-            Settings_TempDispCharArr[cursorPosition_X] = keyboardInputChar;
+            if (cursorPosition_X < 40) { // float can be 40 characters
+              Settings_TempDispCharArr[cursorPosition_X] = keyboardInputChar;
+            }
           } else if (keyboardInputChar == KEYBOARD_MINUS_KEY) {
             double tempDouble = strtod(Settings_TempDispCharArr,NULL);
             tempDouble = -tempDouble;
@@ -1239,7 +1249,9 @@ const char version[] = __DATE__ " " __TIME__;
             Settings_TempDispCharArr[cursorPosition_X] = '\0';
           }
         } else if KEYBOARD_PRINTABLE_CHARACTERS {
-          Settings_TempDispCharArr[cursorPosition_X] = keyboardInputChar;
+          if (cursorPosition_X < sizeof(Settings_TypeString3[0]) - 1) {
+            Settings_TempDispCharArr[cursorPosition_X] = keyboardInputChar;
+          }
         }
         break;
       case SETTINGS_EDIT_TYPE_STRING7:
@@ -1248,7 +1260,9 @@ const char version[] = __DATE__ " " __TIME__;
             Settings_TempDispCharArr[cursorPosition_X] = '\0';
           }
         } else if KEYBOARD_PRINTABLE_CHARACTERS {
-          Settings_TempDispCharArr[cursorPosition_X] = keyboardInputChar;
+          if (cursorPosition_X < sizeof(Settings_TypeString7[0]) - 1) {
+            Settings_TempDispCharArr[cursorPosition_X] = keyboardInputChar;
+          }
         }
         break;
       case SETTINGS_EDIT_TYPE_STRING100:
@@ -1257,7 +1271,9 @@ const char version[] = __DATE__ " " __TIME__;
             Settings_TempDispCharArr[cursorPosition_X] = '\0';
           }
         } else if KEYBOARD_PRINTABLE_CHARACTERS {
-          Settings_TempDispCharArr[cursorPosition_X] = keyboardInputChar;
+          if (cursorPosition_X < sizeof(Settings_TypeString100[0]) - 1) {
+            Settings_TempDispCharArr[cursorPosition_X] = keyboardInputChar;
+          }
           if (cursorPosition_X >= display.width() / 6 - 2) {
             indexPosition_X = (display.width() / 6 - cursorPosition_X) - 2;
           }
@@ -1456,7 +1472,6 @@ const char version[] = __DATE__ " " __TIME__;
     display.setCursor(indexPosition_X*6,UI_DISPLAY_ROW_BOTTOM-1);
     display.print(Settings_TempDispCharArr);
     cursorPosition_X = strlen(Settings_TempDispCharArr);
-
     //
     if (displayBlink) {
       display.setCursor((cursorPosition_X*6)+(indexPosition_X*6),UI_DISPLAY_ROW_BOTTOM);
@@ -3895,12 +3910,12 @@ const char version[] = __DATE__ " " __TIME__;
           i++; // i should be sitting at the ':'. go ahead and skip that.
           if (strstr(Setting, MenuItems_Settings_Display[0]) != NULL) { // "Timeout"
             while (inData[i] != '\n' && inData[i] != '\0') {
-              if (k>4) { // unsigned int would be no longer than 5 digits
-                Serial.print(InvalidData_UnsignedInt);Serial.println(inData_Value);
+              if (k>9) { // unsigned long would be no longer than 10 digits 0 to 4,294,967,295
+                Serial.print(InvalidData_UnsignedLong);Serial.println(inData_Value);
                 return;
               }
               if (!isDigit(inData[i])) {
-                Serial.print(InvalidData_UnsignedInt);Serial.println(inData[i]);
+                Serial.print(InvalidData_UnsignedLong);Serial.println(inData[i]);
                 return;
               }
               inData_Value[k] = inData[i];
