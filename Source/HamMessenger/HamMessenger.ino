@@ -166,7 +166,7 @@ const char version[] = __DATE__ " " __TIME__;
 
   #include <EEPROM.h>
 
-  const char Initialized[] = {"Initialized 2025MAY27"}; // change this to something unique if you want to re-init the EEPROM during flashing. useful when there has been a change to a settings array.
+  const char Initialized[] = {"Initialized 2025MAY27 v2"}; // change this to something unique if you want to re-init the EEPROM during flashing. useful when there has been a change to a settings array.
 
   #define EEPROM_SETTINGS_START_ADDR      1000
   #define SETTINGS_EDIT_TYPE_NONE         0
@@ -306,9 +306,9 @@ const char version[] = __DATE__ " " __TIME__;
     
     SETTINGS_APRS_BEACON_DISTANCE = 0.5000;
 
-    SETTINGS_APRS_BEACON_IDLE_TIME = 60000;
+    SETTINGS_APRS_BEACON_IDLE_TIME = 30000;
 
-    char strTemp1[] = {"HamMessenger!"};
+    char strTemp1[] = {"NOCALL>APRS,WIDE1-1,WIDE2-1:!0000.00N/00000.00W>HamMessenger Ready"};
     for (int i=0; i<sizeof(strTemp1);i++) {
       SETTINGS_APRS_RAW_PACKET[i] = strTemp1[i];
     }
@@ -329,6 +329,7 @@ const char version[] = __DATE__ " " __TIME__;
     }
 
     SETTINGS_APRS_RECIPIENT_SSID[0] = '0';
+    SETTINGS_APRS_RECIPIENT_SSID[1] = '\0';
 
     char strTemp5[] = {"NOCALL"};
     for (int i=0; i<sizeof(strTemp5);i++) {
@@ -336,6 +337,7 @@ const char version[] = __DATE__ " " __TIME__;
     }
 
     SETTINGS_APRS_CALLSIGN_SSID[0] = '0';
+    SETTINGS_APRS_CALLSIGN_SSID[1] = '\0';
 
     char strTemp6[] = {"APRS"};
     for (int i=0; i<sizeof(strTemp6);i++) {
@@ -343,6 +345,7 @@ const char version[] = __DATE__ " " __TIME__;
     }
 
     SETTINGS_APRS_DESTINATION_SSID[0]  = '0';
+    SETTINGS_APRS_DESTINATION_SSID[1] = '\0';
 
     char strTemp7[] = {"WIDE1"};
     for (int i=0; i<sizeof(strTemp7);i++) {
@@ -350,6 +353,7 @@ const char version[] = __DATE__ " " __TIME__;
     }
 
     SETTINGS_APRS_PATH1_SSID[0] = '1';
+    SETTINGS_APRS_PATH1_SSID[1] = '\0';
 
     char strTemp8[] = {"WIDE2"};
     for (int i=0; i<sizeof(strTemp8)-1;i++) {
@@ -357,10 +361,13 @@ const char version[] = __DATE__ " " __TIME__;
     }
 
     SETTINGS_APRS_PATH2_SSID[0] = '2';
+    SETTINGS_APRS_PATH2_SSID[1] = '\0';
 
     SETTINGS_APRS_SYMBOL[0] = 'n';
+    SETTINGS_APRS_SYMBOL[1] = '\0';
 
     SETTINGS_APRS_SYMBOL_TABLE[0] = 's';
+    SETTINGS_APRS_SYMBOL_TABLE[1] = '\0';
 
     SETTINGS_APRS_AUTOMATIC_ACK = true;
 
@@ -1440,9 +1447,15 @@ const char version[] = __DATE__ " " __TIME__;
         }
         break;
       case SETTINGS_EDIT_TYPE_STRING100:
-        for (int i=0; i<strlen(Settings_TypeString100[SettingsTypeIndex]);i++) {
+        short int len = strlen(Settings_TypeString100[SettingsTypeIndex]);
+        for (int i=0; i < len;i++) {
           Settings_TempDispCharArr[i] = Settings_TypeString100[SettingsTypeIndex][i];       
         }
+        if (len > display.width() / CHAR_WIDTH){
+          indexPosition_X = -(len - display.width() / CHAR_WIDTH);
+        }
+        Serial.println(len);
+        Serial.println(indexPosition_X);
         break;
       default:
         break;
@@ -1519,7 +1532,7 @@ const char version[] = __DATE__ " " __TIME__;
     //
     Settings_EditValueSize = sizeof(Settings_TempDispCharArr) - 1;
     //
-    display.setCursor(indexPosition_X * CHAR_WIDTH,UI_DISPLAY_ROW_BOTTOM - 1);
+    display.setCursor(indexPosition_X * CHAR_WIDTH, UI_DISPLAY_ROW_BOTTOM - 1);
     display.print(Settings_TempDispCharArr);
     cursorPosition_X = strlen(Settings_TempDispCharArr);
     //
