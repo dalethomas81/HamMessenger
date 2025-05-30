@@ -16,7 +16,21 @@ import base64
 from tkinter import ttk as ttk_gui  # Avoid conflict with existing ttk
 from tkintermapview import TkinterMapView
 
-#from PIL import Image, ImageTk
+import platform
+
+os_name = platform.system()
+
+'''
+if os_name == "Darwin":
+    # macOS specific code
+    print("Running on macOS")
+elif os_name == "Windows":
+    # Windows specific code
+    print("Running on Windows")
+elif os_name == "Linux":
+    # Linux specific code
+    print("Running on Linux")
+'''
 
 # Shared Queue for incoming complete messages
 from queue import Queue
@@ -62,15 +76,15 @@ default_quick_commands = ["?"
                           ,"CMD:Settings:APRS:Comment:<alphanumeric 99 char max>"
                           ,"CMD:Settings:APRS:Message:<alphanumeric 99 char max>"
                           ,"CMD:Settings:APRS:Recipient Callsign:<alphanumeric 6 char max>"
-                          ,"CMD:Settings:APRS:Recipient SSID:<alphanumeric 1 char max>"
+                          ,"CMD:Settings:APRS:Recipient SSID:<alphanumeric 2 char max>"
                           ,"CMD:Settings:APRS:My Callsign:<alphanumeric 6 char max>"
-                          ,"CMD:Settings:APRS:Callsign SSID:<alphanumeric 1 char max>"
+                          ,"CMD:Settings:APRS:Callsign SSID:<alphanumeric 2 char max>"
                           ,"CMD:Settings:APRS:Dest Callsign:<alphanumeric 6 char max>"
-                          ,"CMD:Settings:APRS:Dest SSID:<alphanumeric 1 char max>"
+                          ,"CMD:Settings:APRS:Dest SSID:<alphanumeric 2 char max>"
                           ,"CMD:Settings:APRS:PATH1 Callsign:<alphanumeric 6 char max>"
-                          ,"CMD:Settings:APRS:PATH1 SSID:<alphanumeric 1 char max>"
+                          ,"CMD:Settings:APRS:PATH1 SSID:<alphanumeric 2 char max>"
                           ,"CMD:Settings:APRS:PATH2 Callsign:<alphanumeric 6 char max>"
-                          ,"CMD:Settings:APRS:PATH2 SSID:<alphanumeric 1 char max>"
+                          ,"CMD:Settings:APRS:PATH2 SSID:<alphanumeric 2 char max>"
                           ,"CMD:Settings:APRS:Symbol:<alphanumeric 1 char max>"
                           ,"CMD:Settings:APRS:Table:<alphanumeric 1 char max>"
                           ,"CMD:Settings:APRS:Automatic ACK:<True/False>"
@@ -355,7 +369,6 @@ emoji_map = {
     # Catch-all fallback
     "default": "📍",
 }
-
 
 # ---------- Config Functions ----------
 def load_config():
@@ -784,8 +797,10 @@ status_label.grid(row=0, column=6, padx=(10, 0))
 open_log_btn = tk.Button(control_frame, text="Open Log", command=open_log_file)
 open_log_btn.grid(row=0, column=7, padx=(10, 0))
 
-theme_toggle_btn = tk.Button(control_frame, text="Theme: Dark", command=toggle_theme)
-theme_toggle_btn.grid(row=0, column=8, padx=(10, 0))
+# MacOS handles the theme so we dont do it here
+if platform.system() != "Darwin":
+    theme_toggle_btn = tk.Button(control_frame, text="Theme: Dark", command=toggle_theme)
+    theme_toggle_btn.grid(row=0, column=8, padx=(10, 0))
 
 # Quick Commands
 quick_frame = tk.Frame(root)
@@ -886,5 +901,9 @@ def show_raw_data(raw: str, marker):
 refresh_ports()
 if config.get("port"):
     port_var.set(config["port"])
-apply_theme()
+
+# MacOS handles the theme so we dont do it here
+if platform.system() != "Darwin":
+    apply_theme()
+
 root.mainloop()
