@@ -26,8 +26,8 @@
   HOME      │                                    MESSAGES                            NEW MESSAGE
 ┌───────────┴─────────────┐                    ┌─────────────────────────┐         ┌─────────────────────────┐
 │ Tx Rx GPS-10 5.2V 9999us│                    │ Tx Rx GPS-10 5.2V 9999us│         │ Tx Rx GPS-10 5.2V 9999us│
-│  [ HOME ]               │                    │  [NOCALL-0]>[NOCALL-1]  │         │  [ NEW MESSAGE ]        │
-│ >Messages               ├──────────┬─────────┤                         ├─────────┤ >Message Text           | 
+│       [ HOME ]          │                    │  [NOCALL-0]>[NOCALL-1]  │         │     [ NEW MESSAGE ]     │
+│ >Messages<              ├──────────┬─────────┤                         ├─────────┤ >Message Text<          | 
 │  Live Feed              │          │         │ Hi, Dale!               │         │  Recipient Callsign     │
 │  Settings               │          │         │ Record: 1 of 100        │         │  Recipient SSID         │
 │                         │          │         │ D: 110721   T: 9271700  │         │                         │
@@ -50,8 +50,8 @@
                                      │           SETTINGS                            APRS
                                      │         ┌─────────────────────────┐         ┌─────────────────────────┐
                                      │         │ Tx Rx GPS-10 5.2V 9999us│         │ Tx Rx GPS-10 5.2V 9999us│
-                                     │         │  [ SETTINGS ]           │         │  [ APRS ]               │
-                                     └─────────┤ >APRS                   ├────┬────┤ >Beacon Enabled         │
+                                     │         │      [ SETTINGS ]       │         │       [ APRS ]          │
+                                     └─────────┤ >APRS<                  ├────┬────┤ >Beacon Enabled<        │
                                                │  GPS                    │    │    │  Beacon Distance        │
                                                │  Display                │    │    │  Beacon Idle Time       │
                                                │                         │    │    │                         │
@@ -62,8 +62,8 @@
                                                                               │      GPS
                                                                               │    ┌─────────────────────────┐
                                                                               │    │ Tx Rx GPS-10 5.2V 9999us│
-                                                                              │    │  [ GPS ]                │
-                                                                              ├────┤ >Position Tolerance     │
+                                                                              │    │        [ GPS ]          │
+                                                                              ├────┤ >Position Tolerance<    │
                                                                               │    │  Dest Latitude          │
                                                                               │    │  Dest Longitude         │
                                                                               │    │                         │
@@ -74,8 +74,8 @@
                                                                               │      DISPLAY
                                                                               │    ┌─────────────────────────┐
                                                                               │    │ Tx Rx GPS-10 5.2V 9999us│
-                                                                              │    │  [ DISPLAY ]            │
-                                                                              └────┤ >Timeout                │
+                                                                              │    │      [ DISPLAY ]        │
+                                                                              └────┤ >Timeout<               │
                                                                                    │  Brightness             │
                                                                                    │  Show Position          │
                                                                                    │                         │

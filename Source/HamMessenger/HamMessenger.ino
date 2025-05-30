@@ -166,9 +166,13 @@ const char version[] = __DATE__ " " __TIME__;
 
   #include <EEPROM.h>
 
-  const char Initialized[] = {"Initialized 2025MAY14"}; // change this to something unique if you want to re-init the EEPROM during flashing. useful when there has been a change to a settings array.
+  const char Initialized[] = {"Initialized 2025MAY27 v2"}; // change this to something unique if you want to re-init the EEPROM during flashing. useful when there has been a change to a settings array.
 
   #define EEPROM_SETTINGS_START_ADDR      1000
+
+  // NOTE: these need to stay in contiguous order starting at 0.
+  // otherwise the getDataTypeExample will break.
+  // if changes are made here, just be sure to update that function.
   #define SETTINGS_EDIT_TYPE_NONE         0
   #define SETTINGS_EDIT_TYPE_BOOLEAN      1
   #define SETTINGS_EDIT_TYPE_INT          2
@@ -177,26 +181,29 @@ const char version[] = __DATE__ " " __TIME__;
   #define SETTINGS_EDIT_TYPE_ULONG        5
   #define SETTINGS_EDIT_TYPE_FLOAT        6
   #define SETTINGS_EDIT_TYPE_STRING2      7
-  #define SETTINGS_EDIT_TYPE_STRING7      8
-  #define SETTINGS_EDIT_TYPE_STRING100    9
-  #define SETTINGS_EDIT_TYPE_ALT1         21
-  #define SETTINGS_EDIT_TYPE_ALT2         22
-  #define SETTINGS_EDIT_TYPE_ALT3         23
+  #define SETTINGS_EDIT_TYPE_STRING3      8
+  #define SETTINGS_EDIT_TYPE_STRING7      9
+  #define SETTINGS_EDIT_TYPE_STRING100    10
+  #define SETTINGS_EDIT_TYPE_ALT1         11
                           
-  const char *MenuItems_Settings[] = {"APRS","GPS","Display"};
-  const char *MenuItems_Settings_APRS[] = {"Beacon Enabled","Beacon Distance","Beacon Idle Time","Raw Packet","Comment","Message Text","Recipient Callsign","Recipient SSID","My Callsign","My Callsign SSID", 
+  const char *MenuItems_Settings[] = {"APRS", "GPS", "Display"};
+  const char *MenuItems_Settings_APRS[] = {"Beacon Enabled", "Beacon Distance", "Beacon Idle Time", "Raw Packet", "Comment",
+                                          "Message Text", "Recipient Callsign", "Recipient SSID", "My Callsign", "My Callsign SSID", 
                                           "Dest Callsign", "Dest SSID", "PATH1 Callsign", "PATH1 SSID", "PATH2 Callsign", "PATH2 SSID",
                                           "Symbol", "Table", "Automatic ACK", "Preamble", "Tail", "Retry Count", "Retry Interval"};
   const char *MenuItems_Settings_GPS[] = {"Pos Tolerance", "Dest Latitude", "Dest Longitude"};
   const char *MenuItems_Settings_Display[] = {"Timeout", "Brightness", "Show Position", "Scroll Messages", "Scroll Speed", "Invert"};
 
-  unsigned char Settings_Type_APRS[] = {SETTINGS_EDIT_TYPE_BOOLEAN,SETTINGS_EDIT_TYPE_FLOAT,SETTINGS_EDIT_TYPE_ULONG,SETTINGS_EDIT_TYPE_STRING100,SETTINGS_EDIT_TYPE_STRING100,
-                                        SETTINGS_EDIT_TYPE_STRING100,SETTINGS_EDIT_TYPE_STRING7,SETTINGS_EDIT_TYPE_STRING2,SETTINGS_EDIT_TYPE_STRING7,SETTINGS_EDIT_TYPE_STRING2,
-                                        SETTINGS_EDIT_TYPE_STRING7,SETTINGS_EDIT_TYPE_STRING2,SETTINGS_EDIT_TYPE_STRING7,SETTINGS_EDIT_TYPE_STRING2,SETTINGS_EDIT_TYPE_STRING7,SETTINGS_EDIT_TYPE_STRING2,
-                                        SETTINGS_EDIT_TYPE_STRING2,SETTINGS_EDIT_TYPE_ALT1,SETTINGS_EDIT_TYPE_BOOLEAN,SETTINGS_EDIT_TYPE_UINT,SETTINGS_EDIT_TYPE_UINT,SETTINGS_EDIT_TYPE_UINT,SETTINGS_EDIT_TYPE_UINT};
-  unsigned char Settings_Type_GPS[] = {SETTINGS_EDIT_TYPE_FLOAT,SETTINGS_EDIT_TYPE_FLOAT,SETTINGS_EDIT_TYPE_FLOAT};
+  unsigned char Settings_Type_APRS[] = {SETTINGS_EDIT_TYPE_BOOLEAN, SETTINGS_EDIT_TYPE_FLOAT, SETTINGS_EDIT_TYPE_ULONG, SETTINGS_EDIT_TYPE_STRING100, SETTINGS_EDIT_TYPE_STRING100,
+                                        SETTINGS_EDIT_TYPE_STRING100, SETTINGS_EDIT_TYPE_STRING7, SETTINGS_EDIT_TYPE_STRING3, SETTINGS_EDIT_TYPE_STRING7, SETTINGS_EDIT_TYPE_STRING3,
+                                        SETTINGS_EDIT_TYPE_STRING7, SETTINGS_EDIT_TYPE_STRING3, SETTINGS_EDIT_TYPE_STRING7, SETTINGS_EDIT_TYPE_STRING3, SETTINGS_EDIT_TYPE_STRING7, SETTINGS_EDIT_TYPE_STRING3,
+                                        SETTINGS_EDIT_TYPE_STRING2, SETTINGS_EDIT_TYPE_ALT1, SETTINGS_EDIT_TYPE_BOOLEAN, SETTINGS_EDIT_TYPE_UINT, SETTINGS_EDIT_TYPE_UINT, SETTINGS_EDIT_TYPE_UINT, SETTINGS_EDIT_TYPE_UINT};
+  unsigned char Settings_Type_GPS[] = {SETTINGS_EDIT_TYPE_FLOAT, SETTINGS_EDIT_TYPE_FLOAT, SETTINGS_EDIT_TYPE_FLOAT};
   unsigned char Settings_Type_Display[] = {SETTINGS_EDIT_TYPE_ULONG, SETTINGS_EDIT_TYPE_UINT, SETTINGS_EDIT_TYPE_BOOLEAN, SETTINGS_EDIT_TYPE_BOOLEAN, SETTINGS_EDIT_TYPE_UINT, SETTINGS_EDIT_TYPE_BOOLEAN};
-  unsigned char Settings_TypeIndex_APRS[] = {0,0,0,0,1,2,0,0,1,1,2,2,3,3,4,4,5,6,3,1,2,4,5}; // this is the index in the array of the data arrays below
+  unsigned char Settings_TypeIndex_APRS[] = { 0,0,0,0,1,
+                                              2,0,0,1,1,
+                                              2,2,3,3,4,4,
+                                              0,1,3,1,2,4,5}; // this is the index in the array of the data arrays below
   unsigned char Settings_TypeIndex_GPS[] = {1,2,3};
   unsigned char Settings_TypeIndex_Display[] = {1,0,1,2,3,4};
   // data arrays
@@ -206,27 +213,28 @@ const char version[] = __DATE__ " " __TIME__;
   long Settings_TypeLong[0] = {};
   unsigned long Settings_TypeULong[2] = {300000, 2000}; // aprs beacon Idle Time, display timeout
   float Settings_TypeFloat[4] = {1.00000,0.00001,34.790040,-82.790672}; // aprs beacon distance, gps position tolerance, gps latitude, gps longitude
-  char Settings_TypeString2[7][2] = {'0','\0'};
+  char Settings_TypeString2[2][2] = {'n','\0'};
+  char Settings_TypeString3[6][3] = {'0','0','\0'};
   char Settings_TypeString7[5][7] = {'N','O','C','A','L','L','\0'};
   char Settings_TypeString100[3][100] = {'T','e','s','t','\0'};
   char Settings_TempDispCharArr[100];
 
-  #define SETTINGS_APRS_BEACON_ENABLED          Settings_TypeBool[Settings_TypeIndex_APRS[0]]        // beacon enabled
+  #define SETTINGS_APRS_BEACON_ENABLED          Settings_TypeBool[Settings_TypeIndex_APRS[0]]         // beacon enabled
   #define SETTINGS_APRS_BEACON_DISTANCE         Settings_TypeFloat[Settings_TypeIndex_APRS[1]]        // beacon distance
   #define SETTINGS_APRS_BEACON_IDLE_TIME        Settings_TypeULong[Settings_TypeIndex_APRS[2]]        // beacon idle time
   #define SETTINGS_APRS_RAW_PACKET              Settings_TypeString100[Settings_TypeIndex_APRS[3]]    // raw packet
   #define SETTINGS_APRS_COMMENT                 Settings_TypeString100[Settings_TypeIndex_APRS[4]]    // comment
   #define SETTINGS_APRS_MESSAGE                 Settings_TypeString100[Settings_TypeIndex_APRS[5]]    // message
   #define SETTINGS_APRS_RECIPIENT_CALL          Settings_TypeString7[Settings_TypeIndex_APRS[6]]      // recipient
-  #define SETTINGS_APRS_RECIPIENT_SSID          Settings_TypeString2[Settings_TypeIndex_APRS[7]]      // recipient ssid
+  #define SETTINGS_APRS_RECIPIENT_SSID          Settings_TypeString3[Settings_TypeIndex_APRS[7]]      // recipient ssid
   #define SETTINGS_APRS_CALLSIGN                Settings_TypeString7[Settings_TypeIndex_APRS[8]]      // callsign
-  #define SETTINGS_APRS_CALLSIGN_SSID           Settings_TypeString2[Settings_TypeIndex_APRS[9]]      // callsign ssid
-  #define SETTINGS_APRS_DESTINATION_CALL        Settings_TypeString7[Settings_TypeIndex_APRS[10]]      // Destination Callsign
-  #define SETTINGS_APRS_DESTINATION_SSID        Settings_TypeString2[Settings_TypeIndex_APRS[11]]      // Destination SSID
+  #define SETTINGS_APRS_CALLSIGN_SSID           Settings_TypeString3[Settings_TypeIndex_APRS[9]]      // callsign ssid
+  #define SETTINGS_APRS_DESTINATION_CALL        Settings_TypeString7[Settings_TypeIndex_APRS[10]]     // Destination Callsign
+  #define SETTINGS_APRS_DESTINATION_SSID        Settings_TypeString3[Settings_TypeIndex_APRS[11]]     // Destination SSID
   #define SETTINGS_APRS_PATH1_CALL              Settings_TypeString7[Settings_TypeIndex_APRS[12]]     // PATH1 Callsign
-  #define SETTINGS_APRS_PATH1_SSID              Settings_TypeString2[Settings_TypeIndex_APRS[13]]     // PATH1 SSID
+  #define SETTINGS_APRS_PATH1_SSID              Settings_TypeString3[Settings_TypeIndex_APRS[13]]     // PATH1 SSID
   #define SETTINGS_APRS_PATH2_CALL              Settings_TypeString7[Settings_TypeIndex_APRS[14]]     // PATH2 Callsign
-  #define SETTINGS_APRS_PATH2_SSID              Settings_TypeString2[Settings_TypeIndex_APRS[15]]     // PATH2 SSID
+  #define SETTINGS_APRS_PATH2_SSID              Settings_TypeString3[Settings_TypeIndex_APRS[15]]     // PATH2 SSID
   #define SETTINGS_APRS_SYMBOL                  Settings_TypeString2[Settings_TypeIndex_APRS[16]]     // Symbol
   #define SETTINGS_APRS_SYMBOL_TABLE            Settings_TypeString2[Settings_TypeIndex_APRS[17]]     // Symbol Table
   #define SETTINGS_APRS_AUTOMATIC_ACK           Settings_TypeBool[Settings_TypeIndex_APRS[18]]        // Automatic ACK
@@ -235,16 +243,16 @@ const char version[] = __DATE__ " " __TIME__;
   #define SETTINGS_APRS_RETRY_COUNT             Settings_TypeUInt[Settings_TypeIndex_APRS[21]]        // Retry Count
   #define SETTINGS_APRS_RETRY_INTERVAL          Settings_TypeUInt[Settings_TypeIndex_APRS[22]]        // Retry Interval
 
-  #define SETTINGS_GPS_POSITION_TOLERANCE       Settings_TypeFloat[Settings_TypeIndex_GPS[0]]       // position tolerance
-  #define SETTINGS_GPS_DESTINATION_LATITUDE     Settings_TypeFloat[Settings_TypeIndex_GPS[1]]       // destination latitude
-  #define SETTINGS_GPS_DESTINATION_LONGITUDE    Settings_TypeFloat[Settings_TypeIndex_GPS[2]]       // destination longitute
+  #define SETTINGS_GPS_POSITION_TOLERANCE       Settings_TypeFloat[Settings_TypeIndex_GPS[0]]         // position tolerance
+  #define SETTINGS_GPS_DESTINATION_LATITUDE     Settings_TypeFloat[Settings_TypeIndex_GPS[1]]         // destination latitude
+  #define SETTINGS_GPS_DESTINATION_LONGITUDE    Settings_TypeFloat[Settings_TypeIndex_GPS[2]]         // destination longitute
 
-  #define SETTINGS_DISPLAY_TIMEOUT              Settings_TypeULong[Settings_TypeIndex_Display[0]]        // timeout
-  #define SETTINGS_DISPLAY_BRIGHTNESS           Settings_TypeUInt[Settings_TypeIndex_Display[1]]         // brightness
-  #define SETTINGS_DISPLAY_SHOW_POSITION        Settings_TypeBool[Settings_TypeIndex_Display[2]]         // show position
-  #define SETTINGS_DISPLAY_SCROLL_MESSAGES      Settings_TypeBool[Settings_TypeIndex_Display[3]]         // scroll messages
-  #define SETTINGS_DISPLAY_SCROLL_SPEED         Settings_TypeUInt[Settings_TypeIndex_Display[4]]         // scroll speed
-  #define SETTINGS_DISPLAY_INVERT               Settings_TypeBool[Settings_TypeIndex_Display[5]]         // invert
+  #define SETTINGS_DISPLAY_TIMEOUT              Settings_TypeULong[Settings_TypeIndex_Display[0]]      // timeout
+  #define SETTINGS_DISPLAY_BRIGHTNESS           Settings_TypeUInt[Settings_TypeIndex_Display[1]]       // brightness
+  #define SETTINGS_DISPLAY_SHOW_POSITION        Settings_TypeBool[Settings_TypeIndex_Display[2]]       // show position
+  #define SETTINGS_DISPLAY_SCROLL_MESSAGES      Settings_TypeBool[Settings_TypeIndex_Display[3]]       // scroll messages
+  #define SETTINGS_DISPLAY_SCROLL_SPEED         Settings_TypeUInt[Settings_TypeIndex_Display[4]]       // scroll speed
+  #define SETTINGS_DISPLAY_INVERT               Settings_TypeBool[Settings_TypeIndex_Display[5]]       // invert
 
   bool applySettings=false, saveModemSettings=false;
   unsigned char applySettings_Seq=0;
@@ -263,7 +271,7 @@ const char version[] = __DATE__ " " __TIME__;
   #endif
 
   void checkInit(){
-    Serial.println(F("Checking initialization..."));
+    Serial.println(F("Checking initialization...")); // `F()` stores the string in flash memory and avoids heaps
     bool writeDefaults = false;
     for (byte i=0;i<sizeof(Initialized)-1;i++){
       if (Initialized[i] != EEPROM.read(i)) {
@@ -300,61 +308,68 @@ const char version[] = __DATE__ " " __TIME__;
     
     SETTINGS_APRS_BEACON_DISTANCE = 0.5000;
 
-    SETTINGS_APRS_BEACON_IDLE_TIME = 60000;
+    SETTINGS_APRS_BEACON_IDLE_TIME = 30000;
 
-    char strTemp1[] = {"HamMessenger!"};
+    const char* strTemp1 = "NOCALL>APRS,WIDE1-1,WIDE2-1:!0000.00N/00000.00W>HamMessenger Ready";
     for (int i=0; i<sizeof(strTemp1);i++) {
       SETTINGS_APRS_RAW_PACKET[i] = strTemp1[i];
     }
 
-    char strTemp2[] = {"https://github.com/dalethomas81/HamMessenger"};
+    const char* strTemp2 = "https://github.com/dalethomas81/HamMessenger";
     for (int i=0; i<sizeof(strTemp2);i++) {
       SETTINGS_APRS_COMMENT[i] = strTemp2[i];
     }
 
-    char strTemp3[] = {"Hi!"};
+    const char* strTemp3 = "Hi!";
     for (int i=0; i<sizeof(strTemp3);i++) {
       SETTINGS_APRS_MESSAGE[i] = strTemp3[i];
     }
 
-    char strTemp4[] = {"NOCALL"};
+    const char* strTemp4 = "NOCALL";
     for (int i=0; i<sizeof(strTemp4);i++) {
       SETTINGS_APRS_RECIPIENT_CALL[i] = strTemp4[i];
     }
 
     SETTINGS_APRS_RECIPIENT_SSID[0] = '0';
+    SETTINGS_APRS_RECIPIENT_SSID[1] = '\0';
 
-    char strTemp5[] = {"NOCALL"};
+    const char* strTemp5 = "NOCALL";
     for (int i=0; i<sizeof(strTemp5);i++) {
       SETTINGS_APRS_CALLSIGN[i] = strTemp5[i];
     }
 
     SETTINGS_APRS_CALLSIGN_SSID[0] = '0';
+    SETTINGS_APRS_CALLSIGN_SSID[1] = '\0';
 
-    char strTemp6[] = {"APRS"};
+    const char* strTemp6 = "APRS";
     for (int i=0; i<sizeof(strTemp6);i++) {
       SETTINGS_APRS_DESTINATION_CALL[i] = strTemp6[i];
     }
 
     SETTINGS_APRS_DESTINATION_SSID[0]  = '0';
+    SETTINGS_APRS_DESTINATION_SSID[1] = '\0';
 
-    char strTemp7[] = {"WIDE1"};
+    const char* strTemp7 = "WIDE1";
     for (int i=0; i<sizeof(strTemp7);i++) {
       SETTINGS_APRS_PATH1_CALL[i] = strTemp7[i];
     }
 
     SETTINGS_APRS_PATH1_SSID[0] = '1';
+    SETTINGS_APRS_PATH1_SSID[1] = '\0';
 
-    char strTemp8[] = {"WIDE2"};
+    const char* strTemp8 = "WIDE2";
     for (int i=0; i<sizeof(strTemp8)-1;i++) {
       SETTINGS_APRS_PATH2_CALL[i] = strTemp8[i];
     }
 
     SETTINGS_APRS_PATH2_SSID[0] = '2';
+    SETTINGS_APRS_PATH2_SSID[1] = '\0';
 
     SETTINGS_APRS_SYMBOL[0] = 'n';
+    SETTINGS_APRS_SYMBOL[1] = '\0';
 
     SETTINGS_APRS_SYMBOL_TABLE[0] = 's';
+    SETTINGS_APRS_SYMBOL_TABLE[1] = '\0';
 
     SETTINGS_APRS_AUTOMATIC_ACK = true;
 
@@ -435,6 +450,13 @@ const char version[] = __DATE__ " " __TIME__;
         address = address + sizeof(Settings_TypeString2[i][j]);
       }
     }
+    for (int i=0;i<ARRAY_SIZE(Settings_TypeString3);i++){
+      //Serial.print(F("Settings_TypeString3:"));Serial.println(address);
+      for (int j=0;j<sizeof(Settings_TypeString3[i]);j++){
+        EEPROM.put(address, Settings_TypeString3[i][j]);
+        address = address + sizeof(Settings_TypeString3[i][j]);
+      }
+    }
     for (int i=0;i<ARRAY_SIZE(Settings_TypeString7);i++){
       //Serial.print(F("Settings_TypeString7:"));Serial.println(address);
       for (int j=0;j<sizeof(Settings_TypeString7[i]);j++){
@@ -494,6 +516,13 @@ const char version[] = __DATE__ " " __TIME__;
       for (int j=0;j<sizeof(Settings_TypeString2[i]);j++){
         EEPROM.get(address, Settings_TypeString2[i][j]);
         address = address + sizeof(Settings_TypeString2[i][j]);
+      }
+    }
+    for (int i=0;i<ARRAY_SIZE(Settings_TypeString3);i++){
+      //Serial.print(F("Settings_TypeString3:"));Serial.println(address);
+      for (int j=0;j<sizeof(Settings_TypeString3[i]);j++){
+        EEPROM.get(address, Settings_TypeString3[i][j]);
+        address = address + sizeof(Settings_TypeString3[i][j]);
       }
     }
     for (int i=0;i<ARRAY_SIZE(Settings_TypeString7);i++){
@@ -965,6 +994,12 @@ const char version[] = __DATE__ " " __TIME__;
   #include <Adafruit_GFX.h>
   #include <Adafruit_SH1106.h>
 
+  #define CHAR_WIDTH                            6 // number of pixels that one character takes up on the screen
+                                                  // TODO make this dynamic by getting from the display library
+
+  #define CURSOR_MARGIN                         6 // number of pixels to have as a margin on the left of the display
+  #define CHAR_GAP                              2 // number of pixels to have as a gap between chars
+
   #define DISPLAY_REFRESH_RATE                  100 // 33 is ~30fps | 100 is ~ 10fps
   #define DISPLAY_REFRESH_RATE_SCROLL           80  // during testing, i found that anything less than 60 causes performance issues
   #define DISPLAY_BLINK_RATE                    500
@@ -991,6 +1026,7 @@ const char version[] = __DATE__ " " __TIME__;
   unsigned char currentDisplay = UI_DISPLAY_HOME;
   unsigned char currentDisplayLast = currentDisplay;
   unsigned char previousDisplay = UI_DISPLAY_HOME;
+  short int indexPosition_X = 0, indexPosition_X_Last = 0;
   uint32_t cursorPosition_X = 0, cursorPosition_X_Last = 0;
   uint32_t cursorPosition_Y = 0, cursorPosition_Y_Last = 0;
   short int ScrollingIndex_LiveFeed, ScrollingIndex_LiveFeed_minX;
@@ -1057,7 +1093,7 @@ const char version[] = __DATE__ " " __TIME__;
     display.print(text);
 
     // Width of text in pixels (6 px per char with default font)
-    int textWidth = text.length() * 6;
+    int textWidth = text.length() * CHAR_WIDTH;
     int textHeight = 8; // For default font height
 
     // Overlay a simulated dimming mask
@@ -1075,6 +1111,17 @@ const char version[] = __DATE__ " " __TIME__;
         }
       }
     }
+  }
+
+  const char* screenNameOn;
+  const char* screenNameOff;
+  uint8_t headerXPos = 0;
+  uint8_t getHeaderXPos(int16_t numHeaderChars){
+      /*int16_t numberOfCharsThatCanFitOnScreen = (display.width() / CHAR_WIDTH);
+      int16_t middleOfScreen = numberOfCharsThatCanFitOnScreen / 2;
+      int16_t halfOfHeaderWidth = numHeaderChars / 2;
+      return (middleOfScreen - halfOfHeaderWidth) * CHAR_WIDTH;*/
+      return (((display.width() / CHAR_WIDTH) / 2) - (numHeaderChars / 2)) * CHAR_WIDTH;
   }
 
   // x bitmap
@@ -1098,7 +1145,7 @@ const char version[] = __DATE__ " " __TIME__;
     display.print("GPS-");
 
     //
-    int textWidth = 6 * 4;    // 6px per char, 4 letters: G P S |
+    int textWidth = CHAR_WIDTH * 4;    // 6px per char, 4 letters: G P S |
     if (!gpsConnected) {
       // Strikethrough the word "GPS"
       int _x = x;                // Cursor X where "G" starts
@@ -1114,25 +1161,44 @@ const char version[] = __DATE__ " " __TIME__;
   // while in edit mode, this method is used to edit a temporary character array that will later be
   // copied into memory. this makes it easier to manage editing a setting from the oled and keyboard.
   void handleDisplay_TempVarDisplay(int SettingsEditType){
-    bool characterDelete = false;
     if (keyboardInputChar == KEYBOARD_LEFT_KEY) {
+      // move the displayed value to the left
+      if(indexPosition_X < 0){
+        indexPosition_X++;
+      }
+      // move the cursor left as the x position is changed
       if (cursorPosition_X > 0) { 
         cursorPosition_X--;
-      } else {
-        cursorPosition_X=Settings_EditValueSize;
-      }
-    }
-    if (keyboardInputChar == KEYBOARD_RIGHT_KEY) {
-      if (cursorPosition_X < Settings_EditValueSize) { 
-        cursorPosition_X++;
       } else {
         cursorPosition_X=0;
       }
     }
+    if (keyboardInputChar == KEYBOARD_RIGHT_KEY) {
+      // move the displayed value to the right
+      short int len = strlen(Settings_TempDispCharArr) * -1;
+      if(indexPosition_X > len + 4){
+        indexPosition_X--;
+      }
+      // move the cursor right as the x position is changed
+      if (cursorPosition_X < Settings_EditValueSize) { 
+        cursorPosition_X++;
+      } else {
+        cursorPosition_X=Settings_EditValueSize;
+      }
+    }
+    bool characterDelete = false;
     if (keyboardInputChar == KEYBOARD_BACKSPACE_KEY){
       if (cursorPosition_X > 0) { 
         cursorPosition_X--;
         characterDelete = true;
+      }
+      // the beginning of the value is out of the window so lets start moving it back in
+      // in the below graphic, the bar represents the edge of the screen
+      // the dots are char positions
+      // .....|     indexPosition_X = -5
+      // .....|.... cursorPosition_X = 9
+      if (indexPosition_X < 0 && cursorPosition_X - 4 <= abs(indexPosition_X)) {
+        indexPosition_X++;
       }
     }
     switch (SettingsEditType) {
@@ -1161,7 +1227,9 @@ const char version[] = __DATE__ " " __TIME__;
               Settings_TempDispCharArr[cursorPosition_X] = '\0';
             }
           } else if (KEYBOARD_NUMBER_KEYS) {
-            Settings_TempDispCharArr[cursorPosition_X] = keyboardInputChar;
+            if (cursorPosition_X < 5) { // int can be 5 digits -32,768 to 32,767
+              Settings_TempDispCharArr[cursorPosition_X] = keyboardInputChar;
+            }
           } else if (keyboardInputChar == KEYBOARD_MINUS_KEY) {
             int tempInt = strtoul(Settings_TempDispCharArr,NULL,10);
             tempInt = -tempInt;
@@ -1174,7 +1242,9 @@ const char version[] = __DATE__ " " __TIME__;
               Settings_TempDispCharArr[cursorPosition_X] = '\0';
             }
           } else if (KEYBOARD_NUMBER_KEYS) {
-            Settings_TempDispCharArr[cursorPosition_X] = keyboardInputChar;
+            if (cursorPosition_X < 5) { // uint can be 5 digits 0 to 65,535
+              Settings_TempDispCharArr[cursorPosition_X] = keyboardInputChar;
+            }
           }
         break;
       case SETTINGS_EDIT_TYPE_LONG:
@@ -1184,7 +1254,9 @@ const char version[] = __DATE__ " " __TIME__;
               Settings_TempDispCharArr[cursorPosition_X] = '\0';
             }
           } else if (KEYBOARD_NUMBER_KEYS) {
-            Settings_TempDispCharArr[cursorPosition_X] = keyboardInputChar;
+            if (cursorPosition_X < 10) { // long can be 10 digits -2,147,483,648 to 2,147,483,647
+              Settings_TempDispCharArr[cursorPosition_X] = keyboardInputChar;
+            }
           } else if (keyboardInputChar == KEYBOARD_MINUS_KEY) {
             int tempInt = strtoul(Settings_TempDispCharArr,NULL,10);
             tempInt = -tempInt;
@@ -1197,7 +1269,9 @@ const char version[] = __DATE__ " " __TIME__;
               Settings_TempDispCharArr[cursorPosition_X] = '\0';
             }
           } else if (KEYBOARD_NUMBER_KEYS) {
-            Settings_TempDispCharArr[cursorPosition_X] = keyboardInputChar;
+            if (cursorPosition_X < 10) { // ulong can be 10 digits 0 to 4,294,967,295
+              Settings_TempDispCharArr[cursorPosition_X] = keyboardInputChar;
+            }
           }
         break;
       case SETTINGS_EDIT_TYPE_FLOAT:
@@ -1206,7 +1280,9 @@ const char version[] = __DATE__ " " __TIME__;
               Settings_TempDispCharArr[cursorPosition_X] = '\0';
             }
           } else if (KEYBOARD_NUMBER_KEYS || keyboardInputChar == KEYBOARD_PERIOD_KEY) {
-            Settings_TempDispCharArr[cursorPosition_X] = keyboardInputChar;
+            if (cursorPosition_X < 40) { // float can be 40 characters
+              Settings_TempDispCharArr[cursorPosition_X] = keyboardInputChar;
+            }
           } else if (keyboardInputChar == KEYBOARD_MINUS_KEY) {
             double tempDouble = strtod(Settings_TempDispCharArr,NULL);
             tempDouble = -tempDouble;
@@ -1219,7 +1295,20 @@ const char version[] = __DATE__ " " __TIME__;
             Settings_TempDispCharArr[cursorPosition_X] = '\0';
           }
         } else if KEYBOARD_PRINTABLE_CHARACTERS {
-          Settings_TempDispCharArr[cursorPosition_X] = keyboardInputChar;
+          if (cursorPosition_X < sizeof(Settings_TypeString2[0]) - 1) {
+            Settings_TempDispCharArr[cursorPosition_X] = keyboardInputChar;
+          }
+        }
+        break;
+      case SETTINGS_EDIT_TYPE_STRING3:
+        if (characterDelete) {
+          if (cursorPosition_X >= 0) {
+            Settings_TempDispCharArr[cursorPosition_X] = '\0';
+          }
+        } else if KEYBOARD_PRINTABLE_CHARACTERS {
+          if (cursorPosition_X < sizeof(Settings_TypeString3[0]) - 1) {
+            Settings_TempDispCharArr[cursorPosition_X] = keyboardInputChar;
+          }
         }
         break;
       case SETTINGS_EDIT_TYPE_STRING7:
@@ -1228,7 +1317,9 @@ const char version[] = __DATE__ " " __TIME__;
             Settings_TempDispCharArr[cursorPosition_X] = '\0';
           }
         } else if KEYBOARD_PRINTABLE_CHARACTERS {
-          Settings_TempDispCharArr[cursorPosition_X] = keyboardInputChar;
+          if (cursorPosition_X < sizeof(Settings_TypeString7[0]) - 1) {
+            Settings_TempDispCharArr[cursorPosition_X] = keyboardInputChar;
+          }
         }
         break;
       case SETTINGS_EDIT_TYPE_STRING100:
@@ -1237,7 +1328,14 @@ const char version[] = __DATE__ " " __TIME__;
             Settings_TempDispCharArr[cursorPosition_X] = '\0';
           }
         } else if KEYBOARD_PRINTABLE_CHARACTERS {
-          Settings_TempDispCharArr[cursorPosition_X] = keyboardInputChar;
+          if (cursorPosition_X < sizeof(Settings_TypeString100[0]) - 1) {
+            Settings_TempDispCharArr[cursorPosition_X] = keyboardInputChar;
+          }
+          // the end of the string is out further than the edge of the screen.
+          // move the index position to the left (negative) so that we can see the end of the string.
+          if (cursorPosition_X >= display.width() / CHAR_WIDTH - 2) {
+            indexPosition_X = (display.width() / CHAR_WIDTH - cursorPosition_X) - 2;
+          }
         }
         break;
       default:
@@ -1289,6 +1387,11 @@ const char version[] = __DATE__ " " __TIME__;
           Settings_TypeString2[SettingsTypeIndex][i] = Settings_TempDispCharArr[i];       
         }
         break;
+      case SETTINGS_EDIT_TYPE_STRING3:
+        for (int i=0; i<sizeof(Settings_TypeString3[SettingsTypeIndex]);i++) {
+          Settings_TypeString3[SettingsTypeIndex][i] = Settings_TempDispCharArr[i];       
+        }
+        break;
       case SETTINGS_EDIT_TYPE_STRING7:
         for (int i=0; i<sizeof(Settings_TypeString7[SettingsTypeIndex]);i++) {
           Settings_TypeString7[SettingsTypeIndex][i] = Settings_TempDispCharArr[i];       
@@ -1332,8 +1435,7 @@ const char version[] = __DATE__ " " __TIME__;
         itoa(Settings_TypeInt[SettingsTypeIndex],Settings_TempDispCharArr,10);
         break;
       case SETTINGS_EDIT_TYPE_UINT:
-        // TODO find a way to do this with an unsigned integer (dont use itoa)
-        itoa(Settings_TypeUInt[SettingsTypeIndex],Settings_TempDispCharArr,10);
+        ultoa(Settings_TypeUInt[SettingsTypeIndex],Settings_TempDispCharArr,10);
         break;
       case SETTINGS_EDIT_TYPE_LONG:
         ltoa(Settings_TypeLong[SettingsTypeIndex],Settings_TempDispCharArr,10);
@@ -1349,14 +1451,24 @@ const char version[] = __DATE__ " " __TIME__;
           Settings_TempDispCharArr[i] = Settings_TypeString2[SettingsTypeIndex][i];       
         }
         break;
+      case SETTINGS_EDIT_TYPE_STRING3:
+        for (int i=0; i<strlen(Settings_TypeString3[SettingsTypeIndex]);i++) {
+          Settings_TempDispCharArr[i] = Settings_TypeString3[SettingsTypeIndex][i];       
+        }
+        break;
       case SETTINGS_EDIT_TYPE_STRING7:
         for (int i=0; i<strlen(Settings_TypeString7[SettingsTypeIndex]);i++) {
           Settings_TempDispCharArr[i] = Settings_TypeString7[SettingsTypeIndex][i];       
         }
         break;
       case SETTINGS_EDIT_TYPE_STRING100:
-        for (int i=0; i<strlen(Settings_TypeString100[SettingsTypeIndex]);i++) {
+        short int len = strlen(Settings_TypeString100[SettingsTypeIndex]);
+        for (int i=0; i < len;i++) {
           Settings_TempDispCharArr[i] = Settings_TypeString100[SettingsTypeIndex][i];       
+        }
+        // the string extends out past the edge of the screen so we set the index position more negative so we can see it.
+        if (len > display.width() / CHAR_WIDTH){
+          indexPosition_X = -(len - display.width() / CHAR_WIDTH);
         }
         break;
       default:
@@ -1367,6 +1479,9 @@ const char version[] = __DATE__ " " __TIME__;
   // this method is used to print the current value of a setting onto the display for reference
   // while scrolling through the settings menu.
   void handleDisplay_PrintValStoredInMem(int SettingsType, int SettingsTypeIndex){
+    //
+    display.setCursor(cursorPosition_X * CHAR_WIDTH,UI_DISPLAY_ROW_BOTTOM);
+    //
     switch (SettingsType) {
       case SETTINGS_EDIT_TYPE_ALT1:
         Settings_EditValueSize = 0;
@@ -1408,6 +1523,10 @@ const char version[] = __DATE__ " " __TIME__;
         Settings_EditValueSize = sizeof(Settings_TypeString2[SettingsTypeIndex]) - 1;
         display.print(Settings_TypeString2[SettingsTypeIndex]);
         break;
+      case SETTINGS_EDIT_TYPE_STRING3:
+        Settings_EditValueSize = sizeof(Settings_TypeString3[SettingsTypeIndex]) - 1;
+        display.print(Settings_TypeString3[SettingsTypeIndex]);
+        break;
       case SETTINGS_EDIT_TYPE_STRING7:
         Settings_EditValueSize = sizeof(Settings_TypeString7[SettingsTypeIndex]) - 1;
         display.print(Settings_TypeString7[SettingsTypeIndex]);
@@ -1424,10 +1543,17 @@ const char version[] = __DATE__ " " __TIME__;
   // while in edit mode, this method is used to temporarily display and edit a setting on the oled using a keyboard.
   // the setting displayed is a character array to make it easier to work with while editing.
   void handleDisplay_PrintTempVal(){
+    //
     Settings_EditValueSize = sizeof(Settings_TempDispCharArr) - 1;
-    display.setCursor(0,UI_DISPLAY_ROW_BOTTOM-1);
+    //
+    display.setCursor(indexPosition_X * CHAR_WIDTH, UI_DISPLAY_ROW_BOTTOM - 1);
     display.print(Settings_TempDispCharArr);
     cursorPosition_X = strlen(Settings_TempDispCharArr);
+    //
+    if (displayBlink) {
+      display.setCursor((cursorPosition_X * CHAR_WIDTH) + (indexPosition_X * CHAR_WIDTH), UI_DISPLAY_ROW_BOTTOM);
+      display.print('_');
+    }
   }
 
   // this method is used to determine the currently selected row based on the cursor position.
@@ -1596,6 +1722,9 @@ const char version[] = __DATE__ " " __TIME__;
       cursorPosition_Y = 0;
       cursorPosition_X_Last = 0;
       cursorPosition_Y_Last = 0;
+      screenNameOn = "[ DEBUG ]";
+      screenNameOff = "[       ]";
+      headerXPos = getHeaderXPos(strlen(screenNameOn));
     }
     // handle button context for current display
     if (keyboardInputChar == KEYBOARD_UP_KEY){
@@ -1635,37 +1764,37 @@ const char version[] = __DATE__ " " __TIME__;
       //display.print(F(">"));
 
       // handle header
-      display.setCursor(6,UI_DISPLAY_ROW_01);
-      display.print(F("[       ]"));
+      display.setCursor(headerXPos, UI_DISPLAY_ROW_01);
+      display.print(screenNameOff);
       if(displayBlink || !displayInitialized){
-        display.setCursor(6,UI_DISPLAY_ROW_01);
-        display.print(F("[ DEBUG ]"));
+        display.setCursor(headerXPos, UI_DISPLAY_ROW_01);
+        display.print(screenNameOn);
       }
       
       // handle body
-      display.setCursor(6,UI_DISPLAY_ROW_02);
+      display.setCursor(CURSOR_MARGIN + CHAR_GAP, UI_DISPLAY_ROW_02);
       display.print(F("Idle:"));
       display.setCursor(36,UI_DISPLAY_ROW_02); // 6 pixels + 6 pixels * 5 chars = 36
       display.print(currentIdleTime);
 
-      display.setCursor(6,UI_DISPLAY_ROW_03);
+      display.setCursor(CURSOR_MARGIN + CHAR_GAP, UI_DISPLAY_ROW_03);
       display.print(F("Dist:"));
       display.setCursor(36,UI_DISPLAY_ROW_03); // 6 pixels + 6 pixels * 5 chars = 36
       display.print(smartBeaconDistance);
 
-      display.setCursor(6,UI_DISPLAY_ROW_04);
+      display.setCursor(CURSOR_MARGIN + CHAR_GAP, UI_DISPLAY_ROW_04);
       display.print(F("Loc:"));
       display.setCursor(30,UI_DISPLAY_ROW_04); // 6 pixels + 6 pixels * 4 chars = 30
       display.print((gpsLocationHasChanged ? "True" : "False"));
 
-      display.setCursor(6,UI_DISPLAY_ROW_05);
+      display.setCursor(CURSOR_MARGIN + CHAR_GAP, UI_DISPLAY_ROW_05);
       display.print(F("Spd:"));
       display.setCursor(30,UI_DISPLAY_ROW_05); // 6 pixels + 6 pixels * 4 chars = 30
       display.print(gps.speed.mph());
 
-      display.setCursor(66,UI_DISPLAY_ROW_05); // 30 pixels + 6 pixels * 6 chars = 66
+      display.setCursor(66, UI_DISPLAY_ROW_05); // 30 pixels + 6 pixels * 6 chars = 66
       display.print(F("hdop:"));
-      display.setCursor(96,UI_DISPLAY_ROW_05); // 66 pixels + 6 pixels * 5 chars = 96
+      display.setCursor(96, UI_DISPLAY_ROW_05); // 66 pixels + 6 pixels * 5 chars = 96
       display.print(gps.hdop.value());
 
       
@@ -1724,7 +1853,7 @@ const char version[] = __DATE__ " " __TIME__;
       display.setCursor(x_lat,UI_DISPLAY_ROW_BOTTOM);
       display.print(currentLat); // DDMM.mmN
 
-      int x_lng = x_lat + (8 * 6) + 5; // 8 letters times 6 pixels wide plus a gap of 3 (0000.00N)
+      int x_lng = x_lat + (8 * CHAR_WIDTH) + 5; // 8 letters times 6 pixels wide plus a gap of 5 (0000.00N)
       display.setCursor(x_lng, UI_DISPLAY_ROW_BOTTOM);
       display.print(currentLng); // DDDMM.mmW
     }
@@ -1740,6 +1869,9 @@ const char version[] = __DATE__ " " __TIME__;
       cursorPosition_Y = 0;
       cursorPosition_X_Last = 0;
       cursorPosition_Y_Last = 0;
+      screenNameOn = "[ HOME ]";
+      screenNameOff = "[      ]";
+      headerXPos = getHeaderXPos(strlen(screenNameOn));
     }
     // handle button context for current display
     if (keyboardInputChar == KEYBOARD_UP_KEY){
@@ -1795,20 +1927,30 @@ const char version[] = __DATE__ " " __TIME__;
       display.print(F(">"));
 
       // handle header
-      display.setCursor(6,UI_DISPLAY_ROW_01);
-      display.print(F("[      ]"));
+      display.setCursor(headerXPos, UI_DISPLAY_ROW_01);
+      display.print(screenNameOff);
       if(displayBlink || !displayInitialized){
-        display.setCursor(6,UI_DISPLAY_ROW_01);
-        display.print(F("[ MAIN ]"));
+        display.setCursor(headerXPos, UI_DISPLAY_ROW_01);
+        display.print(screenNameOn);
       }
       
       // handle body
-      display.setCursor(6,UI_DISPLAY_ROW_02);
-      display.print(F("Messages"));
-      display.setCursor(6,UI_DISPLAY_ROW_03);
-      display.print(F("Live Feed"));
-      display.setCursor(6,UI_DISPLAY_ROW_04);
-      display.print(F("Settings"));
+      size_t charsPrinted, closeCursorPosition;
+      display.setCursor(CURSOR_MARGIN + CHAR_GAP, UI_DISPLAY_ROW_02);
+      charsPrinted = display.print(F("Messages"));
+      if (selectionRow == UI_DISPLAY_ROW_02) closeCursorPosition = charsPrinted;
+
+      display.setCursor(CURSOR_MARGIN + CHAR_GAP, UI_DISPLAY_ROW_03);
+      charsPrinted = display.print(F("Live Feed"));
+      if (selectionRow == UI_DISPLAY_ROW_03) closeCursorPosition = charsPrinted;
+
+      display.setCursor(CURSOR_MARGIN + CHAR_GAP, UI_DISPLAY_ROW_04);
+      charsPrinted = display.print(F("Settings"));
+      if (selectionRow == UI_DISPLAY_ROW_04) closeCursorPosition = charsPrinted;
+
+      // display closing cursor
+      display.setCursor(CURSOR_MARGIN + CHAR_GAP + closeCursorPosition * CHAR_WIDTH + (CHAR_GAP - 1), selectionRow);
+      display.print(F("<"));
       
       // display all content from buffer
       display.display();
@@ -1888,7 +2030,7 @@ const char version[] = __DATE__ " " __TIME__;
         
         //
         int dataLen = strlen(MsgData.msg);
-        ScrollingIndex_MessageFeed_minX = -10 * dataLen; // 10 = 5 pixels/character * text size 2
+        ScrollingIndex_MessageFeed_minX = -CHAR_WIDTH * 2 * dataLen; // 12 = 6 pixels/character * text size 2
         if (!SETTINGS_DISPLAY_SCROLL_MESSAGES) {
           ScrollingIndex_MessageFeed = 0;
         } else {
@@ -1932,16 +2074,16 @@ const char version[] = __DATE__ " " __TIME__;
         display.setTextSize(2);
         display.print(MsgData.msg); 
         // go back to original text size
-        display.setTextSize(1); // Normal 1:1 pixel scale - default letter size is 5x8 pixels
+        display.setTextSize(1); // Normal 1:1 pixel scale - default letter size is 6x8 pixels
         // display the cursor position (represents record number in this case)
-        display.setCursor(0,UI_DISPLAY_ROW_04); display.print("Record: ");
+        display.setCursor(0,UI_DISPLAY_ROW_04); display.print(F("Record: "));
         display.setCursor(45,UI_DISPLAY_ROW_04); display.print(cursorPosition_Y+1);
-        display.setCursor(45 + numberOfDigits<uint32_t>(cursorPosition_Y+1) * 5,UI_DISPLAY_ROW_04); display.print(" of ");
+        display.setCursor(45 + numberOfDigits<uint32_t>(cursorPosition_Y+1) * 5,UI_DISPLAY_ROW_04); display.print(F(" of "));
         display.setCursor(65 + numberOfDigits<uint32_t>(cursorPosition_Y+1) * 5,UI_DISPLAY_ROW_04); display.print(MsgDataRecordCount);
         // display the date and time
-        display.setCursor(0,UI_DISPLAY_ROW_05); display.print("D:");
+        display.setCursor(0,UI_DISPLAY_ROW_05); display.print(F("D:"));
         display.setCursor(15,UI_DISPLAY_ROW_05); display.print(MsgData.DateInt);
-        display.setCursor(60,UI_DISPLAY_ROW_05); display.print("T:");
+        display.setCursor(60,UI_DISPLAY_ROW_05); display.print(F("T:"));
         display.setCursor(75,UI_DISPLAY_ROW_05); display.print(MsgData.TimeInt);
         unsigned int scrollPixelCount = (SETTINGS_DISPLAY_SCROLL_MESSAGES ? SETTINGS_DISPLAY_SCROLL_SPEED : 32);
         if (keyboardInputChar == KEYBOARD_LEFT_KEY || SETTINGS_DISPLAY_SCROLL_MESSAGES){ //  scroll only when enter pressed TODO: this wont work because key press not persistent
@@ -1952,8 +2094,8 @@ const char version[] = __DATE__ " " __TIME__;
           if(ScrollingIndex_MessageFeed > display.width()) ScrollingIndex_MessageFeed = ScrollingIndex_MessageFeed_minX;
         }
       } else {
-        display.setCursor(0,UI_DISPLAY_ROW_02);
-        display.print(F("You have no messages"));
+        display.setCursor(0, UI_DISPLAY_ROW_02);
+        display.print(F("You have no messages :("));
         if (!leaveDisplay_MessageFeed) {
           leaveDisplay_MessageFeed = true;
           leave_display_timer = millis();
@@ -1982,11 +2124,16 @@ const char version[] = __DATE__ " " __TIME__;
     // display method that it is in "on first show" and needs to initialize. this is where we clear and 
     // initalize critical variables such as cursor positions.
     if (!displayInitialized){
+      indexPosition_X = 0;
+      indexPosition_X_Last = indexPosition_X;
       cursorPosition_X = 0;
       cursorPosition_Y = 5; // 5, 6, and 7 are message, recipient callsign, and recipient SSID
       cursorPosition_X_Last = cursorPosition_X;
       cursorPosition_Y_Last = -1;
       editMode_Settings = false;
+      screenNameOn = "[ NEW MESSAGE ]";
+      screenNameOff = "[             ]";
+      headerXPos = getHeaderXPos(strlen(screenNameOn));
     }
     // handle button context for current display
     if (KEYBOARD_PRINTABLE_CHARACTERS || KEYBOARD_DIRECTIONAL_KEYS || keyboardInputChar == KEYBOARD_BACKSPACE_KEY) {
@@ -2018,15 +2165,8 @@ const char version[] = __DATE__ " " __TIME__;
       } else {
         // enable edit mode
         editMode_Settings = true;
+        indexPosition_X = 0;
         handleDisplay_TempVarCopy(Settings_Type_APRS[cursorPosition_Y],Settings_TypeIndex_APRS[cursorPosition_Y]);
-      }
-    }
-    if (keyboardInputChar == KEYBOARD_LEFT_KEY){
-    }
-    if (keyboardInputChar == KEYBOARD_RIGHT_KEY){
-      if (!editMode_Settings) {
-        // trigger a message send
-        sendMessage = true;
       }
     }
     if (keyboardInputChar == KEYBOARD_ESCAPE_KEY){
@@ -2054,28 +2194,32 @@ const char version[] = __DATE__ " " __TIME__;
       display.print(F(">"));
 
       // handle header
-      display.setCursor(6,UI_DISPLAY_ROW_01);
-      display.print(F("[             ]"));
+      display.setCursor(headerXPos, UI_DISPLAY_ROW_01);
+      display.print(screenNameOff);
       if(displayBlink || !displayInitialized){
-        display.setCursor(6,UI_DISPLAY_ROW_01);
-        display.print(F("[ NEW MESSAGE ]"));
+        display.setCursor(headerXPos, UI_DISPLAY_ROW_01);
+        display.print(screenNameOn);
       }
       
       // handle body
-      display.setCursor(6,UI_DISPLAY_ROW_02);
-      display.print(MenuItems_Settings_APRS[5]);
-      display.setCursor(6,UI_DISPLAY_ROW_03);
-      display.print(MenuItems_Settings_APRS[6]);
-      display.setCursor(6,UI_DISPLAY_ROW_04);
-      display.print(MenuItems_Settings_APRS[7]);
+      size_t charsPrinted, closeCursorPosition;
+      display.setCursor(CURSOR_MARGIN + CHAR_GAP, UI_DISPLAY_ROW_02);
+      charsPrinted = display.print(MenuItems_Settings_APRS[5]);
+      if (selectionRow == UI_DISPLAY_ROW_02) closeCursorPosition = charsPrinted;
+
+      display.setCursor(CURSOR_MARGIN + CHAR_GAP, UI_DISPLAY_ROW_03);
+      charsPrinted = display.print(MenuItems_Settings_APRS[6]);
+      if (selectionRow == UI_DISPLAY_ROW_03) closeCursorPosition = charsPrinted;
+
+      display.setCursor(CURSOR_MARGIN + CHAR_GAP, UI_DISPLAY_ROW_04);
+      charsPrinted = display.print(MenuItems_Settings_APRS[7]);
+      if (selectionRow == UI_DISPLAY_ROW_04) closeCursorPosition = charsPrinted;
+
+      // display closing cursor
+      display.setCursor(CURSOR_MARGIN + CHAR_GAP + closeCursorPosition * CHAR_WIDTH + (CHAR_GAP - 1), selectionRow);
+      display.print(F("<"));  
 
       // handle edit field
-      display.setCursor(cursorPosition_X*6,UI_DISPLAY_ROW_BOTTOM);
-      if (editMode_Settings) {
-        if (displayBlink) {
-          display.print('_');
-        }
-      }
       if (editMode_Settings) {
         handleDisplay_PrintTempVal();
       } else {
@@ -2129,7 +2273,7 @@ const char version[] = __DATE__ " " __TIME__;
     if (displayRefresh_Scroll || keyboardInputChar != 0){
       if (cursorPosition_Y != cursorPosition_Y_Last){ // changed to new record (index)
         cursorPosition_Y_Last = cursorPosition_Y; 
-        RawDataRecordCount = getRawDataRecord(cursorPosition_Y + 1, RawData); // adding 1 here becasue cursorPosition_Y is zero indexed but getRawDataRecord is not
+        RawDataRecordCount = getRawDataRecord(cursorPosition_Y + 1, RawData); // adding 1 here because cursorPosition_Y is zero indexed but getRawDataRecord is not
         int dataLen = strlen(RawData.data);
         ScrollingIndex_LiveFeed_minX = -10 * dataLen; // 10 = 5 pixels/character * text size 2
         if (!SETTINGS_DISPLAY_SCROLL_MESSAGES) {
@@ -2172,14 +2316,14 @@ const char version[] = __DATE__ " " __TIME__;
         // go back to original text size
         display.setTextSize(1); // Normal 1:1 pixel scale - default letter size is 5x8 pixels
         // display the cursor position (represents record number in this case)
-        display.setCursor(0,UI_DISPLAY_ROW_04); display.print("Record: ");
+        display.setCursor(0,UI_DISPLAY_ROW_04); display.print(F("Record: "));
         display.setCursor(45,UI_DISPLAY_ROW_04); display.print(cursorPosition_Y+1);
-        display.setCursor(45 + numberOfDigits<uint32_t>(cursorPosition_Y+1) * 5,UI_DISPLAY_ROW_04); display.print(" of ");
+        display.setCursor(45 + numberOfDigits<uint32_t>(cursorPosition_Y+1) * 5,UI_DISPLAY_ROW_04); display.print(F(" of "));
         display.setCursor(65 + numberOfDigits<uint32_t>(cursorPosition_Y+1) * 5,UI_DISPLAY_ROW_04); display.print(RawDataRecordCount);
         // display the date and time
-        display.setCursor(0,UI_DISPLAY_ROW_05); display.print("D:");
+        display.setCursor(0,UI_DISPLAY_ROW_05); display.print(F("D:"));
         display.setCursor(15,UI_DISPLAY_ROW_05); display.print(RawData.DateInt);
-        display.setCursor(60,UI_DISPLAY_ROW_05); display.print("T:");
+        display.setCursor(60,UI_DISPLAY_ROW_05); display.print(F("T:"));
         display.setCursor(75,UI_DISPLAY_ROW_05); display.print(RawData.TimeInt);
         unsigned int scrollPixelCount = (SETTINGS_DISPLAY_SCROLL_MESSAGES ? SETTINGS_DISPLAY_SCROLL_SPEED : 32);
         if (keyboardInputChar == KEYBOARD_LEFT_KEY || SETTINGS_DISPLAY_SCROLL_MESSAGES){ //  scroll only when enter pressed TODO: this wont work because key press not persistent
@@ -2221,6 +2365,9 @@ const char version[] = __DATE__ " " __TIME__;
       cursorPosition_Y = 0;
       cursorPosition_X_Last = 0;
       cursorPosition_Y_Last = 0;
+      screenNameOn = "[ Save changes? ]";
+      screenNameOff = "[               ]";
+      headerXPos = getHeaderXPos(strlen(screenNameOn));
     }
     // handle button context for current display
     if (keyboardInputChar == KEYBOARD_UP_KEY){
@@ -2265,18 +2412,26 @@ const char version[] = __DATE__ " " __TIME__;
       display.print(F(">"));
 
       // handle question
-      display.setCursor(6,UI_DISPLAY_ROW_01);
-      display.print(F("[               ]"));
+      display.setCursor(headerXPos, UI_DISPLAY_ROW_01);
+      display.print(screenNameOff);
       if(displayBlink || !displayInitialized){
-        display.setCursor(6,UI_DISPLAY_ROW_01);
-        display.print(F("[ Save changes? ]"));
+        display.setCursor(headerXPos, UI_DISPLAY_ROW_01);
+        display.print(screenNameOn);
       }
       
-      display.setCursor(6,UI_DISPLAY_ROW_02);
-      display.print(F("No"));
+      // handle body
+      size_t charsPrinted, closeCursorPosition;
+      display.setCursor(CURSOR_MARGIN + CHAR_GAP, UI_DISPLAY_ROW_02);
+      charsPrinted = display.print(F("No"));
+      if (selectionRow == UI_DISPLAY_ROW_02) closeCursorPosition = charsPrinted;
       
-      display.setCursor(6,UI_DISPLAY_ROW_03);
-      display.print(F("Yes"));
+      display.setCursor(CURSOR_MARGIN + CHAR_GAP, UI_DISPLAY_ROW_03);
+      charsPrinted = display.print(F("Yes"));
+      if (selectionRow == UI_DISPLAY_ROW_03) closeCursorPosition = charsPrinted;
+
+      // display closing cursor
+      display.setCursor(CURSOR_MARGIN + CHAR_GAP + closeCursorPosition * CHAR_WIDTH + (CHAR_GAP - 1), selectionRow);
+      display.print(F("<"));  
 
       // display all content from buffer
       display.display();
@@ -2295,6 +2450,9 @@ const char version[] = __DATE__ " " __TIME__;
       cursorPosition_Y = 0;
       cursorPosition_X_Last = 0;
       cursorPosition_Y_Last = 0;
+      screenNameOn = "[ SETTINGS ]";
+      screenNameOff = "[          ]";
+      headerXPos = getHeaderXPos(strlen(screenNameOn));
     }
     // handle button context for current display
     if (keyboardInputChar == KEYBOARD_UP_KEY){
@@ -2346,27 +2504,35 @@ const char version[] = __DATE__ " " __TIME__;
       display.print(F(">"));      
       
       // handle header
-      display.setCursor(6,UI_DISPLAY_ROW_01);
-      display.print(F("[          ]"));
+      display.setCursor(headerXPos, UI_DISPLAY_ROW_01);
+      display.print(screenNameOff);
       if(displayBlink || !displayInitialized){
-        display.setCursor(6,UI_DISPLAY_ROW_01);
-        display.print(F("[ SETTINGS ]"));
+        display.setCursor(headerXPos, UI_DISPLAY_ROW_01);
+        display.print(screenNameOn);
       }
 
       // handle body
+      size_t charsPrinted, closeCursorPosition;
       int NumOfSettings = ARRAY_SIZE(MenuItems_Settings);
       if (NumOfSettings >= 1) {
-        display.setCursor(6,UI_DISPLAY_ROW_02);
-        display.print(MenuItems_Settings[cursorPosition_Y>2 ? cursorPosition_Y-2 : 0]);
+        display.setCursor(CURSOR_MARGIN + CHAR_GAP, UI_DISPLAY_ROW_02);
+        charsPrinted = display.print(MenuItems_Settings[cursorPosition_Y>2 ? cursorPosition_Y-2 : 0]);
+        if (selectionRow == UI_DISPLAY_ROW_02) closeCursorPosition = charsPrinted;
       }
       if (NumOfSettings >= 2) {
-        display.setCursor(6,UI_DISPLAY_ROW_03);
-        display.print(MenuItems_Settings[cursorPosition_Y>2 ? cursorPosition_Y-1 : 1]);
+        display.setCursor(CURSOR_MARGIN + CHAR_GAP, UI_DISPLAY_ROW_03);
+        charsPrinted = display.print(MenuItems_Settings[cursorPosition_Y>2 ? cursorPosition_Y-1 : 1]);
+        if (selectionRow == UI_DISPLAY_ROW_03) closeCursorPosition = charsPrinted;
       }
       if (NumOfSettings >= 3) {
-        display.setCursor(6,UI_DISPLAY_ROW_04);
-        display.print(MenuItems_Settings[cursorPosition_Y>2 ? cursorPosition_Y-0 : 2]);
+        display.setCursor(CURSOR_MARGIN + CHAR_GAP, UI_DISPLAY_ROW_04);
+        charsPrinted = display.print(MenuItems_Settings[cursorPosition_Y>2 ? cursorPosition_Y-0 : 2]);
+        if (selectionRow == UI_DISPLAY_ROW_04) closeCursorPosition = charsPrinted;
       }
+
+      // display closing cursor
+      display.setCursor(CURSOR_MARGIN + CHAR_GAP + closeCursorPosition * CHAR_WIDTH + (CHAR_GAP - 1), selectionRow);
+      display.print(F("<"));  
 
       // display all content from buffer
       display.display();
@@ -2381,6 +2547,8 @@ const char version[] = __DATE__ " " __TIME__;
     // display method that it is in "on first show" and needs to initialize. this is where we clear and 
     // initalize critical variables such as cursor positions.
     if (!displayInitialized){
+      indexPosition_X = 0;
+      indexPosition_X_Last = indexPosition_X;
       cursorPosition_X = 0;
       cursorPosition_Y = 0;
       cursorPosition_X_Last = 0;
@@ -2391,6 +2559,9 @@ const char version[] = __DATE__ " " __TIME__;
       for (int i=0; i<sizeof(Settings_TempDispCharArr);i++) {
         Settings_TempDispCharArr[i] = '\0';
       }
+      screenNameOn = "[ APRS ]";
+      screenNameOff = "[      ]";
+      headerXPos = getHeaderXPos(strlen(screenNameOn));
     }
     // monitor for changes
     if (editMode_Settings) {
@@ -2421,6 +2592,7 @@ const char version[] = __DATE__ " " __TIME__;
       } else {
         // enable edit mode
         editMode_Settings = true;
+        indexPosition_X = 0;
         handleDisplay_TempVarCopy(Settings_Type_APRS[cursorPosition_Y],Settings_TypeIndex_APRS[cursorPosition_Y]);
       }
     }
@@ -2456,35 +2628,37 @@ const char version[] = __DATE__ " " __TIME__;
       display.print(F(">"));
       
       // handle header
-      display.setCursor(6,UI_DISPLAY_ROW_01);
-      display.print(F("[      ]"));
+      display.setCursor(headerXPos, UI_DISPLAY_ROW_01);
+      display.print(screenNameOff);
       if(displayBlink || !displayInitialized){
-        display.setCursor(6,UI_DISPLAY_ROW_01);
-        display.print(F("[ APRS ]"));
+        display.setCursor(headerXPos, UI_DISPLAY_ROW_01);
+        display.print(screenNameOn);
       }
 
       // handle body
+      size_t charsPrinted, closeCursorPosition;
       int NumOfSettings = ARRAY_SIZE(MenuItems_Settings_APRS);
       if (NumOfSettings >= 1) {
-        display.setCursor(6,UI_DISPLAY_ROW_02);
-        display.print(MenuItems_Settings_APRS[cursorPosition_Y>2 ? cursorPosition_Y-2 : 0]);
+        display.setCursor(CURSOR_MARGIN + CHAR_GAP, UI_DISPLAY_ROW_02);
+        charsPrinted = display.print(MenuItems_Settings_APRS[cursorPosition_Y>2 ? cursorPosition_Y-2 : 0]);
+        if (selectionRow == UI_DISPLAY_ROW_02) closeCursorPosition = charsPrinted;
       }
       if (NumOfSettings >= 2) {
-        display.setCursor(6,UI_DISPLAY_ROW_03);
-        display.print(MenuItems_Settings_APRS[cursorPosition_Y>2 ? cursorPosition_Y-1 : 1]);
+        display.setCursor(CURSOR_MARGIN + CHAR_GAP, UI_DISPLAY_ROW_03);
+        charsPrinted = display.print(MenuItems_Settings_APRS[cursorPosition_Y>2 ? cursorPosition_Y-1 : 1]);
+        if (selectionRow == UI_DISPLAY_ROW_03) closeCursorPosition = charsPrinted;
       }
       if (NumOfSettings >= 3) {
-        display.setCursor(6,UI_DISPLAY_ROW_04);
-        display.print(MenuItems_Settings_APRS[cursorPosition_Y>2 ? cursorPosition_Y-0 : 2]);
+        display.setCursor(CURSOR_MARGIN + CHAR_GAP, UI_DISPLAY_ROW_04);
+        charsPrinted = display.print(MenuItems_Settings_APRS[cursorPosition_Y>2 ? cursorPosition_Y-0 : 2]);
+        if (selectionRow == UI_DISPLAY_ROW_04) closeCursorPosition = charsPrinted;
       }
 
+      // display closing cursor
+      display.setCursor(CURSOR_MARGIN + CHAR_GAP + closeCursorPosition * CHAR_WIDTH + (CHAR_GAP - 1), selectionRow);
+      display.print(F("<"));  
+
       // handle edit field
-      display.setCursor(cursorPosition_X*6,UI_DISPLAY_ROW_BOTTOM);
-      if (editMode_Settings) {
-        if (displayBlink) {
-          display.print('_');
-        }
-      }
       if (editMode_Settings) {
         handleDisplay_PrintTempVal();
       } else {
@@ -2504,6 +2678,8 @@ const char version[] = __DATE__ " " __TIME__;
     // display method that it is in "on first show" and needs to initialize. this is where we clear and 
     // initalize critical variables such as cursor positions.
     if (!displayInitialized){
+      indexPosition_X = 0;
+      indexPosition_X_Last = indexPosition_X;
       cursorPosition_X = 0;
       cursorPosition_Y = 0;
       cursorPosition_X_Last = 0;
@@ -2514,6 +2690,9 @@ const char version[] = __DATE__ " " __TIME__;
       for (int i=0; i<sizeof(Settings_TempDispCharArr);i++) {
         Settings_TempDispCharArr[i] = '\0';
       }
+      screenNameOn = "[ GPS ]";
+      screenNameOff = "[     ]";
+      headerXPos = getHeaderXPos(strlen(screenNameOn));
     }
     // monitor for changes
     if (editMode_Settings) {
@@ -2544,6 +2723,7 @@ const char version[] = __DATE__ " " __TIME__;
       } else {
         // enable edit mode
         editMode_Settings = true;
+        indexPosition_X = 0;
         handleDisplay_TempVarCopy(Settings_Type_GPS[cursorPosition_Y],Settings_TypeIndex_GPS[cursorPosition_Y]);
       }
     }
@@ -2579,35 +2759,37 @@ const char version[] = __DATE__ " " __TIME__;
       display.print(F(">"));
 
       // handle header
-      display.setCursor(6,UI_DISPLAY_ROW_01);
-      display.print(F("[     ]"));
+      display.setCursor(headerXPos, UI_DISPLAY_ROW_01);
+      display.print(screenNameOff);
       if(displayBlink || !displayInitialized){
-        display.setCursor(6,UI_DISPLAY_ROW_01);
-        display.print(F("[ GPS ]"));
+        display.setCursor(headerXPos, UI_DISPLAY_ROW_01);
+        display.print(screenNameOn);
       }
 
       // handle body
+      size_t charsPrinted, closeCursorPosition;
       int NumOfSettings = ARRAY_SIZE(MenuItems_Settings_GPS);
       if (NumOfSettings >= 1) {
-        display.setCursor(6,UI_DISPLAY_ROW_02);
-        display.print(MenuItems_Settings_GPS[cursorPosition_Y>2 ? cursorPosition_Y-2 : 0]);
+        display.setCursor(CURSOR_MARGIN + CHAR_GAP, UI_DISPLAY_ROW_02);
+        charsPrinted = display.print(MenuItems_Settings_GPS[cursorPosition_Y>2 ? cursorPosition_Y-2 : 0]);
+        if (selectionRow == UI_DISPLAY_ROW_02) closeCursorPosition = charsPrinted;
       }
       if (NumOfSettings >= 2) {
-        display.setCursor(6,UI_DISPLAY_ROW_03);
-        display.print(MenuItems_Settings_GPS[cursorPosition_Y>2 ? cursorPosition_Y-1 : 1]);
+        display.setCursor(CURSOR_MARGIN + CHAR_GAP, UI_DISPLAY_ROW_03);
+        charsPrinted = display.print(MenuItems_Settings_GPS[cursorPosition_Y>2 ? cursorPosition_Y-1 : 1]);
+        if (selectionRow == UI_DISPLAY_ROW_03) closeCursorPosition = charsPrinted;
       }
       if (NumOfSettings >= 3) {
-        display.setCursor(6,UI_DISPLAY_ROW_04);
-        display.print(MenuItems_Settings_GPS[cursorPosition_Y>2 ? cursorPosition_Y-0 : 2]);
+        display.setCursor(CURSOR_MARGIN + CHAR_GAP, UI_DISPLAY_ROW_04);
+        charsPrinted = display.print(MenuItems_Settings_GPS[cursorPosition_Y>2 ? cursorPosition_Y-0 : 2]);
+        if (selectionRow == UI_DISPLAY_ROW_04) closeCursorPosition = charsPrinted;
       }
 
+      // display closing cursor
+      display.setCursor(CURSOR_MARGIN + CHAR_GAP + closeCursorPosition * CHAR_WIDTH + (CHAR_GAP - 1), selectionRow);
+      display.print(F("<"));  
+
       // handle edit field
-      display.setCursor(cursorPosition_X*6,UI_DISPLAY_ROW_BOTTOM);
-      if (editMode_Settings) {
-        if (displayBlink) {
-          display.print('_');
-        }
-      }
       if (editMode_Settings) {
         handleDisplay_PrintTempVal();
       } else {
@@ -2627,6 +2809,8 @@ const char version[] = __DATE__ " " __TIME__;
     // display method that it is in "on first show" and needs to initialize. this is where we clear and 
     // initalize critical variables such as cursor positions.
     if (!displayInitialized){
+      indexPosition_X = 0;
+      indexPosition_X_Last = indexPosition_X;
       cursorPosition_X = 0;
       cursorPosition_Y = 0;
       cursorPosition_X_Last = 0;
@@ -2637,6 +2821,9 @@ const char version[] = __DATE__ " " __TIME__;
       for (int i=0; i<sizeof(Settings_TempDispCharArr);i++) {
         Settings_TempDispCharArr[i] = '\0';
       }
+      screenNameOn = "[ DISPLAY ]";
+      screenNameOff = "[         ]";
+      headerXPos = getHeaderXPos(strlen(screenNameOn));
     }
     // monitor for changes
     if (editMode_Settings) {
@@ -2667,6 +2854,7 @@ const char version[] = __DATE__ " " __TIME__;
       } else {
         // enable edit mode
         editMode_Settings = true;
+        indexPosition_X = 0;
         handleDisplay_TempVarCopy(Settings_Type_Display[cursorPosition_Y],Settings_TypeIndex_Display[cursorPosition_Y]);
       }
     }
@@ -2702,35 +2890,37 @@ const char version[] = __DATE__ " " __TIME__;
       display.print(F(">"));
 
       // handle header
-      display.setCursor(6,UI_DISPLAY_ROW_01);
-      display.print(F("[         ]"));
+      display.setCursor(headerXPos, UI_DISPLAY_ROW_01);
+      display.print(screenNameOff);
       if(displayBlink || !displayInitialized){
-        display.setCursor(6,UI_DISPLAY_ROW_01);
-        display.print(F("[ DISPLAY ]"));
+        display.setCursor(headerXPos, UI_DISPLAY_ROW_01);
+        display.print(screenNameOn);
       }
 
       // handle body
+      size_t charsPrinted, closeCursorPosition;
       int NumOfSettings = ARRAY_SIZE(MenuItems_Settings_Display);
       if (NumOfSettings >= 1) {
-        display.setCursor(6,UI_DISPLAY_ROW_02);
-        display.print(MenuItems_Settings_Display[cursorPosition_Y>2 ? cursorPosition_Y-2 : 0]);
+        display.setCursor(CURSOR_MARGIN + CHAR_GAP, UI_DISPLAY_ROW_02);
+        charsPrinted = display.print(MenuItems_Settings_Display[cursorPosition_Y>2 ? cursorPosition_Y-2 : 0]);
+        if (selectionRow == UI_DISPLAY_ROW_02) closeCursorPosition = charsPrinted;
       }
       if (NumOfSettings >= 2) {
-        display.setCursor(6,UI_DISPLAY_ROW_03);
-        display.print(MenuItems_Settings_Display[cursorPosition_Y>2 ? cursorPosition_Y-1 : 1]);
+        display.setCursor(CURSOR_MARGIN + CHAR_GAP, UI_DISPLAY_ROW_03);
+        charsPrinted = display.print(MenuItems_Settings_Display[cursorPosition_Y>2 ? cursorPosition_Y-1 : 1]);
+        if (selectionRow == UI_DISPLAY_ROW_03) closeCursorPosition = charsPrinted;
       }
       if (NumOfSettings >= 3) {
-        display.setCursor(6,UI_DISPLAY_ROW_04);
-        display.print(MenuItems_Settings_Display[cursorPosition_Y>2 ? cursorPosition_Y-0 : 2]);
+        display.setCursor(CURSOR_MARGIN + CHAR_GAP, UI_DISPLAY_ROW_04);
+        charsPrinted = display.print(MenuItems_Settings_Display[cursorPosition_Y>2 ? cursorPosition_Y-0 : 2]);
+        if (selectionRow == UI_DISPLAY_ROW_04) closeCursorPosition = charsPrinted;
       }
+
+      // display closing cursor
+      display.setCursor(CURSOR_MARGIN + CHAR_GAP + closeCursorPosition * CHAR_WIDTH + (CHAR_GAP - 1), selectionRow);
+      display.print(F("<"));  
       
       // handle edit field
-      display.setCursor(cursorPosition_X*6,UI_DISPLAY_ROW_BOTTOM);
-      if (editMode_Settings) {
-        if (displayBlink) {
-          display.print('_');
-        }
-      }
       if (editMode_Settings) {
         handleDisplay_PrintTempVal();
       } else {
@@ -3055,8 +3245,8 @@ const char version[] = __DATE__ " " __TIME__;
     if (Serial1.available()){
       memset(modemData,'\0',sizeof(modemData));
       int len = Serial1.readBytesUntil('\n', modemData, sizeof(modemData));
-      modemData[len-1] = '\0';  // Null-terminate manually
-      Serial.print("Modem Raw:");Serial.println(modemData);
+      modemData[len] = '\0';  // Null-terminate manually
+      Serial.print(F("Modem Raw:"));Serial.println(modemData);
       gotFormatRaw = true;
     }
 
@@ -3176,12 +3366,12 @@ const char version[] = __DATE__ " " __TIME__;
         // get the line
         Format_Msg_In.line = atoi(line);
         // print out the message
-        Serial.println("Received a message!");
-        Serial.print("To=");Serial.println(Format_Msg_In.to);
-        Serial.print("From=");Serial.println(Format_Msg_In.from);
-        Serial.print("Msg=");Serial.println(Format_Msg_In.msg);
-        Serial.print("Line=");Serial.println(Format_Msg_In.line);
-        Serial.print("Ack=");Serial.println(Format_Msg_In.ack);
+        Serial.println(F("Received a message!"));
+        Serial.print(F("To="));Serial.println(Format_Msg_In.to);
+        Serial.print(F("From="));Serial.println(Format_Msg_In.from);
+        Serial.print(F("Msg="));Serial.println(Format_Msg_In.msg);
+        Serial.print(F("Line="));Serial.println(Format_Msg_In.line);
+        Serial.print(F("Ack="));Serial.println(Format_Msg_In.ack);
         if (strstr(Format_Msg_In.to, SETTINGS_APRS_CALLSIGN) != NULL) {
           // if message is an acknowledge don't add.
           if (!Format_Msg_In.ack) {
@@ -3206,104 +3396,86 @@ const char version[] = __DATE__ " " __TIME__;
 #pragma region "TERMINAL"
 
   // store common strings here just to save space instead of recreating them
-  const char DataEntered[] = {"Data entered="};
-  const char InvalidCommand[] = {"Invalid command."};
-  const char InvalidData_UnsignedInt[] = {"Invalid data. Expected unsigned integer 0-65535 instead got "};
-  const char InvalidData_Float[] = {"Invalid data. Expected float -3.4028235E+38-3.4028235E+38 instead got "};
-  const char InvalidData_UnsignedLong[] = {"Invalid data. Expected unsigned long 0-4294967295 instead got "};
-  const char InvalidData_TrueFalse[] = {"Invalid data. Expected True/False or 1/0"};
+  const char* InvalidCommand = "Invalid command.";
+  const char* InvalidData_UnsignedInt = "Invalid data. Expected unsigned integer 0-65535 instead got ";
+  const char* InvalidData_Float = "Invalid data. Expected float -3.4028235E+38-3.4028235E+38 instead got ";
+  const char* InvalidData_UnsignedLong = "Invalid data. Expected unsigned long 0-4294967295 instead got ";
+  const char* InvalidData_TrueFalse = "Invalid data. Expected True/False or 1/0";
 
-  void getDataTypeExample(int dataType, char* outExample){
+  const char exNone[]      PROGMEM = ":<Unknown>";
+  const char exBool[]      PROGMEM = ":<True/False>";
+  const char exInt[]       PROGMEM = ":<-32,768 to 32,767>";
+  const char exUInt[]      PROGMEM = ":<0 to 65,535>";
+  const char exLong[]      PROGMEM = ":<-2,147,483,648 to 2,147,483,647>";
+  const char exULong[]     PROGMEM = ":<0 to 4,294,967,295>";
+  const char exFloat[]     PROGMEM = ":<-3.4028235E+38 to 3.4028235E+38>";
+  const char exString2[]   PROGMEM = ":<Alpha numeric up to 1 character>";
+  const char exString3[]   PROGMEM = ":<Alpha numeric up to 2 character>";
+  const char exString7[]   PROGMEM = ":<Alpha numeric up to 6 characters>";
+  const char exString100[] PROGMEM = ":<Alpha numeric up to 99 characters>";
+  const char exAlt1[]      PROGMEM = ":<Standard/Alternate>";
 
-    const char chrNone[] = {":<Unknown>"};
-    const char chrBool[] = {":<True/False>"};
-    const char chrInt[] = {":<-32,768 to 32,767>"};
-    const char chrUInt[] = {":<0 to 65,535>"};
-    const char chrLong[] = {":<-2,147,483,648 to 2,147,483,647>"};
-    const char chrULong[] = {":<0 to 4,294,967,295>"};
-    const char chrFloat[] = {":<-3.4028235E+38 to 3.4028235E+38>"};
-    const char chrString2[] = {":<Alpha numeric up to 1 character max>"};
-    const char chrString7[] = {":<Alpha numeric up to 6 characters max>"};
-    const char chrString100[] = {":<Alpha numeric up to 99 characters max>"};
-    const char chrAlt1[] = {":<Standard/Alternate>"};
-    
-    switch (dataType) {
-      case (int)SETTINGS_EDIT_TYPE_ALT1:
-        for (int i=0;i<ARRAY_SIZE(chrAlt1);i++) outExample[i] = chrAlt1[i];
-        break;
-      case (int)SETTINGS_EDIT_TYPE_NONE:
-        for (int i=0;i<ARRAY_SIZE(chrNone);i++) outExample[i] = chrNone[i];
-        break;
-      case (int)SETTINGS_EDIT_TYPE_BOOLEAN:
-        for (int i=0;i<ARRAY_SIZE(chrBool);i++) outExample[i] = chrBool[i];
-        break;
-      case (int)SETTINGS_EDIT_TYPE_INT:
-        for (int i=0;i<ARRAY_SIZE(chrInt);i++) outExample[i] = chrInt[i];
-        break;
-      case (int)SETTINGS_EDIT_TYPE_UINT:
-        for (int i=0;i<ARRAY_SIZE(chrUInt);i++) outExample[i] = chrUInt[i];
-        break;
-      case (int)SETTINGS_EDIT_TYPE_LONG:
-        for (int i=0;i<ARRAY_SIZE(chrLong);i++) outExample[i] = chrLong[i];
-        break;
-      case (int)SETTINGS_EDIT_TYPE_ULONG:
-        for (int i=0;i<ARRAY_SIZE(chrULong);i++) outExample[i] = chrULong[i];
-        break;
-      case (int)SETTINGS_EDIT_TYPE_FLOAT:
-        for (int i=0;i<ARRAY_SIZE(chrFloat);i++) outExample[i] = chrFloat[i];
-        break;
-      case (int)SETTINGS_EDIT_TYPE_STRING2:
-        for (int i=0;i<ARRAY_SIZE(chrString2);i++) outExample[i] = chrString2[i];
-        break;
-      case (int)SETTINGS_EDIT_TYPE_STRING7:
-        for (int i=0;i<ARRAY_SIZE(chrString7);i++) outExample[i] = chrString7[i];
-        break;
-      case (int)SETTINGS_EDIT_TYPE_STRING100:
-        for (int i=0;i<ARRAY_SIZE(chrString100);i++) outExample[i] = chrString100[i];
-        break;
-      default:
-        break;
+  // Lookup table of pointers to PROGMEM strings
+  const char* const dataTypeExamples[] PROGMEM = {
+    exNone,      // SETTINGS_EDIT_TYPE_NONE       = 0
+    exBool,      // SETTINGS_EDIT_TYPE_BOOLEAN    = 1
+    exInt,       // SETTINGS_EDIT_TYPE_INT        = 2
+    exUInt,      // SETTINGS_EDIT_TYPE_UINT       = 3
+    exLong,      // SETTINGS_EDIT_TYPE_LONG       = 4
+    exULong,     // SETTINGS_EDIT_TYPE_ULONG      = 5
+    exFloat,     // SETTINGS_EDIT_TYPE_FLOAT      = 6
+    exString2,   // SETTINGS_EDIT_TYPE_STRING2    = 7
+    exString3,   // SETTINGS_EDIT_TYPE_STRING3    = 8
+    exString7,   // SETTINGS_EDIT_TYPE_STRING7    = 9
+    exString100, // SETTINGS_EDIT_TYPE_STRING100  = 10
+    exAlt1,      // SETTINGS_EDIT_TYPE_ALT1       = 11
+  };
+
+  void getDataTypeExample(int dataType, char* outExample) {
+    if (dataType >= 0 && dataType < (int)(sizeof(dataTypeExamples) / sizeof(dataTypeExamples[0]))) {
+      strcpy_P(outExample, (PGM_P)pgm_read_word(&dataTypeExamples[dataType])); // strcpy_P reads directly from flash, not from RAM
+    } else {
+      strcpy(outExample, ""); // default to empty string
     }
   }
 
   void printOutSerialCommands(){
 
     Serial.println();
-    Serial.println("CMD:Settings:Print:");  // prints all settings to terminal
-    Serial.println("CMD:Settings:Save:");   // saves all settings to eeprom
-    Serial.println("CMD:Beacon:");          // immediatley sends a beacon per current settings
-    Serial.println("CMD:Message:<Recipient Callsign>:<Recipient SSID>:<Message>");   // sends a message to a recipient
-    Serial.println("CMD:SD:Raw:Print:");    // prints all raw data to terminal
-    Serial.println("CMD:SD:Raw:Delete:");   // deletes all raw data from sd
-    Serial.println("CMD:SD:Msg:Print:");    // prints all messages to terminal
-    Serial.println("CMD:SD:Msg:Delete:");   // deletes all messages from sd
-    Serial.println("CMD:Modem:<command>");  // writes a command directly to the modem (see MicroAPRS github for examples)
+    Serial.println(F("CMD:Settings:Print:"));  // prints all settings to terminal
+    Serial.println(F("CMD:Settings:Save:"));   // saves all settings to eeprom
+    Serial.println(F("CMD:Beacon:"));          // immediatley sends a beacon per current settings
+    Serial.println(F("CMD:Message:<Recipient Callsign>:<Recipient SSID>:<Message>"));   // sends a message to a recipient
+    Serial.println(F("CMD:SD:Raw:Print:"));    // prints all raw data to terminal
+    Serial.println(F("CMD:SD:Raw:Delete:"));   // deletes all raw data from sd
+    Serial.println(F("CMD:SD:Msg:Print:"));    // prints all messages to terminal
+    Serial.println(F("CMD:SD:Msg:Delete:"));   // deletes all messages from sd
+    Serial.println(F("CMD:Modem:<command>"));  // writes a command directly to the modem (see MicroAPRS github for examples)
     Serial.println();
+
+    char example[40] = {'\0'};
     for (int i=0;i<ARRAY_SIZE(MenuItems_Settings);i++) {
       switch (i) {
         case 0: // APRS
           for (int j=0;j<ARRAY_SIZE(MenuItems_Settings_APRS);j++) {
-            char example[50] = {'\0'};
             getDataTypeExample(Settings_Type_APRS[j],example);
-            Serial.print("CMD:Settings:");Serial.print(MenuItems_Settings[i]);Serial.print(":");Serial.print(MenuItems_Settings_APRS[j]);Serial.println(example);
+            Serial.print(F("CMD:Settings:"));Serial.print(MenuItems_Settings[i]);Serial.print(F(":"));Serial.print(MenuItems_Settings_APRS[j]);Serial.println(example);
           }
           break;
           
         case 1: // GPS
           Serial.println();
           for (int k=0;k<ARRAY_SIZE(MenuItems_Settings_GPS);k++) {
-            char example[50] = {'\0'};
             getDataTypeExample(Settings_Type_GPS[k],example);
-            Serial.print("CMD:Settings:");Serial.print(MenuItems_Settings[i]);Serial.print(":");Serial.print(MenuItems_Settings_GPS[k]);Serial.println(example);
+            Serial.print(F("CMD:Settings:"));Serial.print(MenuItems_Settings[i]);Serial.print(F(":"));Serial.print(MenuItems_Settings_GPS[k]);Serial.println(example);
           }
           break;
           
         case 2: // Display
           Serial.println();
           for (int l=0;l<ARRAY_SIZE(MenuItems_Settings_Display);l++) {
-            char example[50] = {'\0'};
             getDataTypeExample(Settings_Type_Display[l],example);
-            Serial.print("CMD:Settings:");Serial.print(MenuItems_Settings[i]);Serial.print(":");Serial.print(MenuItems_Settings_Display[l]);Serial.println(example);
+            Serial.print(F("CMD:Settings:"));Serial.print(MenuItems_Settings[i]);Serial.print(F(":"));Serial.print(MenuItems_Settings_Display[l]);Serial.println(example);
           }
           break;
           
@@ -3318,45 +3490,48 @@ const char version[] = __DATE__ " " __TIME__;
     Serial.println();
     Serial.println(F("Current Settings"));
     Serial.println(F("APRS:"));
-    Serial.print(MenuItems_Settings_APRS[0]); Serial.print("="); Serial.println(SETTINGS_APRS_BEACON_ENABLED);
-    Serial.print(MenuItems_Settings_APRS[1]); Serial.print("="); Serial.println(SETTINGS_APRS_BEACON_DISTANCE);
-    Serial.print(MenuItems_Settings_APRS[2]); Serial.print("="); Serial.println(SETTINGS_APRS_BEACON_IDLE_TIME);
-    Serial.print(MenuItems_Settings_APRS[3]); Serial.print("="); Serial.println(SETTINGS_APRS_RAW_PACKET);
-    Serial.print(MenuItems_Settings_APRS[4]); Serial.print("="); Serial.println(SETTINGS_APRS_COMMENT);
-    Serial.print(MenuItems_Settings_APRS[5]); Serial.print("="); Serial.println(SETTINGS_APRS_MESSAGE);
-    Serial.print(MenuItems_Settings_APRS[6]); Serial.print("="); Serial.println(SETTINGS_APRS_RECIPIENT_CALL);
-    Serial.print(MenuItems_Settings_APRS[7]); Serial.print("="); Serial.println(SETTINGS_APRS_RECIPIENT_SSID);
-    Serial.print(MenuItems_Settings_APRS[8]); Serial.print("="); Serial.println(SETTINGS_APRS_CALLSIGN);
-    Serial.print(MenuItems_Settings_APRS[9]); Serial.print("="); Serial.println(SETTINGS_APRS_CALLSIGN_SSID);
-    Serial.print(MenuItems_Settings_APRS[10]); Serial.print("="); Serial.println(SETTINGS_APRS_DESTINATION_CALL);
-    Serial.print(MenuItems_Settings_APRS[11]); Serial.print("="); Serial.println(SETTINGS_APRS_DESTINATION_SSID);
-    Serial.print(MenuItems_Settings_APRS[12]); Serial.print("="); Serial.println(SETTINGS_APRS_PATH1_CALL);
-    Serial.print(MenuItems_Settings_APRS[13]); Serial.print("="); Serial.println(SETTINGS_APRS_PATH1_SSID);
-    Serial.print(MenuItems_Settings_APRS[14]); Serial.print("="); Serial.println(SETTINGS_APRS_PATH2_CALL);
-    Serial.print(MenuItems_Settings_APRS[15]); Serial.print("="); Serial.println(SETTINGS_APRS_PATH2_SSID);
-    Serial.print(MenuItems_Settings_APRS[16]); Serial.print("="); Serial.println(SETTINGS_APRS_SYMBOL);
-    Serial.print(MenuItems_Settings_APRS[17]); Serial.print("="); Serial.println(SETTINGS_APRS_SYMBOL_TABLE);
-    Serial.print(MenuItems_Settings_APRS[18]); Serial.print("="); Serial.println(SETTINGS_APRS_AUTOMATIC_ACK);
-    Serial.print(MenuItems_Settings_APRS[19]); Serial.print("="); Serial.println(SETTINGS_APRS_PREAMBLE);
-    Serial.print(MenuItems_Settings_APRS[20]); Serial.print("="); Serial.println(SETTINGS_APRS_TAIL);
-    Serial.print(MenuItems_Settings_APRS[21]); Serial.print("="); Serial.println(SETTINGS_APRS_RETRY_COUNT);
-    Serial.print(MenuItems_Settings_APRS[22]); Serial.print("="); Serial.println(SETTINGS_APRS_RETRY_INTERVAL);
+    Serial.print(MenuItems_Settings_APRS[0]); Serial.print(F("=")); Serial.println(SETTINGS_APRS_BEACON_ENABLED);
+    Serial.print(MenuItems_Settings_APRS[1]); Serial.print(F("=")); Serial.println(SETTINGS_APRS_BEACON_DISTANCE);
+    Serial.print(MenuItems_Settings_APRS[2]); Serial.print(F("=")); Serial.println(SETTINGS_APRS_BEACON_IDLE_TIME);
+    Serial.print(MenuItems_Settings_APRS[3]); Serial.print(F("=")); Serial.println(SETTINGS_APRS_RAW_PACKET);
+    Serial.print(MenuItems_Settings_APRS[4]); Serial.print(F("=")); Serial.println(SETTINGS_APRS_COMMENT);
+    Serial.print(MenuItems_Settings_APRS[5]); Serial.print(F("=")); Serial.println(SETTINGS_APRS_MESSAGE);
+    Serial.print(MenuItems_Settings_APRS[6]); Serial.print(F("=")); Serial.println(SETTINGS_APRS_RECIPIENT_CALL);
+    Serial.print(MenuItems_Settings_APRS[7]); Serial.print(F("=")); Serial.println(SETTINGS_APRS_RECIPIENT_SSID);
+    Serial.print(MenuItems_Settings_APRS[8]); Serial.print(F("=")); Serial.println(SETTINGS_APRS_CALLSIGN);
+    Serial.print(MenuItems_Settings_APRS[9]); Serial.print(F("=")); Serial.println(SETTINGS_APRS_CALLSIGN_SSID);
+    Serial.print(MenuItems_Settings_APRS[10]); Serial.print(F("=")); Serial.println(SETTINGS_APRS_DESTINATION_CALL);
+    Serial.print(MenuItems_Settings_APRS[11]); Serial.print(F("=")); Serial.println(SETTINGS_APRS_DESTINATION_SSID);
+    Serial.print(MenuItems_Settings_APRS[12]); Serial.print(F("=")); Serial.println(SETTINGS_APRS_PATH1_CALL);
+    Serial.print(MenuItems_Settings_APRS[13]); Serial.print(F("=")); Serial.println(SETTINGS_APRS_PATH1_SSID);
+    Serial.print(MenuItems_Settings_APRS[14]); Serial.print(F("=")); Serial.println(SETTINGS_APRS_PATH2_CALL);
+    Serial.print(MenuItems_Settings_APRS[15]); Serial.print(F("=")); Serial.println(SETTINGS_APRS_PATH2_SSID);
+    Serial.print(MenuItems_Settings_APRS[16]); Serial.print(F("=")); Serial.println(SETTINGS_APRS_SYMBOL);
+    Serial.print(MenuItems_Settings_APRS[17]); Serial.print(F("=")); Serial.println(SETTINGS_APRS_SYMBOL_TABLE);
+    Serial.print(MenuItems_Settings_APRS[18]); Serial.print(F("=")); Serial.println(SETTINGS_APRS_AUTOMATIC_ACK);
+    Serial.print(MenuItems_Settings_APRS[19]); Serial.print(F("=")); Serial.println(SETTINGS_APRS_PREAMBLE);
+    Serial.print(MenuItems_Settings_APRS[20]); Serial.print(F("=")); Serial.println(SETTINGS_APRS_TAIL);
+    Serial.print(MenuItems_Settings_APRS[21]); Serial.print(F("=")); Serial.println(SETTINGS_APRS_RETRY_COUNT);
+    Serial.print(MenuItems_Settings_APRS[22]); Serial.print(F("=")); Serial.println(SETTINGS_APRS_RETRY_INTERVAL);
     Serial.println(F("GPS:"));
-    Serial.print(MenuItems_Settings_GPS[0]); Serial.print("="); Serial.println(SETTINGS_GPS_POSITION_TOLERANCE, 2);
-    Serial.print(MenuItems_Settings_GPS[1]); Serial.print("="); Serial.println(SETTINGS_GPS_DESTINATION_LATITUDE, 6);
-    Serial.print(MenuItems_Settings_GPS[2]); Serial.print("="); Serial.println(SETTINGS_GPS_DESTINATION_LONGITUDE, 6);
+    Serial.print(MenuItems_Settings_GPS[0]); Serial.print(F("=")); Serial.println(SETTINGS_GPS_POSITION_TOLERANCE, 2);
+    Serial.print(MenuItems_Settings_GPS[1]); Serial.print(F("=")); Serial.println(SETTINGS_GPS_DESTINATION_LATITUDE, 6);
+    Serial.print(MenuItems_Settings_GPS[2]); Serial.print(F("=")); Serial.println(SETTINGS_GPS_DESTINATION_LONGITUDE, 6);
     Serial.println(F("Display:"));
-    Serial.print(MenuItems_Settings_Display[0]); Serial.print("="); Serial.println(SETTINGS_DISPLAY_TIMEOUT);
-    Serial.print(MenuItems_Settings_Display[1]); Serial.print("="); Serial.println(SETTINGS_DISPLAY_BRIGHTNESS);
-    Serial.print(MenuItems_Settings_Display[2]); Serial.print("="); Serial.println(SETTINGS_DISPLAY_SHOW_POSITION);
-    Serial.print(MenuItems_Settings_Display[3]); Serial.print("="); Serial.println(SETTINGS_DISPLAY_SCROLL_MESSAGES);
-    Serial.print(MenuItems_Settings_Display[4]); Serial.print("="); Serial.println(SETTINGS_DISPLAY_SCROLL_SPEED);
-    Serial.print(MenuItems_Settings_Display[5]); Serial.print("="); Serial.println(SETTINGS_DISPLAY_INVERT);
+    Serial.print(MenuItems_Settings_Display[0]); Serial.print(F("=")); Serial.println(SETTINGS_DISPLAY_TIMEOUT);
+    Serial.print(MenuItems_Settings_Display[1]); Serial.print(F("=")); Serial.println(SETTINGS_DISPLAY_BRIGHTNESS);
+    Serial.print(MenuItems_Settings_Display[2]); Serial.print(F("=")); Serial.println(SETTINGS_DISPLAY_SHOW_POSITION);
+    Serial.print(MenuItems_Settings_Display[3]); Serial.print(F("=")); Serial.println(SETTINGS_DISPLAY_SCROLL_MESSAGES);
+    Serial.print(MenuItems_Settings_Display[4]); Serial.print(F("=")); Serial.println(SETTINGS_DISPLAY_SCROLL_SPEED);
+    Serial.print(MenuItems_Settings_Display[5]); Serial.print(F("=")); Serial.println(SETTINGS_DISPLAY_INVERT);
     Serial.println();
     Serial.print(F("Version=")); Serial.println(version);
     Serial.println();
   }
 
+  const char CMD_DELETE[] PROGMEM = "Delete";
+  const char CMD_PRINT[]  PROGMEM = "Print";
+  const char CMD_MODEM[]  PROGMEM = "Modem";
   void handleSerial(){
     // the gps module continuously prints to the cpu
     readGPS();
@@ -3414,13 +3589,13 @@ const char version[] = __DATE__ " " __TIME__;
             startReadingFromSd(0);
           } else if (strstr(SD_cmd, "Test") != NULL) {
             RawDataRecordCount = getRawDataRecord(1, RawData);
-            Serial.print("Raw Data Record Count"); Serial.println(RawDataRecordCount);
-            Serial.print("src:"); Serial.print(RawData.src);
-            Serial.print("\tdst:"); Serial.print(RawData.dst);
-            Serial.print("\tpath:"); Serial.print(RawData.path);
-            Serial.print("\tdata:"); Serial.print(RawData.data);
-            Serial.print("\tdate:"); Serial.print(RawData.DateInt);
-            Serial.print("\ttime:"); Serial.print(RawData.TimeInt);
+            Serial.print(F("Raw Data Record Count")); Serial.println(RawDataRecordCount);
+            Serial.print(F("src:")); Serial.print(RawData.src);
+            Serial.print(F("\tdst:")); Serial.print(RawData.dst);
+            Serial.print(F("\tpath:")); Serial.print(RawData.path);
+            Serial.print(F("\tdata:")); Serial.print(RawData.data);
+            Serial.print(F("\tdate:")); Serial.print(RawData.DateInt);
+            Serial.print(F("\ttime:")); Serial.print(RawData.TimeInt);
             
           } else {
             Serial.println(InvalidCommand);
@@ -3441,14 +3616,14 @@ const char version[] = __DATE__ " " __TIME__;
             printMsgDataFromSd(0);
           } else if (strstr(SD_cmd, "Test") != NULL) {
             MsgDataRecordCount = getMsgDataRecord(1, MsgData);
-            Serial.print("Msg Data Record Count"); Serial.println(MsgDataRecordCount);
-            Serial.print("to:"); Serial.print(MsgData.to);
-            Serial.print("\tfrom:"); Serial.print(MsgData.from);
-            Serial.print("\tmsg:"); Serial.print(MsgData.msg);
-            Serial.print("\tline:"); Serial.print(MsgData.line);
-            Serial.print("\tack:"); Serial.print(MsgData.ack);
-            Serial.print("\tdate:"); Serial.print(MsgData.DateInt);
-            Serial.print("\ttime:"); Serial.print(MsgData.TimeInt);
+            Serial.print(F("Msg Data Record Count")); Serial.println(MsgDataRecordCount);
+            Serial.print(F("to:")); Serial.print(MsgData.to);
+            Serial.print(F("\tfrom:")); Serial.print(MsgData.from);
+            Serial.print(F("\tmsg:")); Serial.print(MsgData.msg);
+            Serial.print(F("\tline:")); Serial.print(MsgData.line);
+            Serial.print(F("\tack:")); Serial.print(MsgData.ack);
+            Serial.print(F("\tdate:")); Serial.print(MsgData.DateInt);
+            Serial.print(F("\ttime:")); Serial.print(MsgData.TimeInt);
           } else {
             Serial.println(InvalidCommand);
           }
@@ -3881,12 +4056,12 @@ const char version[] = __DATE__ " " __TIME__;
           i++; // i should be sitting at the ':'. go ahead and skip that.
           if (strstr(Setting, MenuItems_Settings_Display[0]) != NULL) { // "Timeout"
             while (inData[i] != '\n' && inData[i] != '\0') {
-              if (k>4) { // unsigned int would be no longer than 5 digits
-                Serial.print(InvalidData_UnsignedInt);Serial.println(inData_Value);
+              if (k>9) { // unsigned long would be no longer than 10 digits 0 to 4,294,967,295
+                Serial.print(InvalidData_UnsignedLong);Serial.println(inData_Value);
                 return;
               }
               if (!isDigit(inData[i])) {
-                Serial.print(InvalidData_UnsignedInt);Serial.println(inData[i]);
+                Serial.print(InvalidData_UnsignedLong);Serial.println(inData[i]);
                 return;
               }
               inData_Value[k] = inData[i];
@@ -4002,8 +4177,8 @@ const char version[] = __DATE__ " " __TIME__;
   // they are never closed but the data is saved via the .flush() method
   File RawDataFile;
   File MsgDataFile;
-  const char RawDataFileName[] = {"raw.txt"};
-  const char MsgDataFileName[] = {"msg.txt"};
+  const char* RawDataFileName = "raw.txt";
+  const char* MsgDataFileName = "msg.txt";
   bool readingSD = false;
   APRSFormat_Raw rawData;
   byte* buff = (byte*)&rawData; // to access RawData as bytes
@@ -4036,7 +4211,7 @@ const char version[] = __DATE__ " " __TIME__;
       RawDataFile.write('\n'); // add a \n to make raw.txt more human readable
     } else {
       // if the file didn't open, print an error:
-      Serial.println("error opening raw.txt");
+      Serial.println(F("error opening raw.txt"));
     }
     
     RawDataFile.flush(); // will save data
@@ -4045,7 +4220,7 @@ const char version[] = __DATE__ " " __TIME__;
   void startReadingFromSd(uint32_t StartPosition) {
     RawDataFile.seek(StartPosition);
     readingSD = true;
-    Serial.println("Started reading new data from raw.txt...");
+    Serial.println(F("Started reading new data from raw.txt..."));
   }
 
   void printRawDataFromSd() {
@@ -4069,7 +4244,7 @@ const char version[] = __DATE__ " " __TIME__;
     // Encode and print the record
     int len = encodeBase64(encodedBuffer, sizeof(encodedBuffer), buff, sizeof(APRSFormat_Raw));
 
-    Serial.print("SD Raw:");
+    Serial.print(F("SD Raw:"));
     Serial.println(encodedBuffer);
   }
 
@@ -4082,7 +4257,7 @@ const char version[] = __DATE__ " " __TIME__;
       MsgDataFile.write(buff, sizeof(APRSFormat_Msg)); MsgDataFile.write('\n');
     } else {
       // if the file didn't open, print an error:
-      Serial.println("error opening msg.txt");
+      Serial.println(F("error opening msg.txt"));
     }
     
     MsgDataFile.flush(); // will save data
@@ -4095,25 +4270,25 @@ const char version[] = __DATE__ " " __TIME__;
 
     // if the file opened okay, write to it:
     if (MsgDataFile) {
-      Serial.println("Reading from msg.txt...");
+      Serial.println(F("Reading from msg.txt..."));
       while (MsgDataFile.available()) {
         for (int count=0;count<sizeof(APRSFormat_Msg); count++) { 
           if (MsgDataFile.available()) {
             *(buff+count) = MsgDataFile.read();
           }
         }
-        Serial.print("to:"); Serial.print(MsgData.to);
-        Serial.print("\tfrom:"); Serial.print(MsgData.from);
-        Serial.print("\tmsg:"); Serial.print(MsgData.msg);
-        Serial.print("\tline:"); Serial.print(MsgData.line);
-        Serial.print("\tack:"); Serial.print(MsgData.ack);
-        Serial.print("\tdate:"); Serial.print(MsgData.DateInt);
-        Serial.print("\ttime:"); Serial.print(MsgData.TimeInt);
+        Serial.print(F("to:")); Serial.print(MsgData.to);
+        Serial.print(F("\tfrom:")); Serial.print(MsgData.from);
+        Serial.print(F("\tmsg:")); Serial.print(MsgData.msg);
+        Serial.print(F("\tline:")); Serial.print(MsgData.line);
+        Serial.print(F("\tack:")); Serial.print(MsgData.ack);
+        Serial.print(F("\tdate:")); Serial.print(MsgData.DateInt);
+        Serial.print(F("\ttime:")); Serial.print(MsgData.TimeInt);
         Serial.println(MsgDataFile.read()); // take care of the '\n' (maybe not write this in future)
       }
     } else {
       // if the file didn't open, print an error:
-      Serial.println("error opening msg.txt");
+      Serial.println(F("error opening msg.txt"));
     }
     
     MsgDataFile.flush(); // will save data
@@ -4125,9 +4300,9 @@ const char version[] = __DATE__ " " __TIME__;
       MsgDataFile.close();
       SD.remove(MsgDataFileName);
       MsgDataFile = SD.open(MsgDataFileName, FILE_WRITE);
-      Serial.println("msg.txt has been deleted.");
+      Serial.println(F("msg.txt has been deleted."));
     } else {
-      Serial.println("msg.txt does not exist.");
+      Serial.println(F("msg.txt does not exist."));
     }
   }
 
@@ -4137,9 +4312,9 @@ const char version[] = __DATE__ " " __TIME__;
       RawDataFile.close();
       SD.remove(RawDataFileName);
       RawDataFile = SD.open(RawDataFileName, FILE_WRITE);
-      Serial.println("raw.txt has been deleted.");
+      Serial.println(F("raw.txt has been deleted."));
     } else {
-      Serial.println("raw.txt does not exist.");
+      Serial.println(F("raw.txt does not exist."));
     }
   }
 
@@ -4167,7 +4342,7 @@ const char version[] = __DATE__ " " __TIME__;
       }
     } else {
       // if the file didn't open, print an error:
-      Serial.println("error opening file");
+      Serial.println(F("error opening file"));
     }
     RawDataFile.flush(); // will save data
     return RecordCount;
@@ -4197,13 +4372,13 @@ const char version[] = __DATE__ " " __TIME__;
       }
     } else {
       // if the file didn't open, print an error:
-      Serial.println("error opening file");
+      Serial.println(F("error opening file"));
     }
     MsgDataFile.flush(); // will save data
     return RecordCount;
   }
 
-void extractRawCallParts(const char input[15], char callsign[7], char ssid[2]) {
+void extractRawCallParts(const char input[15], char callsign[7], char ssid[3]) {
     // Initialize outputs to empty strings
     callsign[0] = '\0';
     ssid[0] = '\0';
@@ -4222,7 +4397,7 @@ void extractRawCallParts(const char input[15], char callsign[7], char ssid[2]) {
             callsign[callLen] = '\0';  // null-terminate
         }
 
-        if (ssidLen < 2) {
+        if (ssidLen < 3) {
             strncpy(ssid, dash + 1, ssidLen);
             ssid[ssidLen] = '\0';  // null-terminate
         }
@@ -4262,14 +4437,14 @@ void setup(){
   while (!Serial1) // wait for modem
 
   Serial.println();
-  Serial.println("HamMessenger Copyright (C) 2021  Dale Thomas");
-  Serial.println("This program comes with ABSOLUTELY NO WARRANTY.");
-  Serial.println("This is free software, and you are welcome to redistribute it");
-  Serial.println("under certain conditions.");
+  Serial.println(F("HamMessenger Copyright (C) 2021-2025  Dale Thomas"));
+  Serial.println(F("This program comes with ABSOLUTELY NO WARRANTY."));
+  Serial.println(F("This is free software, and you are welcome to redistribute it"));
+  Serial.println(F("under certain conditions."));
   Serial.println();
 
   if (!SD.begin(53)) {
-    Serial.println("sd card init failed!");
+    Serial.println(F("sd card init failed!"));
     while (1);
   }
 

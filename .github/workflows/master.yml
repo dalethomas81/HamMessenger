@@ -1,0 +1,166 @@
+name: Master Build
+
+on:
+  push:
+    branches:
+      - master
+  pull_request:
+    branches:
+      - master
+
+jobs:
+  Arduino-build:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Install Arduino CLI
+        run: |
+          curl -fsSL https://raw.githubusercontent.com/arduino/arduino-cli/master/install.sh | sh
+          sudo mv bin/arduino-cli /usr/local/bin/
+
+      - name: Set up Arduino CLI
+        run: |
+          arduino-cli config init
+          arduino-cli core update-index
+          arduino-cli core install arduino:avr
+
+      - name: Install Adafruit GFX Library (via Library Manager)
+        run: |
+          arduino-cli lib install "Adafruit GFX Library"
+          arduino-cli lib install "SD"
+
+      - name: Clone SH1106, TinyGPSPlus, and Base64 libraries
+        run: |
+          mkdir -p custom-libraries
+          git clone https://github.com/wonho-maker/Adafruit_SH1106 custom-libraries/Adafruit_SH1106
+          git clone https://github.com/mikalhart/TinyGPSPlus custom-libraries/TinyGPSPlus
+          git clone https://github.com/Xander-Electronics/Base64 custom-libraries/Base64
+
+      - name: Compile sketch for Arduino Mega 2560
+        run: |
+          mkdir -p build-out
+          arduino-cli compile \
+            --fqbn arduino:avr:mega \
+            --libraries custom-libraries \
+            --output-dir build-out \
+            Source/HamMessenger
+
+      - name: Rename firmware file for release
+        run: |
+          mkdir -p output
+          cp build-out/HamMessenger.ino.hex output/HamMessenger-mega2560.hex
+
+      - name: Generate changelog from recent commits
+        run: |
+          git log -n 20 --pretty=format:"- %s" > release-notes.txt
+        #  git log $(git describe --tags --abbrev=0)..HEAD --pretty=format:"- %s" # changelog between the last nightly and now
+        #  git log -n 20 --pretty=format:"- %s (%an, %ad)" --date=short # include author names or dates
+          
+      - name: Upload latest master firmware to release
+        uses: ncipollo/release-action@v1
+        with:
+          tag: master
+          name: Master Build
+          prerelease: false
+          draft: false
+          allowUpdates: true
+          artifacts: output/HamMessenger-mega2560.hex
+          bodyFile: release-notes.txt
+
+  gui-windows-build:
+    runs-on: windows-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+
+      - name: Install Python dependencies
+        run: |
+          pip install -r Source/GUI/requirements-windows.txt
+          pip install -U pyinstaller
+
+      - name: Build GUI with PyInstaller
+        run: |
+          cd Source/GUI
+          pyinstaller --noconfirm --windowed --name HamMessenger --onefile Main.py
+
+      - name: Copy built GUI executable
+        run: |
+          mkdir output
+          copy Source\GUI\dist\HamMessenger.exe output\HamMessenger-windows.exe
+
+      - name: Upload GUI to latest master release
+        uses: ncipollo/release-action@v1
+        with:
+          tag: master
+          name: Master Build
+          prerelease: false
+          draft: false
+          allowUpdates: true
+          artifacts: output/HamMessenger-windows.exe
+
+  gui-mac-build:
+    runs-on: macos-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+
+      - name: Install dependencies
+        run: |
+          pip install -r Source/GUI/requirements-macos.txt
+          pip install -U pyinstaller
+
+      #- name: Verify tkinter is available
+      #  run: |
+      #    python -c "import tkinter; print('Tkinter OK:', tkinter.TkVersion)"
+
+      - name: Build macOS GUI with PyInstaller
+        run: |
+          cd Source/GUI
+          python -m PyInstaller --windowed --name HamMessenger --onefile Main.py
+
+      - name: Install create-dmg
+        run: brew install create-dmg
+
+      - name: Create DMG
+        run: |
+          mkdir -p output
+          create-dmg \
+            --volname "HamMessenger" \
+            --window-pos 200 120 \
+            --window-size 800 400 \
+            --icon-size 100 \
+            --icon "HamMessenger.app" 200 190 \
+            --hide-extension "HamMessenger.app" \
+            --app-drop-link 600 185 \
+            output/HamMessenger-mac.dmg \
+            Source/GUI/dist/HamMessenger.app
+
+      #- name: Zip macOS .app bundle
+      #  run: |
+      #    mkdir -p output
+      #    ditto -c -k --sequesterRsrc --keepParent Source/GUI/dist/HamMessenger.app output/HamMessenger-mac.zip
+
+      - name: Upload macOS GUI to latest master release
+        uses: ncipollo/release-action@v1
+        with:
+          tag: master
+          name: Master Build
+          prerelease: false
+          draft: false
+          allowUpdates: true
+          #artifacts: output/HamMessenger-mac.zip
+          artifacts: output/HamMessenger-mac.dmg

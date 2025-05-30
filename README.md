@@ -79,9 +79,10 @@ software:
 ## Libraries ##
 
 Here are links to the non-standard libraries that I am using for this project. All other libraries are standard and can be installed using the library manager built into the Arduino IDE.  
-https://github.com/wonho-maker/Adafruit_SH1106  
-https://github.com/mikalhart/TinyGPSPlus/releases/tag/v1.02b  
-https://github.com/adafruit/Adafruit-GFX-Library/releases/tag/1.10.10  
+- https://github.com/wonho-maker/Adafruit_SH1106  
+- https://github.com/mikalhart/TinyGPSPlus  
+- https://github.com/adafruit/Adafruit-GFX-Library  
+- https://github.com/Xander-Electronics/Base64  
 
 ## Compilation ##
 

@@ -1,13 +1,33 @@
 // devs
+// install python with tk support
+brew install python-tk
+// outputs all installed requirments
 pip freeze > requirements.txt
+// to only output the requirments used in GUI
+pip install pipreqs
+(windows) pipreqs --force --encoding=utf-8 --savepath requirements-windows.txt
+(mac) pipreqs --force --encoding=utf-8 --savepath requirements-macos.txt
 
-// cross-platform
-1) python -m venv venv
-2) source venv/bin/activate  # macOS/Linux or venv\\Scripts\\activate on Windows
-3) pip install -r requirements.txt
-4) python Main.py
+// creating and running from a virtual environment
+1) (windows) python -m venv venv
+   (mac) python3 -m venv venv
+2) (windows) venv\\Scripts\\activate
+   (mac) source venv/bin/activate
+3) (windows) python -m pip install -r requirements-windows.txt
+   (mac) python3 -m pip install -r requirements-macos.txt
+4) (windows) python Main.py
+   (mac) python3 Main.py
 
 // build
 1) pip install pyinstaller
 2) (windows) pyinstaller --noconfirm --windowed --name HamMessenger --onefile Main.py
    (mac) /usr/local/bin/python3 -m PyInstaller --windowed --name HamMessenger --onefile Main.py 
+
+
+// python virtual environment example
+python -m venv /path/to/myenv
+
+source venv/bin/activate      # macOS/Linux
+.\venv\Scripts\activate       # Windows
+
+deactivate                    # Exits the environment
