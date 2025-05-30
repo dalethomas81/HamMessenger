@@ -797,10 +797,11 @@ status_label.grid(row=0, column=6, padx=(10, 0))
 open_log_btn = tk.Button(control_frame, text="Open Log", command=open_log_file)
 open_log_btn.grid(row=0, column=7, padx=(10, 0))
 
+# the themes are not looking well. lets diable it for now on all platforms
 # MacOS handles the theme so we dont do it here
-if platform.system() != "Darwin":
-    theme_toggle_btn = tk.Button(control_frame, text="Theme: Dark", command=toggle_theme)
-    theme_toggle_btn.grid(row=0, column=8, padx=(10, 0))
+#if platform.system() != "Darwin":
+#    theme_toggle_btn = tk.Button(control_frame, text="Theme: Dark", command=toggle_theme)
+#    theme_toggle_btn.grid(row=0, column=8, padx=(10, 0))
 
 # Quick Commands
 quick_frame = tk.Frame(root)
@@ -903,7 +904,7 @@ if config.get("port"):
     port_var.set(config["port"])
 
 # MacOS handles the theme so we dont do it here
-if platform.system() != "Darwin":
-    apply_theme()
+#if platform.system() != "Darwin":
+    #apply_theme()
 
 root.mainloop()
