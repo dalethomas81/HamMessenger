@@ -131,6 +131,14 @@ Panasonic 18650 - don't have a link but you can get them on eBay or Amazon
 
 ## Updates ##
 
+### 31-MAY-2025: Major updates!
+
+I have made some major updates to the board (RF filtering for the PTT), to the enclosure, and to the firmware (many improvements to the display including a dedicated "New Message" display). Additionally, I have created a companion GUI app that you can use to connect HamMessenger to your PC.  
+
+I have ordered parts to begin building 3 new HamMessengers and will begin building them next week. The purpose is to create some instructional videos and documentation to help support anyone that wants to build one themselves. I also plan to donate these builds to my local Ham club.  
+
+There is now a new [Build Instructions](/Documentation/Build%20Instructions/) folder that I will use to put the tutorial references and documentation.  
+
 ### 08-SEP-2021: Troubleshooting freezing
 
 There is an issue where during transmit the unit will freeze or restart. I did some experimenting and found out that its the cable that connects to the radio. It is not shielded at all. I thought the small ferrites would be enough to combat this but obviously not. I did some experimenting and found that if I use larger ferrites and wrap them once that the issue goes away. [Here](/Media/Install/large-ferrites.jpeg/) is a picture of the installation. I will now look at sourcing a shielded cable for this application.
@@ -145,14 +153,6 @@ A few pics:
 [Front](/Media/Unibody-Frame-v1/front.jpeg/)  
 [Side](/Media/Unibody-Frame-v1/side.jpeg/)  
 [Back](/Media/Unibody-Frame-v1/back.jpeg/)  
-
-### 31-MAY-2025: Major updates!
-
-I have made some major updates to the board (RF filtering for the PTT), to the enclosure, and to the firmware (many improvements to the display including a dedicated "New Message" display). Additionally, I have created a companion GUI app that you can use to connect HamMessenger to your PC.  
-
-I have ordered parts to begin building 3 new HamMessengers and will begin building them next week. The purpose is to create some instructional videos and documentation to help support anyone that wants to build one themselves. I also plan to donate these builds to my local Ham club.  
-
-There is now a new [Build Instructions](/Documentation/Build%20Instructions/) folder that I will use to put the tutorial references and documentation.  
 
 ### 14-AUG-2021: Rev v1.1 has arrived and it works!
 

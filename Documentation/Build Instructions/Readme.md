@@ -6,6 +6,6 @@ As is turns out, the model I originally used has a different pinout than most ot
 
 However, there is a solution for the current versions of the board (currently v1.2). You can simply shift the board one pin over and solder a jumper from the vcc line to the pps through-hole (not used otherwise).  
 
-[Front](/Media/Build Instructions/gps-alternate.jpeg/)  
+<img src="Media/Build Instructions/gps-alternate.jpeg" alt="Alt text" style="width: 50%; display: block; margin: auto;" />  
 
 Additionally, I do plan to change this in the next board revision.  
