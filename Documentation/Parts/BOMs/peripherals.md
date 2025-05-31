@@ -7,3 +7,5 @@
 | RADIO | 1 | Baofeng | UV-5R5 | https://www.amazon.com/gp/product/B091YLJ6CN/ref=ppx_yo_dt_b_asin_title_o00_s02?ie=UTF8&psc=1
 | FERRITE | 1 | various | Unknown | Ferrite rings for cables | https://www.amazon.com/gp/product/B01E5E5IY4/ref=ppx_yo_dt_b_asin_title_o07_s00?ie=UTF8&psc=1
 | PCB | 1 | Various | HamMessenger v1.2 | Printed circuit board for HamMessenger | Use Gerber files in Source/CAD/Fusion-360/Builds on a site like PCBWay.com
+| battery | 2 | Various | 18650 battery | https://www.mouser.com/ProductDetail/SparkFun/PRT-12895?qs=WyAARYrbSnY5bEhbpFpipQ%3D%3D
+| SD Card | 1 | Various | SD Card 8gb | https://www.mouser.com/ProductDetail/SanDisk/SDSDQAB-008G?qs=EgF7oUuTQmoYk8ahPy9gPg%3D%3D

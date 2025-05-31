@@ -146,6 +146,14 @@ A few pics:
 [Side](/Media/Unibody-Frame-v1/side.jpeg/)  
 [Back](/Media/Unibody-Frame-v1/back.jpeg/)  
 
+### 31-MAY-2025: Major updates!
+
+I have made some major updates to the board (RF filtering for the PTT), to the enclosure, and to the firmware (many improvements to the display including a dedicated "New Message" display). Additionally, I have created a companion GUI app that you can use to connect HamMessenger to your PC.  
+
+I have ordered parts to begin building 3 new HamMessengers and will begin building them next week. The purpose is to create some instructional videos and documentation to help support anyone that wants to build one themselves. I also plan to donate these builds to my local Ham club.  
+
+There is now a new [Build Instructions](/Documentation/Build%20Instructions/) folder that I will use to put the tutorial references and documentation.  
+
 ### 14-AUG-2021: Rev v1.1 has arrived and it works!
 
 Ok, great news. Revision v1.1 of the HamMessenger board came in from PCBWay and they are great. I built 2 units and was able to encode and decode messages well. I will add some more information later but [here](/Media/Board-v1.1/) is a few pictures for now.
