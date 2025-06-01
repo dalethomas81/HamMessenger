@@ -4,15 +4,12 @@ import serial.tools.list_ports
 from PySide6.QtWidgets import (
     QApplication, QMainWindow, QWidget, QVBoxLayout, QHBoxLayout, QTabWidget,
     QLabel, QComboBox, QPushButton, QPlainTextEdit, QLineEdit, QFileDialog,
-    QMessageBox
+    QMessageBox, QCheckBox
 )
 from PySide6.QtCore import Qt, QTimer, QThread, Signal, QUrl
 from PySide6.QtWebEngineWidgets import QWebEngineView
 from PySide6.QtGui import QTextCharFormat, QTextCursor, QColor, QFont
 from datetime import datetime
-import json
-import os
-import platform
 import re
 import base64
 from queue import Queue
@@ -370,6 +367,8 @@ class HamMessengerGUI(QMainWindow):
         self.setCentralWidget(self.central_widget)
         self.main_layout = QVBoxLayout(self.central_widget)
 
+        self.auto_scroll_enabled = True
+
         self.create_control_panel()
         self.create_command_panel()
         self.create_tabs()
@@ -384,6 +383,11 @@ class HamMessengerGUI(QMainWindow):
                                 "Modem": "orange",
                                 "SD": "red"
                             }
+
+    def toggle_auto_scroll(self, state):
+        #print(f"[Toggle Handler] State: {state} ({type(state)}), Qt.Checked: {Qt.Checked}")
+        self.auto_scroll_enabled = state == Qt.CheckState.Checked.value
+        #print(f"[Toggle Handler] Enabled: {self.auto_scroll_enabled}")
 
     def create_control_panel(self):
         control_row = QHBoxLayout()
@@ -486,6 +490,15 @@ class HamMessengerGUI(QMainWindow):
         self.tabs.addTab(self.msg_tab, "Messages")
 
         self.main_layout.addWidget(self.tabs)
+
+        self.auto_scroll_checkbox = QCheckBox("Auto-Scroll")
+        self.auto_scroll_checkbox.setChecked(True)
+        self.auto_scroll_checkbox.stateChanged.connect(self.toggle_auto_scroll)
+        log_center_layout = QVBoxLayout()
+        log_center_layout.setAlignment(Qt.AlignCenter)
+        log_center_layout.addWidget(self.auto_scroll_checkbox)
+        self.log_layout.addLayout(log_center_layout)
+
 
         # Filter dropdown
         self.filter_box = QComboBox()
@@ -700,20 +713,6 @@ class HamMessengerGUI(QMainWindow):
         self.log_entries.append(log_entry)
         self.render_log_entry(log_entry)
 
-    '''def append_to_log(self, entry):
-        text = entry["text"]
-        tag = entry.get("tag", "Received")  # default to Received if not specified
-        color = self.log_tag_colors.get(tag, "black")
-
-        fmt = QTextCharFormat()
-        fmt.setForeground(QColor(color))
-
-        cursor = self.log_output.textCursor()
-        cursor.movePosition(QTextCursor.End)
-        cursor.insertText(text, fmt)
-        self.log_output.setTextCursor(cursor)
-        self.log_output.ensureCursorVisible()'''
-
     def render_log_entry(self, entry):
         from PySide6.QtGui import QTextCharFormat, QTextCursor, QColor
 
@@ -732,8 +731,12 @@ class HamMessengerGUI(QMainWindow):
         cursor = self.log_output.textCursor()
         cursor.movePosition(QTextCursor.End)
         cursor.insertText(text, fmt)
-        self.log_output.setTextCursor(cursor)
-        self.log_output.ensureCursorVisible()
+
+        #print(f"[Render] Auto-scroll is: {self.auto_scroll_enabled}")
+        if self.auto_scroll_enabled:
+            self.log_output.setTextCursor(cursor)
+            self.log_output.ensureCursorVisible()
+
 
 if __name__ == "__main__":
     app = QApplication(sys.argv)
