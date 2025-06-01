@@ -680,7 +680,10 @@ def change_filter_mode(*args):
     filter_mode = filter_var.get()
     update_log_display()
 
-# ---------- GUI ----------
+load_config()
+
+#region GUI Main
+
 root = tk.Tk()
 #root.iconbitmap("ham_messenger_icon.ico")
 root.title("HamMessenger Serial GUI")
@@ -700,33 +703,42 @@ log_tab.columnconfigure(0, weight=1)
 tabs.add(log_tab, text="Log")
 tabs.add(map_tab, text="Map")
 
-load_config()
+#endregion
 
-# Control Bar
+#region Connection Controls Bar
+
 control_frame = tk.Frame(root)
 control_frame.grid(row=0, column=0, sticky="ew", padx=10, pady=5)
 
+# add port label and combobox
 tk.Label(control_frame, text="Port:").grid(row=0, column=0)
 port_var = tk.StringVar()
 port_menu = ttk.Combobox(control_frame, textvariable=port_var, width=12)
 port_menu.grid(row=0, column=1, sticky="w")
 
+# add refresh button
 refresh_btn = tk.Button(control_frame, text="Refresh", command=refresh_ports)
 refresh_btn.grid(row=0, column=2, padx=(5, 10))
 
+# add baud rate label and combobox
 tk.Label(control_frame, text="Baud:").grid(row=0, column=3)
 baud_var = tk.StringVar(value=config.get("baud", "115200"))
 baud_menu = ttk.Combobox(control_frame, textvariable=baud_var,
                          values=["9600", "19200", "38400", "57600", "115200"], width=10)
 baud_menu.grid(row=0, column=4)
 
+# add connect button
 connect_btn = tk.Button(control_frame, text="Connect", command=connect_serial)
 connect_btn.grid(row=0, column=5, padx=(10, 0))
 
+# add connection status label
 status_label = tk.Label(control_frame, text="Not connected", fg="red")
 status_label.grid(row=0, column=6, padx=(10, 0))
 
-# Quick Commands
+#endregion
+
+#region Commands Bar
+
 quick_frame = tk.Frame(root)
 quick_frame.grid(row=1, column=0, sticky="ew", padx=10, pady=(0, 5))
 
@@ -750,7 +762,10 @@ def add_quick_command():
 add_quick_btn = tk.Button(quick_frame, text="Add", command=add_quick_command)
 add_quick_btn.pack(side=tk.LEFT, padx=(5, 0))
 
-# Log Controls
+#endregion
+
+#region Log Controls Bar
+
 log_control_frame = tk.Frame(root)
 log_control_frame.grid(row=3, column=0, sticky="ew", padx=10)
 
@@ -770,7 +785,10 @@ clear_log_btn.pack(side=tk.LEFT, padx=(10, 0))
 open_log_btn = tk.Button(log_control_frame, text="Open Log", command=open_log_file)
 open_log_btn.pack(side=tk.LEFT, padx=(10, 0))
 
-# Log Viewer
+#endregion
+
+#region Log Viewer Tab
+
 log_box = scrolledtext.ScrolledText(log_tab, wrap=tk.WORD, state=tk.DISABLED)
 log_box.grid(row=0, column=0, sticky="nsew", padx=10, pady=10, in_=log_tab)
 log_box.tag_config("Sent", foreground="blue")
@@ -778,7 +796,10 @@ log_box.tag_config("Received", foreground="green")
 log_box.tag_config("Modem", foreground="orange")
 log_box.tag_config("SD", foreground="red")
 
-# Map Viewer
+#endregion
+
+#region Map Viewer Tab
+
 map_widget = TkinterMapView(map_tab, width=900, height=500)
 map_widget.pack(fill="both", expand=True)
 map_widget.set_position(37.7749, -122.4194)  # Default to SF
@@ -810,6 +831,12 @@ def show_raw_data(raw: str, marker):
     )
     label.pack(padx=4, pady=2)
     popup.after(3000, popup.destroy)
+
+#endregion
+
+#region Messages Tab
+
+#endregion
 
 # Startup
 refresh_ports()

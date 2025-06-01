@@ -31,3 +31,7 @@ source venv/bin/activate      # macOS/Linux
 .\venv\Scripts\activate       # Windows
 
 deactivate                    # Exits the environment
+
+
+
+pip install PySide6
