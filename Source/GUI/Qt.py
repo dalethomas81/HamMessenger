@@ -376,6 +376,7 @@ class HamMessengerGUI(QMainWindow):
         self.populate_serial_ports()
 
         self.marker_registry = {}
+        self.log_entries = []
 
         self.log_tag_colors = {
                                 "Sent": "blue",
@@ -486,6 +487,25 @@ class HamMessengerGUI(QMainWindow):
 
         self.main_layout.addWidget(self.tabs)
 
+        # Filter dropdown
+        self.filter_box = QComboBox()
+        self.filter_box.addItems(["All", "Sent", "Received", "Modem", "SD"])
+        self.filter_box.setFixedWidth(150)
+        self.filter_box.currentTextChanged.connect(self.filter_log_entries)
+
+        # Center the dropdown
+        filter_row = QHBoxLayout()
+        filter_row.addStretch()
+        filter_row.addWidget(self.filter_box)
+        filter_row.addStretch()
+        self.log_layout.addLayout(filter_row)
+
+    def filter_log_entries(self, selected_tag):
+        self.log_output.clear()
+        for entry in self.log_entries:
+            if selected_tag == "All" or entry["tag"] == selected_tag:
+                self.render_log_entry(entry)
+
     def populate_serial_ports(self):
         current_selection = self.port_combo.currentData()
         self.port_combo.clear()
@@ -526,14 +546,18 @@ class HamMessengerGUI(QMainWindow):
             return
         if self.serial_thread and self.serial_thread.isRunning():
             self.serial_thread.write(text + "\n")
-            self.command_input.clear()
+            #self.command_input.clear()
+            self.command_input.setCurrentIndex(-1)
+            self.command_input.setEditText("")
+            self.command_input.setFocus()
 
             timestamp = datetime.now().strftime("[%H:%M:%S]")
             log_entry = {
                 "text": f"{timestamp} TX: {text}\n",
                 "tag": "Sent"
             }
-            self.append_to_log(log_entry)
+            self.log_entries.append(log_entry)
+            self.render_log_entry(log_entry)
         else:
             QMessageBox.warning(self, "Not Connected", "No serial connection is active.")
 
@@ -608,7 +632,8 @@ class HamMessengerGUI(QMainWindow):
                         "text": f"{timestamp} RX: {packet}\n",
                         "tag": tag
                     }
-                    self.append_to_log(log_entry)
+                    self.log_entries.append(log_entry)
+                    self.render_log_entry(log_entry)
 
                     lat = getattr(packet, "latitude", None)
                     lon = getattr(packet, "longitude", None)
@@ -672,11 +697,33 @@ class HamMessengerGUI(QMainWindow):
             "text": f"{timestamp} RX: {line}\n",
             "tag": tag
         }
-        self.append_to_log(log_entry)
+        self.log_entries.append(log_entry)
+        self.render_log_entry(log_entry)
 
-    def append_to_log(self, entry):
+    '''def append_to_log(self, entry):
         text = entry["text"]
         tag = entry.get("tag", "Received")  # default to Received if not specified
+        color = self.log_tag_colors.get(tag, "black")
+
+        fmt = QTextCharFormat()
+        fmt.setForeground(QColor(color))
+
+        cursor = self.log_output.textCursor()
+        cursor.movePosition(QTextCursor.End)
+        cursor.insertText(text, fmt)
+        self.log_output.setTextCursor(cursor)
+        self.log_output.ensureCursorVisible()'''
+
+    def render_log_entry(self, entry):
+        from PySide6.QtGui import QTextCharFormat, QTextCursor, QColor
+
+        # Respect current filter
+        selected_tag = self.filter_box.currentText()
+        if selected_tag != "All" and entry["tag"] != selected_tag:
+            return  # Don't show it
+
+        text = entry["text"]
+        tag = entry.get("tag", "Received")
         color = self.log_tag_colors.get(tag, "black")
 
         fmt = QTextCharFormat()
