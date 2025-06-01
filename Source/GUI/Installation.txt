@@ -20,8 +20,8 @@ pip install pipreqs
 
 // build
 1) pip install pyinstaller
-2) (windows) pyinstaller --noconfirm --windowed --name HamMessenger --onefile Main.py
-   (mac) /usr/local/bin/python3 -m PyInstaller --windowed --name HamMessenger --onefile Main.py 
+2) (windows) pyinstaller --noconfirm --windowed --name HamMessenger --onefile Qt.py
+   (mac) python -m PyInstaller --windowed --name HamMessenger --onefile Qt.py 
 
 
 // python virtual environment example
