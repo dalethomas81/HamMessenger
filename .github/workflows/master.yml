@@ -55,8 +55,6 @@ jobs:
       - name: Generate changelog from recent commits
         run: |
           git log -n 20 --pretty=format:"- %s" > release-notes.txt
-        #  git log $(git describe --tags --abbrev=0)..HEAD --pretty=format:"- %s" # changelog between the last nightly and now
-        #  git log -n 20 --pretty=format:"- %s (%an, %ad)" --date=short # include author names or dates
           
       - name: Upload latest master firmware to release
         uses: ncipollo/release-action@v1
@@ -123,10 +121,6 @@ jobs:
           pip install -r Source/GUI/requirements-macos.txt
           pip install -U pyinstaller
 
-      #- name: Verify tkinter is available
-      #  run: |
-      #    python -c "import tkinter; print('Tkinter OK:', tkinter.TkVersion)"
-
       - name: Build macOS GUI with PyInstaller
         run: |
           cd Source/GUI
@@ -149,11 +143,6 @@ jobs:
             output/HamMessenger-mac.dmg \
             Source/GUI/dist/HamMessenger.app
 
-      #- name: Zip macOS .app bundle
-      #  run: |
-      #    mkdir -p output
-      #    ditto -c -k --sequesterRsrc --keepParent Source/GUI/dist/HamMessenger.app output/HamMessenger-mac.zip
-
       - name: Upload macOS GUI to latest master release
         uses: ncipollo/release-action@v1
         with:
@@ -162,5 +151,4 @@ jobs:
           prerelease: false
           draft: false
           allowUpdates: true
-          #artifacts: output/HamMessenger-mac.zip
           artifacts: output/HamMessenger-mac.dmg
