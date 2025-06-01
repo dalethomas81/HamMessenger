@@ -209,26 +209,69 @@ class HamMessengerGUI(QMainWindow):
         else:
             QMessageBox.warning(self, "Not Connected", "No serial connection is active.")
 
+    def parse_raw_modem_fields(self, line: str) -> dict:
+        pattern = (
+            r'(?:Modem Raw:|SD Raw:)\s*'                   # allow “Modem Raw:” or “SD Raw:”
+            r'SRC:\s*\[(?P<SRC>[^\]]+)\]\s*'               # SRC:[…]
+            r'DST:\s*\[(?P<DST>[^\]]+)\]\s*'               # DST:[…]
+            r'PATH:\s*(?P<PATH>(?:\[[^\]]+\]\s*)+)\s*'     # one or more PATH:[…] groups
+            r'DATA:\s*(?P<DATA>.*)'                        # everything after DATA:
+        )
+        m = re.match(pattern, line, re.IGNORECASE)
+        if not m:
+            return {}
+        fields = m.groupdict()
+        fields['PATH'] = ",".join(re.findall(r'\[([^\]]+)\]', fields['PATH']))
+        
+        return fields
+    
+    def decode_aprs(self, line):
+        fields = self.parse_raw_modem_fields(line)
+        if fields:
+            # KN6ARG-9>SWQTWR,WIDE1-1:`2Z5lr|j/`"7I}146.520MHz_1
+            message = fields['SRC'] + '>' + fields['DST'] + ',' + fields['PATH'] + ':' + fields['DATA']
+            try:
+                packet = self.aprs_parser.parse(message)
+                return packet
+            except:
+                pass
+
+        return None
+
     def handle_serial_data(self, line):
         timestamp = datetime.now().strftime("[%H:%M:%S]")
+
+        # Check for SD Raw prefix and decode base64 if present
+        if re.search(r"^SD Raw:", line, re.IGNORECASE):
+            try:
+                b64 = line[7:].strip()
+                data = base64.b64decode(b64)
+                if len(data) != 173:
+                    self.msg_output.appendPlainText(f"{timestamp} Unexpected packet size: {len(data)}")
+                    return
+                src = data[0:15].decode('ascii', errors='ignore').strip('\x00')
+                dst = data[15:30].decode('ascii', errors='ignore').strip('\x00')
+                path = data[30:40].decode('ascii', errors='ignore').strip('\x00')
+                msg = data[40:165].decode('ascii', errors='ignore').strip('\x00')
+                line = f"SD Raw:SRC:{src} DST:{dst} PATH:{path} DATA:{msg}"
+            except Exception as e:
+                self.msg_output.appendPlainText(f"{timestamp} Base64 decode error: {e}")
+
         self.log_output.appendPlainText(f"{timestamp} {line}")
 
         # Attempt to parse APRS
         try:
-            parsed = self.aprs_parser.parse(line)
-            if parsed:
-                message_queue.put(parsed)
-                formatted = json.dumps(parsed, indent=2)
-                self.msg_output.appendPlainText(f"{timestamp} APRS: {formatted}")
+            packet = self.decode_aprs(line)
+            if packet:
+                message_queue.put(packet)
+                self.msg_output.appendPlainText(f"{timestamp} APRS: {packet}")
 
-                # Plot on map if lat/lon present
-                lat = parsed.get("latitude")
-                lon = parsed.get("longitude")
-                src = parsed.get("source")
+                lat = getattr(packet, "latitude", None)
+                lon = getattr(packet, "longitude", None)
+                src = getattr(packet, "source", "")
                 if lat and lon:
                     js = f"addMarker({lat}, {lon}, '{src}');"
                     self.map_view.page().runJavaScript(js)
-
         except Exception as e:
             self.msg_output.appendPlainText(f"{timestamp} Failed to parse APRS: {e}")
 

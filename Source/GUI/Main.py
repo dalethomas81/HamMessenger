@@ -688,10 +688,9 @@ root = tk.Tk()
 #root.iconbitmap("ham_messenger_icon.ico")
 root.title("HamMessenger Serial GUI")
 root.geometry("950x620")
-root.rowconfigure(5, weight=1)
+root.rowconfigure(6, weight=8)
 root.columnconfigure(0, weight=1)
 
-root.rowconfigure(6, weight=8)
 tabs = ttk_gui.Notebook(root)
 tabs.grid(row=6, column=0, sticky="nsew", padx=10, pady=(0, 10))
 
