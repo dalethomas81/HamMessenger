@@ -4,7 +4,7 @@ import serial.tools.list_ports
 from PySide6.QtWidgets import (
     QApplication, QMainWindow, QWidget, QVBoxLayout, QHBoxLayout, QTabWidget,
     QLabel, QComboBox, QPushButton, QPlainTextEdit, QLineEdit, QFileDialog,
-    QMessageBox, QCheckBox
+    QMessageBox, QCheckBox, QBoxLayout
 )
 from PySide6.QtCore import Qt, QTimer, QThread, Signal, QUrl
 from PySide6.QtWebEngineWidgets import QWebEngineView
@@ -319,7 +319,7 @@ default_quick_commands = ["?"
                           ,"CMD:Settings:Display:Scroll Speed:<0 to 65,535>"
                           ,"CMD:Settings:Display:Invert:<True/False>"]
 
-def movable_widget(widget:QWidget, SpacingX, SpacingY, 
+def movable_widget(layout:QBoxLayout, widget:QWidget, SpacingX, SpacingY, 
                     AlignmentX:Qt.AlignmentFlag=Qt.AlignmentFlag.AlignCenter, 
                     AlignmentY:Qt.AlignmentFlag=Qt.AlignmentFlag.AlignCenter):
 
@@ -328,8 +328,10 @@ def movable_widget(widget:QWidget, SpacingX, SpacingY,
     LayoutV.addSpacing(SpacingY)
 
     LayoutH = QHBoxLayout()
-    LayoutH.addLayout(LayoutV)
     LayoutH.addSpacing(SpacingX)
+    LayoutH.addLayout(LayoutV)
+
+    layout.addLayout(LayoutH)
 
     return LayoutH
 
@@ -407,7 +409,7 @@ class HamMessengerGUI(QMainWindow):
         # create a horizontal layout that will hold all items in a single row for connecting to HamMessenger
         control_row = QHBoxLayout()
 
-        ###
+        '''###
         # create a horizontal layout that will hold the port label, combobox, and refresh button
         port_combo_qbox = QHBoxLayout()
         # create the port label and add it to the port horizontal layout
@@ -431,19 +433,21 @@ class HamMessengerGUI(QMainWindow):
         # set the spacing of all items in the port horizontal layout to 0 so they are all close
         port_combo_qbox.setSpacing(0)
         # finally, add the port horizontal layout to the control row horizontal layout
-        control_row.addLayout(port_combo_qbox)
+        control_row.addLayout(port_combo_qbox)'''
 
-        '''port_combo_qbox = QHBoxLayout()
-        port_label = movable_widget(QLabel("Port:"),0,0,Qt.AlignmentFlag.AlignCenter,Qt.AlignmentFlag.AlignCenter)
-        port_combo_qbox.addLayout(port_label)
-        self.port_combo = movable_widget(QComboBox(),0,0,Qt.AlignmentFlag.AlignCenter,Qt.AlignmentFlag.AlignCenter)
-        port_combo_qbox.addLayout(self.port_combo)
+        port_combo_qbox = QHBoxLayout()
+        label = QLabel("Port:")
+        port_label = movable_widget(port_combo_qbox, label, 0, 0, Qt.AlignmentFlag.AlignCenter, Qt.AlignmentFlag.AlignCenter)
+
+        self.port_combo = QComboBox()
+        combobox = movable_widget(port_combo_qbox, self.port_combo, 0, 0, Qt.AlignmentFlag.AlignCenter, Qt.AlignmentFlag.AlignCenter)
+
         button = QPushButton("Refresh")
         button.clicked.connect(self.populate_serial_ports)
-        refresh_button = movable_widget(button,0,0,Qt.AlignmentFlag.AlignCenter,Qt.AlignmentFlag.AlignCenter)
-        port_combo_qbox.addLayout(refresh_button)
+        refresh_button = movable_widget(port_combo_qbox, button, 0, 3, Qt.AlignmentFlag.AlignCenter, Qt.AlignmentFlag.AlignCenter)
+
         port_combo_qbox.setSpacing(0)
-        control_row.addLayout(port_combo_qbox)'''
+        control_row.addLayout(port_combo_qbox)
 
         # add some spacing between the port horizontal layout and the baud horizontal layout
         #control_row.addSpacing(20)
