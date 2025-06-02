@@ -319,6 +319,20 @@ default_quick_commands = ["?"
                           ,"CMD:Settings:Display:Scroll Speed:<0 to 65,535>"
                           ,"CMD:Settings:Display:Invert:<True/False>"]
 
+def movable_widget(widget:QWidget, SpacingX, SpacingY, 
+                    AlignmentX:Qt.AlignmentFlag=Qt.AlignmentFlag.AlignCenter, 
+                    AlignmentY:Qt.AlignmentFlag=Qt.AlignmentFlag.AlignCenter):
+
+    LayoutV = QVBoxLayout()
+    LayoutV.addWidget(widget, alignment=AlignmentX | AlignmentY)
+    LayoutV.addSpacing(SpacingY)
+
+    LayoutH = QHBoxLayout()
+    LayoutH.addLayout(LayoutV)
+    LayoutH.addSpacing(SpacingX)
+
+    return LayoutH
+
 class SerialThread(QThread):
     message_received = Signal(str)
 
@@ -390,29 +404,105 @@ class HamMessengerGUI(QMainWindow):
         #print(f"[Toggle Handler] Enabled: {self.auto_scroll_enabled}")
 
     def create_control_panel(self):
+        # create a horizontal layout that will hold all items in a single row for connecting to HamMessenger
         control_row = QHBoxLayout()
 
-        control_row.addWidget(QLabel("Port:"))
+        ###
+        # create a horizontal layout that will hold the port label, combobox, and refresh button
+        port_combo_qbox = QHBoxLayout()
+        # create the port label and add it to the port horizontal layout
+        port_combo_qbox.addWidget(QLabel("Port:"),alignment=Qt.AlignmentFlag.AlignRight)
+        # its silly, but now we need to create a vertical layout to add the combobox to and spacing
+        # the reason we need to do this is because the combobox wont line up with the port label or refresh button correctly
+        port_combo_qboxv = QVBoxLayout()
+        # create the combobox
         self.port_combo = QComboBox()
-        control_row.addWidget(self.port_combo)
-
+        # add the combobox to the vertical layout
+        port_combo_qboxv.addWidget(self.port_combo)
+        # add some spacing to make it line up right
+        port_combo_qboxv.addSpacing(0)
+        # add the combobox vertical layout to the port horizontal layout
+        port_combo_qbox.addLayout(port_combo_qboxv)
+        # create a refresh button
         refresh_button = QPushButton("Refresh")
         refresh_button.clicked.connect(self.populate_serial_ports)
-        control_row.addWidget(refresh_button)
+        # add the refresh button to the port horizontal layout
+        port_combo_qbox.addWidget(refresh_button)
+        # set the spacing of all items in the port horizontal layout to 0 so they are all close
+        port_combo_qbox.setSpacing(0)
+        # finally, add the port horizontal layout to the control row horizontal layout
+        control_row.addLayout(port_combo_qbox)
 
-        control_row.addWidget(QLabel("Baud:"))
+        '''port_combo_qbox = QHBoxLayout()
+        port_label = movable_widget(QLabel("Port:"),0,0,Qt.AlignmentFlag.AlignCenter,Qt.AlignmentFlag.AlignCenter)
+        port_combo_qbox.addLayout(port_label)
+        self.port_combo = movable_widget(QComboBox(),0,0,Qt.AlignmentFlag.AlignCenter,Qt.AlignmentFlag.AlignCenter)
+        port_combo_qbox.addLayout(self.port_combo)
+        button = QPushButton("Refresh")
+        button.clicked.connect(self.populate_serial_ports)
+        refresh_button = movable_widget(button,0,0,Qt.AlignmentFlag.AlignCenter,Qt.AlignmentFlag.AlignCenter)
+        port_combo_qbox.addLayout(refresh_button)
+        port_combo_qbox.setSpacing(0)
+        control_row.addLayout(port_combo_qbox)'''
+
+        # add some spacing between the port horizontal layout and the baud horizontal layout
+        #control_row.addSpacing(20)
+
+        ###
+        # create a horizontal layout that will hold the baud label and baud combobox
+        baud_combo_qbox = QHBoxLayout()
+        # its silly, but now we need to create a vertical layout to add the label to and spacing
+        # the reason we need to do this is because the label wont line up with the button correctly
+        baud_lbl_qboxv = QVBoxLayout()
+        # create the baud label and add it to the port horizontal layout
+        baud_label = QLabel("Baud:")
+        baud_lbl_qboxv.addWidget(baud_label,alignment=Qt.AlignmentFlag.AlignRight)
+        # add some spacing to make it line up right
+        baud_lbl_qboxv.addSpacing(3)
+        # add the combobox vertical layout to the port horizontal layout
+        baud_combo_qbox.addLayout(baud_lbl_qboxv)
+        # its silly, but now we need to create a vertical layout to add the combobox to and spacing
+        # the reason we need to do this is because the combobox wont line up with the label correctly
+        baud_combo_qboxv = QVBoxLayout()
+        # create the combobox
         self.baud_combo = QComboBox()
         self.baud_combo.addItems(["9600", "19200", "38400", "57600", "115200"])
         self.baud_combo.setCurrentText("115200")
-        control_row.addWidget(self.baud_combo)
+        # add the combobox to the vertical layout
+        baud_combo_qboxv.addWidget(self.baud_combo)
+        # add some spacing to make it line up right
+        baud_combo_qboxv.addSpacing(3)
+        # add the combobox vertical layout to the port horizontal layout
+        baud_combo_qbox.addLayout(baud_combo_qboxv)
+        # set the spacing of all items in the port horizontal layout to 0 so they are all clos
+        baud_combo_qbox.setSpacing(0)
+        # finally, add the port horizontal layout to the control row horizontal layout
+        control_row.addLayout(baud_combo_qbox)
 
+        # add some spacing between the baud horizontal layout and the connect horizontal layout
+        #control_row.addSpacing(20)
+
+        ###
+        # create a horizontal layout that will hold the connect button and connect label
+        conn_combo_qbox = QHBoxLayout()
+        # create the connect button and add it to the connection horizontal layout
         self.connect_button = QPushButton("Connect")
         self.connect_button.clicked.connect(self.toggle_connection)
-        control_row.addWidget(self.connect_button)
+        conn_combo_qbox.addWidget(self.connect_button)
+        # create the baud label and add it to the port horizontal layout
+        conn_combo_qbox.addWidget(QLabel("Not connected"),alignment=Qt.AlignmentFlag.AlignRight)
+        # set the spacing of all items in the port horizontal layout to 0 so they are all clos
+        conn_combo_qbox.setSpacing(0)
+        # finally, add the port horizontal layout to the control row horizontal layout
+        control_row.addLayout(conn_combo_qbox)
 
-        self.status_label = QLabel("Not connected")
-        control_row.addWidget(self.status_label)
+        #
+        control_row.setSpacing(0)
 
+        #
+        self.main_layout.setSpacing(0)
+
+        #
         self.main_layout.addLayout(control_row)
 
     def create_command_panel(self):
