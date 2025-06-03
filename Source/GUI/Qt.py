@@ -320,27 +320,6 @@ default_quick_commands = ["?"
                           ,"CMD:Settings:Display:Scroll Speed:<0 to 65,535>"
                           ,"CMD:Settings:Display:Invert:<True/False>"]
 
-def movable_widget(layout:QBoxLayout, widget:QWidget, padding: list[int], 
-                    AlignmentX:Qt.AlignmentFlag=Qt.AlignmentFlag.AlignCenter, 
-                    AlignmentY:Qt.AlignmentFlag=Qt.AlignmentFlag.AlignCenter):
-    
-    if not isinstance(padding, list):
-        raise TypeError("Input must be a list.")
-
-    LayoutV = QVBoxLayout()
-    LayoutV.addSpacing(padding[2])
-    LayoutV.addWidget(widget, alignment=AlignmentX | AlignmentY)
-    LayoutV.addSpacing(padding[3])
-
-    LayoutH = QHBoxLayout()
-    LayoutH.addSpacing(padding[0])
-    LayoutH.addLayout(LayoutV)
-    LayoutH.addSpacing(padding[1])
-
-    layout.addLayout(LayoutH)
-
-    return LayoutH
-
 class SerialThread(QThread):
     message_received = Signal(str)
 
@@ -420,7 +399,28 @@ class HamMessengerGUI(QMainWindow):
         #print(f"[Toggle Handler] State: {state} ({type(state)}), Qt.Checked: {Qt.Checked}")
         self.auto_scroll_enabled = state == Qt.CheckState.Checked.value
         #print(f"[Toggle Handler] Enabled: {self.auto_scroll_enabled}")
+    
+    def add_movable_widget(self,layout:QBoxLayout, widget:QWidget, padding: list[int], 
+                        AlignmentX:Qt.AlignmentFlag=Qt.AlignmentFlag.AlignCenter, 
+                        AlignmentY:Qt.AlignmentFlag=Qt.AlignmentFlag.AlignCenter):
+        
+        if not isinstance(padding, list):
+            raise TypeError("Input must be a list.")
 
+        LayoutV = QVBoxLayout()
+        LayoutV.addSpacing(padding[2])
+        LayoutV.addWidget(widget, alignment=AlignmentX | AlignmentY)
+        LayoutV.addSpacing(padding[3])
+
+        LayoutH = QHBoxLayout()
+        LayoutH.addSpacing(padding[0])
+        LayoutH.addLayout(LayoutV)
+        LayoutH.addSpacing(padding[1])
+
+        layout.addLayout(LayoutH)
+
+        return LayoutH
+    
     def create_control_panel(self):
         # create a horizontal layout that will hold all items in a single row for connecting to HamMessenger
         control_row = QHBoxLayout()
@@ -429,14 +429,14 @@ class HamMessengerGUI(QMainWindow):
         port_combo_qbox = QHBoxLayout()
         # create and add port label
         label = QLabel("Port:")
-        movable_widget(port_combo_qbox, label, [50,0,0,0], Qt.AlignmentFlag.AlignRight)
+        self.add_movable_widget(port_combo_qbox, label, [50,0,0,0], Qt.AlignmentFlag.AlignRight)
         # create and add port combobox
         self.port_combo = QComboBox()
-        movable_widget(port_combo_qbox, self.port_combo, [0,0,0,0], Qt.AlignmentFlag.AlignLeft)
+        self.add_movable_widget(port_combo_qbox, self.port_combo, [0,0,0,0], Qt.AlignmentFlag.AlignLeft)
         # create and add refresh button
         button = QPushButton("Refresh")
         button.clicked.connect(self.populate_serial_ports)
-        movable_widget(port_combo_qbox, button, [0,0,0,2], Qt.AlignmentFlag.AlignLeft)
+        self.add_movable_widget(port_combo_qbox, button, [0,0,0,2], Qt.AlignmentFlag.AlignLeft)
         # set spacing between all widgets in port layout
         port_combo_qbox.setSpacing(0)
         # add the port layout to the control row
@@ -450,12 +450,12 @@ class HamMessengerGUI(QMainWindow):
         baud_combo_qbox = QHBoxLayout()
         # create the baud label and add it to the port horizontal layout
         baud_label = QLabel("Baud:")
-        movable_widget(baud_combo_qbox, baud_label, [8,0,0,0], Qt.AlignmentFlag.AlignRight)
+        self.add_movable_widget(baud_combo_qbox, baud_label, [8,0,0,0], Qt.AlignmentFlag.AlignRight)
         # create the combobox
         self.baud_combo = QComboBox()
         self.baud_combo.addItems(["9600", "19200", "38400", "57600", "115200"])
         self.baud_combo.setCurrentText("115200")
-        movable_widget(baud_combo_qbox, self.baud_combo, [0,0,0,0], Qt.AlignmentFlag.AlignLeft)
+        self.add_movable_widget(baud_combo_qbox, self.baud_combo, [0,0,0,0], Qt.AlignmentFlag.AlignLeft)
         # set the spacing of all items in the port horizontal layout to 0 so they are all clos
         baud_combo_qbox.setSpacing(0)
         # finally, add the port horizontal layout to the control row horizontal layout
@@ -470,10 +470,10 @@ class HamMessengerGUI(QMainWindow):
         # create the connect button and add it to the connection horizontal layout
         self.connect_button = QPushButton("Connect")
         self.connect_button.clicked.connect(self.toggle_connection)
-        movable_widget(conn_combo_qbox, self.connect_button, [0,0,0,2.5], Qt.AlignmentFlag.AlignRight)
+        self.add_movable_widget(conn_combo_qbox, self.connect_button, [0,0,0,2.5], Qt.AlignmentFlag.AlignRight)
         # create the baud label and add it to the port horizontal layout
         self.status_label = QLabel("Not connected")
-        movable_widget(conn_combo_qbox, self.status_label, [10,0,0,0], Qt.AlignmentFlag.AlignLeft)
+        self.add_movable_widget(conn_combo_qbox, self.status_label, [10,0,0,0], Qt.AlignmentFlag.AlignLeft)
         # set the spacing of all items in the port horizontal layout to 0 so they are all close
         conn_combo_qbox.setSpacing(0)
         # finally, add the port horizontal layout to the control row horizontal layout
@@ -493,7 +493,7 @@ class HamMessengerGUI(QMainWindow):
         cmd_combo_qbox = QHBoxLayout()
         # create the command label and add it to the command horizontal layout
         cmd_label = QLabel("Command:")
-        movable_widget(cmd_combo_qbox, cmd_label, [20,0,0,0], Qt.AlignmentFlag.AlignRight)
+        self.add_movable_widget(cmd_combo_qbox, cmd_label, [20,0,0,0], Qt.AlignmentFlag.AlignRight)
         # create the command combobox and add it to the command horizontal layout
         self.command_input = QComboBox()
         self.command_input.setEditable(True)
@@ -502,7 +502,7 @@ class HamMessengerGUI(QMainWindow):
         self.command_input.lineEdit().returnPressed.connect(self.send_serial_command)
         self.command_input.setFont(self.mono_font)
         self.command_input.setMinimumWidth(800)
-        movable_widget(cmd_combo_qbox, self.command_input, [0,0,0,0], Qt.AlignmentFlag.AlignLeft)
+        self.add_movable_widget(cmd_combo_qbox, self.command_input, [0,0,0,0], Qt.AlignmentFlag.AlignLeft)
         # set the spacing of all items in the command horizontal layout to 0 so they are all close
         cmd_combo_qbox.setSpacing(0)
         # finally, add the command horizontal layout to the command row horizontal layout
@@ -516,7 +516,7 @@ class HamMessengerGUI(QMainWindow):
         self.send_button = QPushButton("Send")
         self.send_button.clicked.connect(self.send_serial_command)
         #self.send_button.setMaximumWidth(100)
-        movable_widget(cmd_row, self.send_button, [8,0,0,0], Qt.AlignmentFlag.AlignLeft)
+        self.add_movable_widget(cmd_row, self.send_button, [8,0,0,0], Qt.AlignmentFlag.AlignLeft)
 
         #
         cmd_row.setSpacing(0)
@@ -607,26 +607,26 @@ class HamMessengerGUI(QMainWindow):
         message_send_qbox.addStretch()
         #
         label = QLabel("To:")
-        movable_widget(message_send_qbox, label, [0,5,0,0], Qt.AlignmentFlag.AlignRight, Qt.AlignmentFlag.AlignTop)
+        self.add_movable_widget(message_send_qbox, label, [0,5,0,0], Qt.AlignmentFlag.AlignRight, Qt.AlignmentFlag.AlignTop)
         #
         self.message_to = QLineEdit()
         self.message_to.setMaximumWidth(80)
         self.message_to.setFont(self.mono_font)
         self.message_to.setMaxLength(9) # 2x3 callsing with a dash and 2 digit ssid is 9 chars
-        movable_widget(message_send_qbox, self.message_to, [0,30,0,0], Qt.AlignmentFlag.AlignLeft)
+        self.add_movable_widget(message_send_qbox, self.message_to, [0,30,0,0], Qt.AlignmentFlag.AlignLeft)
         #
         label = QLabel("Message:")
-        movable_widget(message_send_qbox, label, [0,5,0,0], Qt.AlignmentFlag.AlignRight, Qt.AlignmentFlag.AlignTop)
+        self.add_movable_widget(message_send_qbox, label, [0,5,0,0], Qt.AlignmentFlag.AlignRight, Qt.AlignmentFlag.AlignTop)
         #
         self.message_msg = QLineEdit()
         self.message_msg.setMinimumWidth(400)
         self.message_msg.setFont(self.mono_font)
         self.message_to.setMaxLength(99) # max message length for HamMessenger is 99 chars for now
-        movable_widget(message_send_qbox, self.message_msg, [0,30,0,0], Qt.AlignmentFlag.AlignLeft)
+        self.add_movable_widget(message_send_qbox, self.message_msg, [0,30,0,0], Qt.AlignmentFlag.AlignLeft)
         #
         button = QPushButton("Send")
         button.clicked.connect(self.send_message)
-        movable_widget(message_send_qbox, button, [0,0,0,3], Qt.AlignmentFlag.AlignLeft)
+        self.add_movable_widget(message_send_qbox, button, [0,0,0,3], Qt.AlignmentFlag.AlignLeft)
         #
         message_send_qbox.setSpacing(0)
         message_send_qbox.addStretch()
@@ -704,7 +704,7 @@ class HamMessengerGUI(QMainWindow):
             }
             self.msg_entries.append(msg_entry)
             self.render_msg_entry(msg_entry)
-            
+
             self.message_msg.clear()
             self.message_msg.setFocus()
 
