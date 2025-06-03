@@ -391,6 +391,8 @@ class HamMessengerGUI(QMainWindow):
         self.main_layout = QVBoxLayout(self.central_widget)
 
         self.auto_scroll_enabled = True
+        self.message_to = "NOCALL-0"
+        self.messsage_msg = "Hello, HamMessenger."
 
         self.create_control_panel()
         self.create_command_panel()
@@ -402,14 +404,15 @@ class HamMessengerGUI(QMainWindow):
         self.msg_entries = []
 
         self.log_tag_colors = {
-                                "Sent": "blue",
+                                "Sent": "blue", # deepskyblue
                                 "Received": "green",
                                 "Modem": "orange",
                                 "SD": "red"
                             }
         
         self.msg_tag_colors = {
-                                "Received": "deepskyblue",
+                                "Sent": "blue", # deepskyblue
+                                "Received": "green",
                                 "Message": "purple",
                             }
 
@@ -586,7 +589,6 @@ class HamMessengerGUI(QMainWindow):
         log_center_layout.addWidget(self.auto_scroll_checkbox)
         self.log_layout.addLayout(log_center_layout)
 
-
         # Filter dropdown
         self.filter_box = QComboBox()
         self.filter_box.addItems(["All", "Sent", "Received", "Modem", "SD"])
@@ -599,6 +601,37 @@ class HamMessengerGUI(QMainWindow):
         filter_row.addWidget(self.filter_box)
         filter_row.addStretch()
         self.log_layout.addLayout(filter_row)
+
+        #
+        message_send_qbox = QHBoxLayout()
+        message_send_qbox.addStretch()
+        #
+        label = QLabel("To:")
+        movable_widget(message_send_qbox, label, [0,5,0,0], Qt.AlignmentFlag.AlignRight, Qt.AlignmentFlag.AlignTop)
+        #
+        self.message_to = QLineEdit()
+        self.message_to.setMaximumWidth(80)
+        self.message_to.setFont(self.mono_font)
+        self.message_to.setMaxLength(9) # 2x3 callsing with a dash and 2 digit ssid is 9 chars
+        movable_widget(message_send_qbox, self.message_to, [0,30,0,0], Qt.AlignmentFlag.AlignLeft)
+        #
+        label = QLabel("Message:")
+        movable_widget(message_send_qbox, label, [0,5,0,0], Qt.AlignmentFlag.AlignRight, Qt.AlignmentFlag.AlignTop)
+        #
+        self.message_msg = QLineEdit()
+        self.message_msg.setMinimumWidth(400)
+        self.message_msg.setFont(self.mono_font)
+        self.message_to.setMaxLength(99) # max message length for HamMessenger is 99 chars for now
+        movable_widget(message_send_qbox, self.message_msg, [0,30,0,0], Qt.AlignmentFlag.AlignLeft)
+        #
+        button = QPushButton("Send")
+        button.clicked.connect(self.send_message)
+        movable_widget(message_send_qbox, button, [0,0,0,3], Qt.AlignmentFlag.AlignLeft)
+        #
+        message_send_qbox.setSpacing(0)
+        message_send_qbox.addStretch()
+        #
+        self.msg_layout.addLayout(message_send_qbox)
 
     def filter_log_entries(self, selected_tag):
         self.log_output.clear()
@@ -639,6 +672,44 @@ class HamMessengerGUI(QMainWindow):
             self.serial_thread.start()
             self.connect_button.setText("Disconnect")
             self.status_label.setText(f"Connected to {port}")
+
+    def parse_callsign_ssid(self, s):
+        # Normalize dash types: convert en dash (–) to hyphen (-)
+        s = s.replace("–", "-")
+        
+        # Match callsign and SSID
+        match = re.match(r"^([A-Z0-9]+)-(\d+)$", s, re.IGNORECASE)
+        if match:
+            callsign, ssid = match.groups()
+            return callsign.upper(), ssid
+        else:
+            return s.upper(), ""  # If no SSID, return full string as callsign
+
+    def send_message(self):
+        to = self.message_to
+        msg = self.message_msg
+        if not to or not msg:
+            return
+        if self.serial_thread and self.serial_thread.isRunning():
+            # CMD:Message:<Recipient Callsign>:<Recipient SSID>:<Message>
+            callsign, ssid = self.parse_callsign_ssid(to.text())
+            text = f"CMD:Message:{callsign}:{ssid}:{msg.text()}"
+
+            self.serial_thread.write(text + "\n")
+
+            timestamp = datetime.now().strftime("[%H:%M:%S]")
+            msg_entry = {
+                "text": f"{timestamp} TX: From: {self.my_callsign} To: {to.text()} Message: {msg.text()}\n",
+                "tag": "Sent"
+            }
+            self.msg_entries.append(msg_entry)
+            self.render_msg_entry(msg_entry)
+            
+            self.message_msg.clear()
+            self.message_msg.setFocus()
+
+        else:
+            QMessageBox.warning(self, "Not Connected", "No serial connection is active.")
 
     def send_serial_command(self):
         text = self.command_input.currentText().strip()
@@ -748,7 +819,7 @@ class HamMessengerGUI(QMainWindow):
                     if packet.data_type_id == ":": # is a message
                         # :NOCALL-3 :Hi!{006
                         msg_entry = {
-                            "text": f"{timestamp} From: {packet.source} To: {packet.addressee} Message: {packet.message}\n",
+                            "text": f"{timestamp} RX: From: {packet.source} To: {packet.addressee} Message: {packet.message}\n",
                             "tag": "Received" if packet.addressee == self.my_callsign else "Message"
                         }
                         self.msg_entries.append(msg_entry)
