@@ -375,6 +375,7 @@ class SerialThread(QThread):
 class HamMessengerGUI(QMainWindow):
     def __init__(self):
         super().__init__()
+        self.my_callsign = "NOCALL-0"
         
         self.mono_font = QFont("Courier New")
         self.mono_font.setStyleHint(QFont.Monospace)
@@ -398,12 +399,18 @@ class HamMessengerGUI(QMainWindow):
 
         self.marker_registry = {}
         self.log_entries = []
+        self.msg_entries = []
 
         self.log_tag_colors = {
                                 "Sent": "blue",
                                 "Received": "green",
                                 "Modem": "orange",
                                 "SD": "red"
+                            }
+        
+        self.msg_tag_colors = {
+                                "Received": "deepskyblue",
+                                "Message": "purple",
                             }
 
     def toggle_auto_scroll(self, state):
@@ -694,6 +701,11 @@ class HamMessengerGUI(QMainWindow):
     def handle_serial_data(self, line):
         timestamp = datetime.now().strftime("[%H:%M:%S]")
 
+        # "Modem Raw:Callsign: KN4UAH-0"
+        match = re.search(r"Modem Raw:Callsign:\s*(\S+)", line, re.IGNORECASE)
+        if match:
+            self.my_callsign = match.group(1)
+
         if re.search(r"^SD Raw:", line, re.IGNORECASE):
             tag = "SD"
         elif re.search(r"^Modem Raw:", line, re.IGNORECASE):
@@ -727,7 +739,21 @@ class HamMessengerGUI(QMainWindow):
             try:
                 packet = self.decode_aprs(line)
                 if packet:
-                    message_queue.put(packet)  # why are we doing this?
+                    if packet.data_type_id == ">": # status
+                        is_status = True
+                    if packet.data_type_id == "!": # Position
+                        is_position = True
+                    if packet.data_type_id == "`": # MIC-E
+                        is_mice = True
+                    if packet.data_type_id == ":": # is a message
+                        # :NOCALL-3 :Hi!{006
+                        msg_entry = {
+                            "text": f"{timestamp} From: {packet.source} To: {packet.addressee} Message: {packet.message}\n",
+                            "tag": "Received" if packet.addressee == self.my_callsign else "Message"
+                        }
+                        self.msg_entries.append(msg_entry)
+                        self.render_msg_entry(msg_entry)
+                        #message_queue.put(packet)  # why are we doing this?
                     #self.msg_output.appendPlainText(f"{timestamp} APRS: {packet}")
                     log_entry = {
                         "text": f"{timestamp} RX: {packet}\n",
@@ -832,6 +858,21 @@ class HamMessengerGUI(QMainWindow):
         }
         self.log_entries.append(log_entry)
         self.render_log_entry(log_entry)
+
+    def render_msg_entry(self, entry):
+        from PySide6.QtGui import QTextCharFormat, QTextCursor, QColor
+
+        text = entry["text"]
+        tag = entry.get("tag", "Message")
+        fmt = QTextCharFormat()
+        fmt.setForeground(QColor(self.msg_tag_colors.get(tag, "black")))
+
+        cursor = self.msg_output.textCursor()
+        cursor.movePosition(QTextCursor.End)
+        cursor.insertText(text, fmt)
+
+        self.msg_output.setTextCursor(cursor)
+        self.msg_output.ensureCursorVisible()
 
     def render_log_entry(self, entry):
         from PySide6.QtGui import QTextCharFormat, QTextCursor, QColor
