@@ -13,6 +13,7 @@ from datetime import datetime
 import re
 import base64
 from queue import Queue
+import html
 
 # Placeholder for APRS functionality
 from aprspy import APRS
@@ -682,6 +683,14 @@ class HamMessengerGUI(QMainWindow):
 
         return None
 
+    def handle_js_result(self, result):
+        if result is None:
+            print("[JS Error] JavaScript execution failed or returned None.")
+        elif isinstance(result, str) and result.strip() == "":
+            print("[JS Error] JavaScript returned an empty string.")
+        #else:
+            #print("[JS Result]:", result)
+
     def handle_serial_data(self, line):
         timestamp = datetime.now().strftime("[%H:%M:%S]")
 
@@ -730,8 +739,9 @@ class HamMessengerGUI(QMainWindow):
                     lat = getattr(packet, "latitude", None)
                     lon = getattr(packet, "longitude", None)
                     src = getattr(packet, "source", "")
+                    info = getattr(packet, "info", "")
 
-                    symbol_description = symbol_map.get(f'{packet.symbol_table}{packet.symbol_id}', 'Unknown')
+                    #symbol_description = symbol_map.get(f'{packet.symbol_table}{packet.symbol_id}', 'Unknown')
                     symbol_code = f"{packet.symbol_table}{packet.symbol_id}"
                     emoji = emoji_map.get(symbol_code, "📍")  # default pin if unknown  
 
@@ -742,45 +752,76 @@ class HamMessengerGUI(QMainWindow):
                         # Remove existing marker if present
                         if key in self.marker_registry:
                             prev_marker = self.marker_registry[key]
-                            js_remove = f"map.removeLayer({prev_marker});"
-                            self.map_view.page().runJavaScript(js_remove)
+                            js_remove = f"""
+                                        try {{
+                                            map.removeLayer({prev_marker});
+                                            'success';
+                                        }} catch (err) {{
+                                            console.error('[Remove Marker Error]', err);
+                                            '[Remove Marker Error] ' + err.toString();
+                                        }}
+                                        """
+                            self.map_view.page().runJavaScript(js_remove, self.handle_js_result)
+
 
                         # Add new marker with emoji (without recentering the map)
-                        popup_text = f"{emoji} {src}"
+                        #popup_text = f"{emoji} {src}"
+                        #info.replace("`", "\\`").replace("$", "\\$")
+                        info.replace("\\", "\\\\").replace("'", "\\'").replace("\"", "\\\"").replace("\n", "\\n").replace("\r", "")
+                        popup_text = f"{emoji} {src}<br>{info}"
+                        #popup_text = f"{emoji} {src}" + (f"<br>{html.escape(info)}" if info else "")
                         js_add = f"""
-                                    var zoom = map.getZoom();
-                                    var scale = 1 + (zoom - 10) * 0.25;
-                                    var {marker_id} = L.marker([{lat}, {lon}], {{
-                                        icon: L.divIcon({{
-                                            className: 'emoji-icon',
-                                            html: '{emoji}',
-                                            iconSize: null
-                                        }})
-                                    }}).addTo(map).bindPopup('{popup_text}');
-                                    document.querySelectorAll('.emoji-icon').forEach(function(el) {{ el.style.fontSize = (24 * scale) + 'px'; }});
+                                    try {{
+                                        var zoom = map.getZoom();
+                                        var scale = 1 + (zoom - 10) * 0.25;
+                                        var {marker_id} = L.marker([{lat}, {lon}], {{
+                                            icon: L.divIcon({{
+                                                className: 'emoji-icon',
+                                                html: '{emoji}',
+                                                iconSize: null
+                                            }})
+                                        }}).addTo(map).bindPopup(`{popup_text}`);
+                                        document.querySelectorAll('.emoji-icon').forEach(function(el) {{
+                                            el.style.fontSize = (24 * scale) + 'px';
+                                        }});
+                                        'success'
+                                    }} catch (err) {{
+                                        'JS Error: ' + err.message
+                                    }}
                                     """
-                        self.map_view.page().runJavaScript(js_add)
+                        #self.map_view.page().runJavaScript(js_add)
+                        self.map_view.page().runJavaScript(js_add, self.handle_js_result)
+
 
                         # Add zoom scaling logic
                         js_scale = """
-                                    map.off('zoomend');
-                                    map.on('zoomend', function() {
-                                        var zoom = map.getZoom();
-                                        var scale = 1 + (zoom - 10) * 0.25;
-                                        var icons = document.getElementsByClassName('emoji-icon');
-                                        for (var i = 0; i < icons.length; i++) {
-                                            icons[i].style.fontSize = (24 * scale) + 'px';
-                                        }
-                                    });
+                                    try {
+                                        map.off('zoomend');
+                                        map.on('zoomend', function() {
+                                            var zoom = map.getZoom();
+                                            var scale = 1 + (zoom - 10) * 0.25;
+                                            var icons = document.getElementsByClassName('emoji-icon');
+                                            for (var i = 0; i < icons.length; i++) {
+                                                icons[i].style.fontSize = (24 * scale) + 'px';
+                                            }
+                                        });
+                                        'success';
+                                    } catch (err) {
+                                        console.error('[Zoom Scale Error]', err);
+                                        '[Zoom Scale Error] ' + err.toString();
+                                    }
                                     """
-                        self.map_view.page().runJavaScript(js_scale)
 
-                        # Optionally open popup (this doesn't pan the map)
+                        #self.map_view.page().runJavaScript(js_scale)
+                        self.map_view.page().runJavaScript(js_scale, self.handle_js_result)
+
+                        # Optionally open popup
                         #js_popup = f"{marker_id}.openPopup();"
                         #self.map_view.page().runJavaScript(js_popup)
 
                         # Store reference
                         self.marker_registry[key] = marker_id
+
             except Exception as e:
                 #self.msg_output.appendPlainText(f"{timestamp} Failed to parse APRS: {e}")
                 pass
