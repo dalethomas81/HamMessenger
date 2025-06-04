@@ -20,7 +20,7 @@ jobs:
 
       - name: Generate date-based tag
         id: vars
-        run: echo "tag_name=dev-$(date +'%Y%m%d')" >> $GITHUB_OUTPUT
+        run: echo "tag_name=dev-$(date +'%Y%m%d-%H%M%S')" >> $GITHUB_OUTPUT
 
       - name: Configure Git
         run: |

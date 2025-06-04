@@ -9,18 +9,18 @@ jobs:
   create-release:
     runs-on: ubuntu-latest
     outputs:
-      upload_url: ${{ steps.create_release.outputs.upload_url }}
+      upload_url: ${{ steps.release.outputs.upload_url }}
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
 
       - name: Create GitHub Release
-        id: create_release
-        uses: ncipollo/release-action@v1
+        id: release
+        uses: softprops/action-gh-release@v1
         with:
-          tag: ${{ github.ref_name }}
+          tag_name: ${{ github.ref_name }}
           name: Release ${{ github.ref_name }}
-          generateReleaseNotes: true
+          generate_release_notes: true
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
