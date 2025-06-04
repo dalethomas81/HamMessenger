@@ -18,11 +18,11 @@ I will add some videos and pictures of the device in action asap. Please feel fr
 <table>
   <tr>
     <td align="center">
-      <img src="https://github.com/dalethomas81/HamMessenger/blob/master/Media/Screenshots/GUI/log-macos-dark.png" alt="Screenshot 1" width="300px" style="border:1px solid #ccc; border-radius:8px;" /><br/>
+      <img src="Media/Screenshots/GUI/log-macos-dark.png" alt="Screenshot 1" width="300px" style="border:1px solid #ccc; border-radius:8px;" /><br/>
       <sub>MacOS Log Screen</sub>
     </td>
     <td align="center">
-      <img src="https://github.com/dalethomas81/HamMessenger/blob/master/Media/Screenshots/GUI/map-macos-dark.png" alt="Screenshot 2" width="300px" style="border:1px solid #ccc; border-radius:8px;" /><br/>
+      <img src="Media/Screenshots/GUI/map-macos-dark.png" alt="Screenshot 2" width="300px" style="border:1px solid #ccc; border-radius:8px;" /><br/>
       <sub>MacOS Map Screen</sub>
     </td>
   </tr>
@@ -31,11 +31,11 @@ I will add some videos and pictures of the device in action asap. Please feel fr
 <table>
   <tr>
     <td align="center">
-      <img src="https://github.com/dalethomas81/HamMessenger/blob/master/Media/Screenshots/GUI/msg-macos-dark.png" alt="Screenshot 1" width="300px" style="border:1px solid #ccc; border-radius:8px;" /><br/>
+      <img src="Media/Screenshots/GUI/msg-macos-dark.png" alt="Screenshot 1" width="300px" style="border:1px solid #ccc; border-radius:8px;" /><br/>
       <sub>MacOS Message Screen</sub>
     </td>
     <td align="center">
-      <img src="https://github.com/dalethomas81/HamMessenger/blob/master/Media/Screenshots/GUI/cmd-macos-dark.png" alt="Screenshot 2" width="300px" style="border:1px solid #ccc; border-radius:8px;" /><br/>
+      <img src="Media/Screenshots/GUI/cmd-macos-dark.png" alt="Screenshot 2" width="300px" style="border:1px solid #ccc; border-radius:8px;" /><br/>
       <sub>MacOS Commands Example</sub>
     </td>
   </tr>
