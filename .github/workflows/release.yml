@@ -1,45 +1,26 @@
-name: Development Build
+name: Release Build
 
 on:
   push:
-    branches:
-      - develop
-  pull_request:
-    branches:
-      - develop
+    tags:
+      - 'v*'
 
 jobs:
   create-release:
     runs-on: ubuntu-latest
     outputs:
       upload_url: ${{ steps.create_release.outputs.upload_url }}
-      tag_name: ${{ steps.vars.outputs.tag_name }}
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
 
-      - name: Generate date-based tag
-        id: vars
-        run: echo "tag_name=dev-$(date +'%Y%m%d')" >> $GITHUB_OUTPUT
-
-      - name: Configure Git
-        run: |
-          git config user.name "github-actions[bot]"
-          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-
-      - name: Create and push tag
-        run: |
-          git tag -f ${{ steps.vars.outputs.tag_name }}
-          git push origin ${{ steps.vars.outputs.tag_name }} --force
-
       - name: Create GitHub Release
         id: create_release
-        uses: actions/create-release@latest
+        uses: ncipollo/release-action@v1
         with:
-          tag_name: ${{ steps.vars.outputs.tag_name }}
-          release_name: Development Build ${{ steps.vars.outputs.tag_name }}
-          draft: false
-          prerelease: true
+          tag: ${{ github.ref_name }}
+          name: Release ${{ github.ref_name }}
+          generateReleaseNotes: true
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
