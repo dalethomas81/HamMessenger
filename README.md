@@ -1,11 +1,10 @@
 # HamMessenger # 
-
-Click [here](https://github.com/dalethomas81/HamMessenger#updates) for updates.
+![Tests](https://github.com/dalethomas81/HamMessenger/actions/workflows/development.yml/badge.svg)  
+![Release Build](https://github.com/dalethomas81/HamMessenger/actions/workflows/release.yml/badge.svg)  
 
 Hands on article about HamMessenger in IEEE Spectrum magazine [here](https://spectrum.ieee.org/ham-radio-text-hacking)  
 Arduino blog post on HamMessenger [here](https://blog.arduino.cc/2021/07/27/send-text-messages-over-ham-radio-with-the-hammessenger/?queryID=undefined)  
 Hackaday blog post on HamMessenger [here](https://hackaday.com/blog/?s=hammessenger)  
-
 
 HamMessenger is a portable, battery powered device that runs on a microcontroller and interfaces with an inexpensive ham radio to send and receive text messages and provide position updates using the [APRS](http://www.aprs.org/doc/APRS101.PDF) protocol. Messages and position updates sent via HamMessenger can be viewed on sites such as [aprs.fi](https://aprs.fi). HamMessenger messages are NOT encrypted!  
 
@@ -20,12 +19,25 @@ I will add some videos and pictures of the device in action asap. Please feel fr
 <table>
   <tr>
     <td align="center">
-      <img src="https://github.com/dalethomas81/HamMessenger/blob/master/Media/Screenshots/GUI.png" alt="Screenshot 1" width="300px" style="border:1px solid #ccc; border-radius:8px;" /><br/>
-      <sub>Raw Serial Data Output</sub>
+      <img src="Media/Screenshots/GUI/log-macos-dark.png" alt="Screenshot 1" width="300px" style="border:1px solid #ccc; border-radius:8px;" /><br/>
+      <sub>MacOS Log Screen</sub>
     </td>
     <td align="center">
-      <img src="https://github.com/dalethomas81/HamMessenger/blob/master/Media/Screenshots/GUI2.png" alt="Screenshot 2" width="300px" style="border:1px solid #ccc; border-radius:8px;" /><br/>
-      <sub>Station Markers on Map Tab</sub>
+      <img src="Media/Screenshots/GUI/map-macos-dark.png" alt="Screenshot 2" width="300px" style="border:1px solid #ccc; border-radius:8px;" /><br/>
+      <sub>MacOS Map Screen</sub>
+    </td>
+  </tr>
+</table>
+
+<table>
+  <tr>
+    <td align="center">
+      <img src="Media/Screenshots/GUI/msg-macos-dark.png" alt="Screenshot 1" width="300px" style="border:1px solid #ccc; border-radius:8px;" /><br/>
+      <sub>MacOS Message Screen</sub>
+    </td>
+    <td align="center">
+      <img src="Media/Screenshots/GUI/cmd-macos-dark.png" alt="Screenshot 2" width="300px" style="border:1px solid #ccc; border-radius:8px;" /><br/>
+      <sub>MacOS Commands Example</sub>
     </td>
   </tr>
 </table>
@@ -130,6 +142,14 @@ Battery:
 Panasonic 18650 - don't have a link but you can get them on eBay or Amazon  
 
 ## Updates ##
+
+### 31-MAY-2025: Major updates!
+
+I have made some major updates to the board (RF filtering for the PTT), to the enclosure, and to the firmware (many improvements to the display including a dedicated "New Message" display). Additionally, I have created a companion GUI app that you can use to connect HamMessenger to your PC.  
+
+I have ordered parts to begin building 3 new HamMessengers and will begin building them next week. The purpose is to create some instructional videos and documentation to help support anyone that wants to build one themselves. I also plan to donate these builds to my local Ham club.  
+
+There is now a new [Build Instructions](/Documentation/Build%20Instructions/) folder that I will use to put the tutorial references and documentation.  
 
 ### 08-SEP-2021: Troubleshooting freezing
 

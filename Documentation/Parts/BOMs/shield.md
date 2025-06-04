@@ -3,8 +3,7 @@
 | D2 | 1 | BIVAR | SM0805URC | Standard LEDs - SMD Ultra Red 660 nm Water Clear | https://www.mouser.com/ProductDetail/749-SM0805URC
 | D1 | 1 | BIVAR | SM0805UGC | Standard LEDs - SMD Ultra Green 525 nm Water Clear | https://www.mouser.com/ProductDetail/749-SM0805UGC
 | C4 | 1 | KEMET | C0805C105J4RECTU | Multilayer Ceramic Capacitors MLCC - SMD/SMT 16V 1uF X7R 0805 5% | https://www.mouser.com/ProductDetail/80-C0805C105J4RECTU
-| C3 | 1 | KEMET | C0805C104J4RACTU | Multilayer Ceramic Capacitors MLCC - SMD/SMT 16V 0.1uF X7R 0805 5% | https://www.mouser.com/ProductDetail/80-C0805C104J4R
-| C2 | 1 | KEMET | C0805C104J4RACTU | Multilayer Ceramic Capacitors MLCC - SMD/SMT 16V 0.1uF X7R 0805 5% | https://www.mouser.com/ProductDetail/80-C0805C104J4R
+| C2,C3 | 2 | KEMET | C0805C104J4RACTU | Multilayer Ceramic Capacitors MLCC - SMD/SMT 16V 0.1uF X7R 0805 5% | https://www.mouser.com/ProductDetail/80-C0805C104J4R
 | C1 | 1 | KEMET | T591B475M035ATE200 | Tantalum Capacitors - Polymer 35V 4.7uF 1311 20% E SR=200mOhm AEC-Q200 | https://www.mouser.com/ProductDetail/80-T591B475M35ATE200
 | R1 | 1 | Bourns | CR0805-JW-101ELF | Thick Film Resistors - SMD 100ohm 5% | https://www.mouser.com/ProductDetail/Bourns/CR0805-JW-101ELF?qs=wL7NMIHXUPl5EcPQbx1sug%3D%3D
 | J2 | 1 | Seeed Studio | 110990037 | Seeed Studio Accessories Grove - Universal 4 pin connector 90 (10 PCs) | https://www.mouser.com/ProductDetail/713-110990037
@@ -22,8 +21,8 @@
 | U2 | 1 | Texas Instruments | TXB0104PWR | Translation - Voltage Levels 4-Bit Bi-directional V-Level Translator | https://www.mouser.com/ProductDetail/595-TXB0104PWR
 | VR1 | 1 | Bourns | 3313J-2-104E | Trimmer Resistors - SMD 3MM TRIM POT 100K SM D SEALED | https://www.mouser.com/ProductDetail/652-3313J-2-104E
 | GPS | 1 | Various | gyneo6mv2 | GPS Reciever | https://a.co/d/f8HjOKv (Note: please pay attention to the pinout and form-factor. it may be necessary to solder a small jumper to match the pinout.)
-| OLED | 1 | Adafruit | ssh1106 | Oled Display 128x64 I2C sh1106 | https://a.co/d/fJx9IbG
+| OLED | 1 | Adafruit | ssh1106 | Oled Display 128x64 I2C sh1106 1.3" | https://a.co/d/fJx9IbG (Note: you can buy many different brands jsut be sure it is a 128x64 and 1.3" ssh1106 I2C. Alternatively, you can update the firmware to match your model.)
 | M1 | 1 | Arduino | Ardunio Mega 2560 R3 | Arduino Mega 2560 Dev Board | https://www.amazon.com/gp/product/B01H4ZLZLQ/ref=ppx_yo_dt_b_asin_title_o05_s01?ie=UTF8&psc=1
 | M2 | 1 | Arduino | Arduino Pro Mini | Arduino Pro Mini Dev Board | https://www.amazon.com/gp/product/B07X2JGS69/ref=ppx_yo_dt_b_asin_title_o05_s01?ie=UTF8&psc=1
-
+| Solder| 1 | Chip Quik | SMDLTB35T4 | Solder Solder Paste Sn60/Bi40 T4 35g Syringe 87% Metal Low-Temperature | https://www.mouser.com/ProductDetail/Chip-Quik/SMDLTB35T4?qs=amGC7iS6iy8V7Ynvdf414A%3D%3D
 
