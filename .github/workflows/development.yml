@@ -9,7 +9,42 @@ on:
       - develop
 
 jobs:
+  create-release:
+    runs-on: ubuntu-latest
+    outputs:
+      upload_url: ${{ steps.create_release.outputs.upload_url }}
+      tag_name: ${{ steps.vars.outputs.tag_name }}
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Generate date-based tag
+        id: vars
+        run: echo "tag_name=dev-$(date +'%Y%m%d')" >> $GITHUB_OUTPUT
+
+      - name: Configure Git
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+
+      - name: Create and push tag
+        run: |
+          git tag -f ${{ steps.vars.outputs.tag_name }}
+          git push origin ${{ steps.vars.outputs.tag_name }} --force
+
+      - name: Create GitHub Release
+        id: create_release
+        uses: actions/create-release@v1
+        with:
+          tag_name: ${{ steps.vars.outputs.tag_name }}
+          release_name: Development Build ${{ steps.vars.outputs.tag_name }}
+          draft: false
+          prerelease: true
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
   Arduino-build:
+    needs: create-release
     runs-on: ubuntu-latest
     steps:
       - name: Checkout code
@@ -47,39 +82,22 @@ jobs:
             --output-dir build-out \
             Source/HamMessenger
 
-      #- name: List everything in build output
-      #  run: |
-      #    find Source/HamMessenger/build-out
-
-      #- name: List all .hex files
-      #  run: |
-      #    find . -name "*.hex"
-
       - name: Rename firmware file for release
         run: |
           mkdir -p output
           cp build-out/HamMessenger.ino.hex output/HamMessenger-mega2560.hex
 
-      - name: Generate changelog from recent commits
-        run: |
-          git log -n 20 --pretty=format:"- %s" > release-notes.txt
-        #  git log $(git describe --tags --abbrev=0)..HEAD --pretty=format:"- %s" # changelog between the last nightly and now
-        #  git log -n 20 --pretty=format:"- %s (%an, %ad)" --date=short # include author names or dates
-          
-      - name: Upload latest dev firmware to release
-        uses: ncipollo/release-action@v1
+      - name: Upload Arduino firmware
+        uses: actions/upload-release-asset@v1
         with:
-          tag: dev
-          name: Development Build
-          prerelease: true
-          draft: false
-          allowUpdates: true
-          artifacts: output/HamMessenger-mega2560.hex
-          bodyFile: release-notes.txt
+          upload_url: ${{ needs.create-release.outputs.upload_url }}
+          asset_path: output/HamMessenger-mega2560.hex
+          asset_name: HamMessenger-mega2560.hex
+          asset_content_type: application/octet-stream
 
   gui-windows-build:
+    needs: create-release
     runs-on: windows-latest
-
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
@@ -104,19 +122,17 @@ jobs:
           mkdir output
           copy Source\GUI\dist\HamMessenger.exe output\HamMessenger-windows.exe
 
-      - name: Upload GUI to latest dev release
-        uses: ncipollo/release-action@v1
+      - name: Upload Windows GUI
+        uses: actions/upload-release-asset@v1
         with:
-          tag: dev
-          name: Development Build
-          prerelease: true
-          draft: false
-          allowUpdates: true
-          artifacts: output/HamMessenger-windows.exe
+          upload_url: ${{ needs.create-release.outputs.upload_url }}
+          asset_path: output/HamMessenger-windows.exe
+          asset_name: HamMessenger-windows.exe
+          asset_content_type: application/octet-stream
 
   gui-mac-build:
+    needs: create-release
     runs-on: macos-latest
-
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
@@ -130,10 +146,6 @@ jobs:
         run: |
           pip install -r Source/GUI/requirements-macos.txt
           pip install -U pyinstaller
-
-      #- name: Verify tkinter is available
-      #  run: |
-      #    python -c "import tkinter; print('Tkinter OK:', tkinter.TkVersion)"
 
       - name: Build macOS GUI with PyInstaller
         run: |
@@ -157,18 +169,10 @@ jobs:
             output/HamMessenger-mac.dmg \
             Source/GUI/dist/HamMessenger.app
 
-      #- name: Zip macOS .app bundle
-      #  run: |
-      #    mkdir -p output
-      #    ditto -c -k --sequesterRsrc --keepParent Source/GUI/dist/HamMessenger.app output/HamMessenger-mac.zip
-
-      - name: Upload macOS GUI to latest dev release
-        uses: ncipollo/release-action@v1
+      - name: Upload macOS GUI
+        uses: actions/upload-release-asset@v1
         with:
-          tag: dev
-          name: Development Build
-          prerelease: true
-          draft: false
-          allowUpdates: true
-          #artifacts: output/HamMessenger-mac.zip
-          artifacts: output/HamMessenger-mac.dmg
+          upload_url: ${{ needs.create-release.outputs.upload_url }}
+          asset_path: output/HamMessenger-mac.dmg
+          asset_name: HamMessenger-mac.dmg
+          asset_content_type: application/octet-stream
