@@ -34,7 +34,7 @@ jobs:
 
       - name: Create GitHub Release
         id: create_release
-        uses: actions/create-release@v1
+        uses: actions/create-release@latest
         with:
           tag_name: ${{ steps.vars.outputs.tag_name }}
           release_name: Development Build ${{ steps.vars.outputs.tag_name }}
@@ -94,6 +94,8 @@ jobs:
           asset_path: output/HamMessenger-mega2560.hex
           asset_name: HamMessenger-mega2560.hex
           asset_content_type: application/octet-stream
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
   gui-windows-build:
     needs: create-release
@@ -129,6 +131,8 @@ jobs:
           asset_path: output/HamMessenger-windows.exe
           asset_name: HamMessenger-windows.exe
           asset_content_type: application/octet-stream
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
   gui-mac-build:
     needs: create-release
@@ -176,3 +180,5 @@ jobs:
           asset_path: output/HamMessenger-mac.dmg
           asset_name: HamMessenger-mac.dmg
           asset_content_type: application/octet-stream
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
