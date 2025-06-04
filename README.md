@@ -1,9 +1,10 @@
 # HamMessenger # 
+![Tests](https://github.com/dalethomas81/HamMessenger/actions/workflows/development.yml/badge.svg)  
+![Release Build](https://github.com/dalethomas81/HamMessenger/actions/workflows/release.yml/badge.svg)  
 
 Hands on article about HamMessenger in IEEE Spectrum magazine [here](https://spectrum.ieee.org/ham-radio-text-hacking)  
 Arduino blog post on HamMessenger [here](https://blog.arduino.cc/2021/07/27/send-text-messages-over-ham-radio-with-the-hammessenger/?queryID=undefined)  
 Hackaday blog post on HamMessenger [here](https://hackaday.com/blog/?s=hammessenger)  
-
 
 HamMessenger is a portable, battery powered device that runs on a microcontroller and interfaces with an inexpensive ham radio to send and receive text messages and provide position updates using the [APRS](http://www.aprs.org/doc/APRS101.PDF) protocol. Messages and position updates sent via HamMessenger can be viewed on sites such as [aprs.fi](https://aprs.fi). HamMessenger messages are NOT encrypted!  
 
