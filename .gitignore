@@ -8,3 +8,5 @@ Source/GUI/Main.spec
 Source/GUI/dist/*
 .DS_Store
 Source/GUI/HamMessenger.spec
+Source/MicroAPRS Firmware Installer/avrdude.*
+Source/MicroAPRS Firmware Installer/*.hex
