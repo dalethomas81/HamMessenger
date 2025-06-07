@@ -346,7 +346,7 @@ const char version[] = __DATE__ " " __TIME__;
       SETTINGS_APRS_DESTINATION_CALL[i] = strTemp6[i];
     }
 
-    SETTINGS_APRS_DESTINATION_SSID[0]  = '0';
+    SETTINGS_APRS_DESTINATION_SSID[0]  = '1';
     SETTINGS_APRS_DESTINATION_SSID[1] = '\0';
 
     const char* strTemp7 = "WIDE1";
@@ -4201,20 +4201,57 @@ const char version[] = __DATE__ " " __TIME__;
     return actualLen;
   }
 
-  void writeRawDataToSd(APRSFormat_Raw RawData){
-    byte *buff = (byte *) &RawData; // to access RawData as bytes
-
-    // if the file opened okay, write to it:
-    if (RawDataFile) {
-      RawDataFile.seek(RawDataFile.size()); // go to end of file first
-      RawDataFile.write(buff, sizeof(APRSFormat_Raw)); 
-      RawDataFile.write('\n'); // add a \n to make raw.txt more human readable
+  void printFormattedSize(uint32_t bytes) {
+    if (bytes < 1024) {
+      Serial.print(bytes);
+      Serial.print(F(" B"));
+    } else if (bytes < 1024 * 1024) {
+      Serial.print(bytes / 1024.0, 2);
+      Serial.print(F(" KB"));
+    } else if (bytes < 1024UL * 1024UL * 1024UL) {
+      Serial.print(bytes / 1024.0 / 1024.0, 2);
+      Serial.print(F(" MB"));
     } else {
-      // if the file didn't open, print an error:
-      Serial.println(F("error opening raw.txt"));
+      Serial.print(bytes / 1024.0 / 1024.0 / 1024.0, 2);
+      Serial.print(F(" GB"));
     }
-    
-    RawDataFile.flush(); // will save data
+  }
+
+  // 1 GB (gigabyte) = 1,073,741,824 bytes
+  // 2 GB = 2 × 1,073,741,824 = 2,147,483,648 bytes
+  // 90% of 2 GB = 0.9 × 2,147,483,648 = 1,932,735,283.2 bytes
+  //#define MAX_FILE_BYTES 2147483648UL
+  #define WARN_AT_BYTES 1932735283UL
+  void writeStructToSd(File& file, void* dataPtr, size_t dataSize, const char* label, bool addNewline = true) {
+    if (file) {
+      uint32_t size = file.size();
+      //if (size > MAX_FILE_SIZE * WARN_THRESHOLD) {
+      if (size >= WARN_AT_BYTES) {
+        Serial.print(F("[WARNING] "));
+        Serial.print(label);
+        Serial.print(F(" file is getting large: "));
+        //Serial.print(size);
+        //Serial.println(F(" bytes."));
+        printFormattedSize(size);
+        Serial.println(F("). Consider offloading or deleting."));
+      }
+      file.seek(size);
+      file.write((byte*)dataPtr, dataSize);
+      if (addNewline) file.write('\n');
+      file.flush();
+    } else {
+      Serial.print(F("error opening "));
+      Serial.print(label);
+      Serial.println(F(".txt"));
+    }
+  }
+
+  void writeRawDataToSd(APRSFormat_Raw RawData) {
+    writeStructToSd(RawDataFile, &RawData, sizeof(APRSFormat_Raw), "raw");
+  }
+
+  void writeMsgDataToSd(APRSFormat_Msg MsgData) {
+    writeStructToSd(MsgDataFile, &MsgData, sizeof(APRSFormat_Msg), "msg");
   }
 
   void startReadingFromSd(uint32_t StartPosition) {
@@ -4246,21 +4283,6 @@ const char version[] = __DATE__ " " __TIME__;
 
     Serial.print(F("SD Raw:"));
     Serial.println(encodedBuffer);
-  }
-
-  void writeMsgDataToSd(APRSFormat_Msg MsgData){
-    byte *buff = (byte *) &MsgData; // to access MsgData as bytes
-
-    // if the file opened okay, write to it:
-    if (MsgDataFile) {
-      MsgDataFile.seek(MsgDataFile.size()); // go to end of file first
-      MsgDataFile.write(buff, sizeof(APRSFormat_Msg)); MsgDataFile.write('\n');
-    } else {
-      // if the file didn't open, print an error:
-      Serial.println(F("error opening msg.txt"));
-    }
-    
-    MsgDataFile.flush(); // will save data
   }
 
   void printMsgDataFromSd(uint32_t StartPosition){
