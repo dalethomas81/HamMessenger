@@ -188,7 +188,7 @@ const char version[] = __DATE__ " " __TIME__;
                           
   const char *MenuItems_Settings[] = {"APRS", "GPS", "Display"};
   const char *MenuItems_Settings_APRS[] = {"Beacon Enabled", "Beacon Distance", "Beacon Idle Time", "Raw Packet", "Comment",
-                                          "Message Text", "Recipient Callsign", "Recipient SSID", "My Callsign", "My Callsign SSID", 
+                                          "Message Text", "Recipient Callsign", "Recipient SSID", "My Callsign", "My SSID", 
                                           "Dest Callsign", "Dest SSID", "PATH1 Callsign", "PATH1 SSID", "PATH2 Callsign", "PATH2 SSID",
                                           "Symbol", "Table", "Automatic ACK", "Preamble", "Tail", "Retry Count", "Retry Interval"};
   const char *MenuItems_Settings_GPS[] = {"Pos Tolerance", "Dest Latitude", "Dest Longitude"};
