@@ -13,13 +13,13 @@ from datetime import datetime
 import re
 import base64
 from queue import Queue
-import html
-
-# Placeholder for APRS functionality
+import platform
+import objc
+from Foundation import NSObject, NSRunLoop, NSDefaultRunLoopMode, NSDistributedNotificationCenter
+import AppKit
 from aprspy import APRS
 
-# Global message queue
-message_queue = Queue()
+IS_DARK_MODE = True
 
 symbol_map = {
     # Primary Table ('/')
@@ -319,6 +319,13 @@ default_quick_commands = ["?"
                           ,"CMD:Settings:Display:Scroll Messages:<True/False>"
                           ,"CMD:Settings:Display:Scroll Speed:<0 to 65,535>"
                           ,"CMD:Settings:Display:Invert:<True/False>"]
+
+class AppearanceObserver(NSObject):
+    def darkModeChanged_(self, notification):
+        appearance = AppKit.NSApplication.sharedApplication().effectiveAppearance().name()
+        global IS_DARK_MODE
+        IS_DARK_MODE = "Dark" in appearance
+        print("Dark mode is now", "enabled" if IS_DARK_MODE else "disabled")
 
 class SerialThread(QThread):
     message_received = Signal(str)
@@ -824,7 +831,6 @@ class HamMessengerGUI(QMainWindow):
                         }
                         self.msg_entries.append(msg_entry)
                         self.render_msg_entry(msg_entry)
-                        #message_queue.put(packet)  # why are we doing this?
                     #self.msg_output.appendPlainText(f"{timestamp} APRS: {packet}")
                     log_entry = {
                         "text": f"{timestamp} RX: {packet}\n",
@@ -971,7 +977,42 @@ class HamMessengerGUI(QMainWindow):
 
 
 if __name__ == "__main__":
+
+    system = platform.system()
+
+    if system == "Darwin":  # macOS
+        try:
+            # set up dark mode monitoring
+            AppKit.NSApplication.sharedApplication()
+            observer = AppearanceObserver.alloc().init()
+            center = NSDistributedNotificationCenter.defaultCenter()
+            # Listen for macOS dark mode change notification
+            center.addObserver_selector_name_object_(
+                observer,
+                objc.selector(observer.darkModeChanged_, signature=b'v@:@'),
+                "AppleInterfaceThemeChangedNotification",
+                None
+            )
+            # Print current dark mode
+            current = AppKit.NSApplication.sharedApplication().effectiveAppearance().name()
+            print("Initial mode:", "Dark" if "Dark" in current else "Light")
+        except Exception:
+            pass
+
+    elif system == "Windows":
+        try:
+            pass
+        except Exception:
+            pass
+
+    else:
+        #raise NotImplementedError("Dark mode detection not supported on this OS.")
+        pass
+
+    # set up Qt application
     app = QApplication(sys.argv)
+    # open app
     window = HamMessengerGUI()
     window.show()
+    # exit cleanly
     sys.exit(app.exec())
