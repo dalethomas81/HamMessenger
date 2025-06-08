@@ -14,12 +14,11 @@ import re
 import base64
 from queue import Queue
 import platform
-import objc
-from Foundation import NSObject, NSRunLoop, NSDefaultRunLoopMode, NSDistributedNotificationCenter
-import AppKit
 from aprspy import APRS
 
 IS_DARK_MODE = True
+IS_MAC = platform.system() == "Darwin"
+IS_WINDOWS = platform.system() == "Windows"
 
 symbol_map = {
     # Primary Table ('/')
@@ -320,21 +319,22 @@ default_quick_commands = ["?"
                           ,"CMD:Settings:Display:Scroll Speed:<0 to 65,535>"
                           ,"CMD:Settings:Display:Invert:<True/False>"]
 
+if IS_MAC:
+    import objc
+    from Foundation import NSObject, NSDistributedNotificationCenter
+    import AppKit
 
-class AppearanceObserver(NSObject):
-    def darkModeChanged_(self, notification):
-        appearance = AppKit.NSApplication.sharedApplication().effectiveAppearance().name()
-        is_dark = "Dark" in appearance
-        print("Dark mode is now", "enabled" if is_dark else "disabled")
-        global IS_DARK_MODE
-        if is_dark:
-            IS_DARK_MODE = True
-            print("Dark mode is now", "enabled")
-        else:
-            IS_DARK_MODE = False
-            print("Dark mode is now", "disabled")
-        global window
-        window.change_text_colors()
+    class AppearanceObserver(NSObject):
+        def getDarkMode(self):
+            appearance = AppKit.NSApplication.sharedApplication().effectiveAppearance().name()
+            is_dark = "Dark" in appearance
+            return is_dark
+
+        def darkModeChanged_(self, notification):
+            global IS_DARK_MODE
+            IS_DARK_MODE = self.getDarkMode()
+            global window
+            window.change_text_colors()
 
 class SerialThread(QThread):
     message_received = Signal(str)
@@ -407,11 +407,11 @@ class HamMessengerGUI(QMainWindow):
                             }
 
         self.tag_colors_light_mode = {
-                                "Sent": "blue",
-                                "Received": "green",
-                                "Modem": "orange",
-                                "SD": "red",
-                                "Message": "purple",
+                            "Sent": "#005EA2",      # deep azure blue
+                            "Received": "#2E8B57",  # medium sea green
+                            "Modem": "#D99000",     # warm mustard gold
+                            "SD": "#C14444",        # muted brick red
+                            "Message": "#A64CA6",   # rich orchid purple
                             }
 
     def toggle_auto_scroll(self, state):
@@ -659,7 +659,6 @@ class HamMessengerGUI(QMainWindow):
                 self.render_log_entry(entry)
 
     def change_text_colors(self):
-        print("changing colors")
         self.log_output.clear()
         for entry in self.log_entries:
             self.render_log_entry(entry)
@@ -965,10 +964,8 @@ class HamMessengerGUI(QMainWindow):
         tag = entry.get("tag", "Message")
         global IS_DARK_MODE
         if IS_DARK_MODE:
-            print("using dark mode colors")
             color = self.tag_colors_dark_mode.get(tag, "white")
         else:
-            print("using light mode colors")
             color = self.tag_colors_light_mode.get(tag, "black")
 
         fmt = QTextCharFormat()
@@ -993,10 +990,10 @@ class HamMessengerGUI(QMainWindow):
         tag = entry.get("tag", "Received")
         global IS_DARK_MODE
         if IS_DARK_MODE:
-            print("using dark mode colors")
+            print("dark mode color")
             color = self.tag_colors_dark_mode.get(tag, "white")
         else:
-            print("using light mode colors")
+            print("light mode color")
             color = self.tag_colors_light_mode.get(tag, "black")
 
         fmt = QTextCharFormat()
@@ -1018,9 +1015,7 @@ if __name__ == "__main__":
     app = QApplication(sys.argv)
     window = HamMessengerGUI()
 
-    system = platform.system()
-
-    if system == "Darwin":  # macOS
+    if IS_MAC:  # macOS
         try:
             # set up dark mode monitoring
             AppKit.NSApplication.sharedApplication()
@@ -1033,13 +1028,13 @@ if __name__ == "__main__":
                 "AppleInterfaceThemeChangedNotification",
                 None
             )
-            # Print current dark mode
-            IS_DARK_MODE = AppKit.NSApplication.sharedApplication().effectiveAppearance().name()
-            print("Initial mode:", "Dark" if "Dark" in IS_DARK_MODE else "Light")
+            # get current dark mode
+            IS_DARK_MODE = observer.getDarkMode()
+
         except Exception:
             pass
 
-    elif system == "Windows":
+    elif IS_WINDOWS:
         try:
             pass
         except Exception:
