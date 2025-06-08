@@ -6,7 +6,7 @@ from PySide6.QtWidgets import (
     QLabel, QComboBox, QPushButton, QPlainTextEdit, QLineEdit, QFileDialog,
     QMessageBox, QCheckBox, QBoxLayout
 )
-from PySide6.QtCore import Qt, QTimer, QThread, Signal, QUrl
+from PySide6.QtCore import Qt, QTimer, QThread, Signal, QUrl, Signal
 from PySide6.QtWebEngineWidgets import QWebEngineView
 from PySide6.QtGui import QTextCharFormat, QTextCursor, QColor, QFont
 from datetime import datetime
@@ -329,10 +329,47 @@ if IS_MAC:
             appearance = AppKit.NSApplication.sharedApplication().effectiveAppearance().name()
             is_dark = "Dark" in appearance
             return is_dark
-
+        # the trailing underscore is needed to match the Objective-C selector name used by macOS notifications
+        # in objective-c this would be - (void)darkModeChanged:(NSNotification *)notification;
         def darkModeChanged_(self, notification):
             global IS_DARK_MODE
             IS_DARK_MODE = self.getDarkMode()
+            global window
+            window.change_text_colors()
+
+if IS_WINDOWS:
+    import winreg
+    import ctypes
+
+    class WindowsDarkModeThread(QThread):
+        darkModeChanged = Signal(bool)  # Signal to emit: True = dark, False = light
+
+        def run(self):
+            REG_PATH = r"Software\Microsoft\Windows\CurrentVersion\Themes\Personalize"
+            REG_NAME = "AppsUseLightTheme"
+            REG_NOTIFY_CHANGE_LAST_SET = 0x00000004
+
+            hKey = winreg.OpenKey(winreg.HKEY_CURRENT_USER, REG_PATH, 0, winreg.KEY_READ)
+            current_value, _ = winreg.QueryValueEx(hKey, REG_NAME)
+            self.darkModeChanged.emit(current_value == 0)  # Emit current state
+
+            while True:
+                ctypes.windll.advapi32.RegNotifyChangeKeyValue(
+                    hKey.handle,
+                    True,
+                    REG_NOTIFY_CHANGE_LAST_SET,
+                    None,
+                    False
+                )
+                new_value, _ = winreg.QueryValueEx(hKey, REG_NAME)
+                is_dark = new_value == 0
+                if is_dark != (current_value == 0):
+                    current_value = new_value
+                    self.darkModeChanged.emit(is_dark)
+
+        def on_dark_mode_change(self, is_dark):
+            global IS_DARK_MODE
+            IS_DARK_MODE = is_dark
             global window
             window.change_text_colors()
 
@@ -1036,6 +1073,10 @@ if __name__ == "__main__":
 
     elif IS_WINDOWS:
         try:
+            #watch_windows_dark_mode(on_dark_mode_change)
+            win_dark_mode_thread = WindowsDarkModeThread()
+            win_dark_mode_thread.darkModeChanged.connect(lambda is_dark: win_dark_mode_thread.on_dark_mode_change(is_dark))
+            win_dark_mode_thread.start()
             pass
         except Exception:
             pass
