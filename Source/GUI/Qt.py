@@ -320,12 +320,21 @@ default_quick_commands = ["?"
                           ,"CMD:Settings:Display:Scroll Speed:<0 to 65,535>"
                           ,"CMD:Settings:Display:Invert:<True/False>"]
 
+
 class AppearanceObserver(NSObject):
     def darkModeChanged_(self, notification):
         appearance = AppKit.NSApplication.sharedApplication().effectiveAppearance().name()
+        is_dark = "Dark" in appearance
+        print("Dark mode is now", "enabled" if is_dark else "disabled")
         global IS_DARK_MODE
-        IS_DARK_MODE = "Dark" in appearance
-        print("Dark mode is now", "enabled" if IS_DARK_MODE else "disabled")
+        if is_dark:
+            IS_DARK_MODE = True
+            print("Dark mode is now", "enabled")
+        else:
+            IS_DARK_MODE = False
+            print("Dark mode is now", "disabled")
+        global window
+        window.change_text_colors()
 
 class SerialThread(QThread):
     message_received = Signal(str)
@@ -389,16 +398,19 @@ class HamMessengerGUI(QMainWindow):
         self.log_entries = []
         self.msg_entries = []
 
-        self.log_tag_colors = {
-                                "Sent": "blue", # deepskyblue
+        self.tag_colors_dark_mode = {
+                                "Sent": "#4DA6FF",      # softer sky blue
+                                "Received": "#90EE90",  # light green
+                                "Modem": "#FFB347",     # warm amber (less harsh than bright orange)
+                                "SD": "#FF6B6B",        # soft coral red
+                                "Message": "#DDA0DD",   # muted light purple
+                            }
+
+        self.tag_colors_light_mode = {
+                                "Sent": "blue",
                                 "Received": "green",
                                 "Modem": "orange",
-                                "SD": "red"
-                            }
-        
-        self.msg_tag_colors = {
-                                "Sent": "blue", # deepskyblue
-                                "Received": "green",
+                                "SD": "red",
                                 "Message": "purple",
                             }
 
@@ -645,6 +657,16 @@ class HamMessengerGUI(QMainWindow):
         for entry in self.log_entries:
             if selected_tag == "All" or entry["tag"] == selected_tag:
                 self.render_log_entry(entry)
+
+    def change_text_colors(self):
+        print("changing colors")
+        self.log_output.clear()
+        for entry in self.log_entries:
+            self.render_log_entry(entry)
+
+        self.msg_output.clear()
+        for entry in self.msg_entries:
+            self.render_msg_entry(entry)
 
     def populate_serial_ports(self):
         current_selection = self.port_combo.currentData()
@@ -941,8 +963,16 @@ class HamMessengerGUI(QMainWindow):
 
         text = entry["text"]
         tag = entry.get("tag", "Message")
+        global IS_DARK_MODE
+        if IS_DARK_MODE:
+            print("using dark mode colors")
+            color = self.tag_colors_dark_mode.get(tag, "white")
+        else:
+            print("using light mode colors")
+            color = self.tag_colors_light_mode.get(tag, "black")
+
         fmt = QTextCharFormat()
-        fmt.setForeground(QColor(self.msg_tag_colors.get(tag, "black")))
+        fmt.setForeground(QColor(color))
 
         cursor = self.msg_output.textCursor()
         cursor.movePosition(QTextCursor.End)
@@ -961,7 +991,13 @@ class HamMessengerGUI(QMainWindow):
 
         text = entry["text"]
         tag = entry.get("tag", "Received")
-        color = self.log_tag_colors.get(tag, "black")
+        global IS_DARK_MODE
+        if IS_DARK_MODE:
+            print("using dark mode colors")
+            color = self.tag_colors_dark_mode.get(tag, "white")
+        else:
+            print("using light mode colors")
+            color = self.tag_colors_light_mode.get(tag, "black")
 
         fmt = QTextCharFormat()
         fmt.setForeground(QColor(color))
@@ -977,6 +1013,10 @@ class HamMessengerGUI(QMainWindow):
 
 
 if __name__ == "__main__":
+
+    # set up Qt application
+    app = QApplication(sys.argv)
+    window = HamMessengerGUI()
 
     system = platform.system()
 
@@ -994,8 +1034,8 @@ if __name__ == "__main__":
                 None
             )
             # Print current dark mode
-            current = AppKit.NSApplication.sharedApplication().effectiveAppearance().name()
-            print("Initial mode:", "Dark" if "Dark" in current else "Light")
+            IS_DARK_MODE = AppKit.NSApplication.sharedApplication().effectiveAppearance().name()
+            print("Initial mode:", "Dark" if "Dark" in IS_DARK_MODE else "Light")
         except Exception:
             pass
 
@@ -1009,10 +1049,7 @@ if __name__ == "__main__":
         #raise NotImplementedError("Dark mode detection not supported on this OS.")
         pass
 
-    # set up Qt application
-    app = QApplication(sys.argv)
     # open app
-    window = HamMessengerGUI()
     window.show()
     # exit cleanly
     sys.exit(app.exec())
