@@ -287,10 +287,12 @@ default_quick_commands = ["?"
                           ,"CMD:Modem:!<data Send raw packet>"
                           ,"CMD:Modem:V<1/0 Silent Mode>"
                           ,"CMD:Modem:v<1/0 Verbose Mode>"
-                          ,"CMD:Settings:APRS:Beacon Frequency:<0 to 4,294,967,295>"
+                          ,"CMD:Settings:APRS:Beacon Enabled:<True/False>"
+                          ,"CMD:Settings:APRS:Beacon Distance:<-3.4028235E+38 to 3.4028235E+38>"
+                          ,"CMD:Settings:APRS:Beacon Idle Time:<0 to 4,294,967,295>"
                           ,"CMD:Settings:APRS:Raw Packet:<alphanumeric 99 char max>"
                           ,"CMD:Settings:APRS:Comment:<alphanumeric 99 char max>"
-                          ,"CMD:Settings:APRS:Message:<alphanumeric 99 char max>"
+                          ,"CMD:Settings:APRS:Message Text:<alphanumeric 99 char max>"
                           ,"CMD:Settings:APRS:Recipient Callsign:<alphanumeric 6 char max>"
                           ,"CMD:Settings:APRS:Recipient SSID:<alphanumeric 2 char max>"
                           ,"CMD:Settings:APRS:My Callsign:<alphanumeric 6 char max>"
@@ -308,8 +310,7 @@ default_quick_commands = ["?"
                           ,"CMD:Settings:APRS:Tail:<0 to 65,535>"
                           ,"CMD:Settings:APRS:Retry Count:<0 to 65,535>"
                           ,"CMD:Settings:APRS:Retry Interval:<0 to 65,535>"
-                          ,"CMD:Settings:GPS:Update Freq:<0 to 4,294,967,295>"
-                          ,"CMD:Settings:GPS:Pos Tolerance:<0-100%>"
+                          ,"CMD:Settings:GPS:Pos Tolerance:<-3.4028235E+38 to 3.4028235E+38>"
                           ,"CMD:Settings:GPS:Dest Latitude:<-3.4028235E+38 to 3.4028235E+38>"
                           ,"CMD:Settings:GPS:Dest Longitude:<-3.4028235E+38 to 3.4028235E+38>"
                           ,"CMD:Settings:Display:Timeout:<0 to 4,294,967,295>"
@@ -510,7 +511,7 @@ class HamMessengerGUI(QMainWindow):
         # create the combobox
         self.baud_combo = QComboBox()
         self.baud_combo.addItems(["9600", "19200", "38400", "57600", "115200"])
-        self.baud_combo.setCurrentText("115200")
+        self.baud_combo.setCurrentText("9600")
         self.add_movable_widget(baud_combo_qbox, self.baud_combo, [0,0,0,0], Qt.AlignmentFlag.AlignLeft)
         # set the spacing of all items in the port horizontal layout to 0 so they are all clos
         baud_combo_qbox.setSpacing(0)
@@ -1027,10 +1028,8 @@ class HamMessengerGUI(QMainWindow):
         tag = entry.get("tag", "Received")
         global IS_DARK_MODE
         if IS_DARK_MODE:
-            print("dark mode color")
             color = self.tag_colors_dark_mode.get(tag, "white")
         else:
-            print("light mode color")
             color = self.tag_colors_light_mode.get(tag, "black")
 
         fmt = QTextCharFormat()

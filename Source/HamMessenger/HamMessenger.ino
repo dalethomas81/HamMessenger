@@ -3401,6 +3401,10 @@ const char version[] = __DATE__ " " __TIME__;
   const char* InvalidData_Float = "Invalid data. Expected float -3.4028235E+38-3.4028235E+38 instead got ";
   const char* InvalidData_UnsignedLong = "Invalid data. Expected unsigned long 0-4294967295 instead got ";
   const char* InvalidData_TrueFalse = "Invalid data. Expected True/False or 1/0";
+  const char* InvalidData_String99 = "Invalid data. Expected string <= 99 chars";
+  const char* InvalidData_String6 = "Invalid data. Expected string <= 6 chars";
+  const char* InvalidData_String2 = "Invalid data. Expected string <= 2 chars";
+  const char* InvalidData_String1 = "Invalid data. Expected string <= 1 chars";
 
   const char exNone[]      PROGMEM = ":<Unknown>";
   const char exBool[]      PROGMEM = ":<True/False>";
@@ -3529,6 +3533,9 @@ const char version[] = __DATE__ " " __TIME__;
     Serial.println();
   }
 
+  const byte MAX_LEN = 250;
+  char inData[MAX_LEN] = {'\0'};
+  byte index = 0;
   const char CMD_DELETE[] PROGMEM = "Delete";
   const char CMD_PRINT[]  PROGMEM = "Print";
   const char CMD_MODEM[]  PROGMEM = "Modem";
@@ -3539,15 +3546,25 @@ const char version[] = __DATE__ " " __TIME__;
     readModem();
     // usb serial commands are handled here
     bool gotCMD = false;
-    char inData[250];
-    if (Serial.available()) {
-      memset(inData,'\0',sizeof(inData));
-      Serial.readBytesUntil('\n', inData, sizeof(inData));
-      Serial.print(F("ECHO  "));Serial.println(inData);
-      if (inData[0]=='C' && inData[1]=='M' && inData[2]=='D' && inData[3]==':') gotCMD=true;
-      if (inData[0]=='?') printOutSerialCommands();
-      //if (inData[0]=='M' && inData[1]=='S' && inData[2]=='G' && inData[3]==':') sendMessage=true;
+    while (Serial.available()) {
+      char c = Serial.read();
+      if (c == '\n') {
+        inData[index] = '\0';
+        Serial.print(F("ECHO ["));Serial.print(index+1);Serial.print(F("] "));Serial.println(inData);
+        if (inData[0]=='C' && inData[1]=='M' && inData[2]=='D' && inData[3]==':') gotCMD=true;
+        if (inData[0]=='?') printOutSerialCommands();
+        index = 0;
+      } else {
+        if (index < MAX_LEN - 1) {
+          inData[index++] = c;
+        } else {
+          // we got to the end of our buffer and never got a \n so lets start over
+          index = 0;
+          break;
+        }
+      }
     }
+
     if (gotCMD){
       // get the command
       char CMD[30]={'\0'};
@@ -3732,6 +3749,10 @@ const char version[] = __DATE__ " " __TIME__;
             
           } else if (strstr(Setting, MenuItems_Settings_APRS[3]) != NULL) { // "Raw Packet"
             while (inData[i] != '\n' && inData[i] != '\0') {
+              if (k>99) { // string100 should be no longer than 99 chars (plus \n)
+                Serial.print(InvalidData_String99);Serial.println(inData_Value);
+                return;
+              }
               inData_Value[k] = inData[i];
               i++; k++;
             }
@@ -3743,6 +3764,10 @@ const char version[] = __DATE__ " " __TIME__;
             
           } else if (strstr(Setting, MenuItems_Settings_APRS[4]) != NULL) { // "Comment"
             while (inData[i] != '\n' && inData[i] != '\0') {
+              if (k>99) { // string100 should be no longer than 99 chars (plus \n)
+                Serial.print(InvalidData_String99);Serial.println(inData_Value);
+                return;
+              }
               inData_Value[k] = inData[i];
               i++; k++;
             }
@@ -3754,6 +3779,10 @@ const char version[] = __DATE__ " " __TIME__;
             
           } else if (strstr(Setting, MenuItems_Settings_APRS[5]) != NULL) { // "Message"
             while (inData[i] != '\n' && inData[i] != '\0') {
+              if (k>99) { // string100 should be no longer than 99 chars (plus \n)
+                Serial.print(InvalidData_String99);Serial.println(inData_Value);
+                return;
+              }
               inData_Value[k] = inData[i];
               i++; k++;
             }
@@ -3765,6 +3794,10 @@ const char version[] = __DATE__ " " __TIME__;
             
           } else if (strstr(Setting, MenuItems_Settings_APRS[6]) != NULL) { // "Recipient Callsign"
             while (inData[i] != '\n' && inData[i] != '\0') {
+              if (k>6) { // string7 should be no longer than 6 chars (plus \n)
+                Serial.print(InvalidData_String6);Serial.println(inData_Value);
+                return;
+              }
               inData_Value[k] = inData[i];
               i++; k++;
             }
@@ -3776,6 +3809,10 @@ const char version[] = __DATE__ " " __TIME__;
             
           } else if (strstr(Setting, MenuItems_Settings_APRS[7]) != NULL) { // "Recipient SSID"
             while (inData[i] != '\n' && inData[i] != '\0') {
+              if (k>2) { // string3 should be no longer than 2 chars (plus \n)
+                Serial.print(InvalidData_String2);Serial.println(inData_Value);
+                return;
+              }
               inData_Value[k] = inData[i];
               i++; k++;
             }
@@ -3788,6 +3825,10 @@ const char version[] = __DATE__ " " __TIME__;
             
           } else if (strstr(Setting, MenuItems_Settings_APRS[8]) != NULL) { // "My Callsign"
             while (inData[i] != '\n' && inData[i] != '\0') {
+              if (k>6) { // string7 should be no longer than 6 chars (plus \n)
+                Serial.print(InvalidData_String6);Serial.println(inData_Value);
+                return;
+              }
               inData_Value[k] = inData[i];
               i++; k++;
             }
@@ -3799,6 +3840,10 @@ const char version[] = __DATE__ " " __TIME__;
             
           } else if (strstr(Setting, MenuItems_Settings_APRS[9]) != NULL) { // "Callsign SSID"
             while (inData[i] != '\n' && inData[i] != '\0') {
+              if (k>2) { // string3 should be no longer than 2 chars (plus \n)
+                Serial.print(InvalidData_String2);Serial.println(inData_Value);
+                return;
+              }
               inData_Value[k] = inData[i];
               i++; k++;
             }
@@ -3811,6 +3856,10 @@ const char version[] = __DATE__ " " __TIME__;
             
           } else if (strstr(Setting, MenuItems_Settings_APRS[10]) != NULL) { // "Destination Callsign"
             while (inData[i] != '\n' && inData[i] != '\0') {
+              if (k>6) { // string7 should be no longer than 6 chars (plus \n)
+                Serial.print(InvalidData_String6);Serial.println(inData_Value);
+                return;
+              }
               inData_Value[k] = inData[i];
               i++; k++;
             }
@@ -3822,6 +3871,10 @@ const char version[] = __DATE__ " " __TIME__;
             
           } else if (strstr(Setting, MenuItems_Settings_APRS[11]) != NULL) { // "Destination SSID"
             while (inData[i] != '\n' && inData[i] != '\0') {
+              if (k>2) { // string3 should be no longer than 2 chars (plus \n)
+                Serial.print(InvalidData_String2);Serial.println(inData_Value);
+                return;
+              }
               inData_Value[k] = inData[i];
               i++; k++;
             }
@@ -3834,6 +3887,10 @@ const char version[] = __DATE__ " " __TIME__;
             
           } else if (strstr(Setting, MenuItems_Settings_APRS[12]) != NULL) { // "PATH1 Callsign"
             while (inData[i] != '\n' && inData[i] != '\0') {
+              if (k>6) { // string7 should be no longer than 6 chars (plus \n)
+                Serial.print(InvalidData_String6);Serial.println(inData_Value);
+                return;
+              }
               inData_Value[k] = inData[i];
               i++; k++;
             }
@@ -3845,6 +3902,10 @@ const char version[] = __DATE__ " " __TIME__;
             
           } else if (strstr(Setting, MenuItems_Settings_APRS[13]) != NULL) { // "PATH1 SSID"
             while (inData[i] != '\n' && inData[i] != '\0') {
+              if (k>2) { // string3 should be no longer than 2 chars (plus \n)
+                Serial.print(InvalidData_String2);Serial.println(inData_Value);
+                return;
+              }
               inData_Value[k] = inData[i];
               i++; k++;
             }
@@ -3857,6 +3918,10 @@ const char version[] = __DATE__ " " __TIME__;
             
           } else if (strstr(Setting, MenuItems_Settings_APRS[14]) != NULL) { // "PATH2 Callsign"
             while (inData[i] != '\n' && inData[i] != '\0') {
+              if (k>6) { // string7 should be no longer than 6 chars (plus \n)
+                Serial.print(InvalidData_String6);Serial.println(inData_Value);
+                return;
+              }
               inData_Value[k] = inData[i];
               i++; k++;
             }
@@ -3868,6 +3933,10 @@ const char version[] = __DATE__ " " __TIME__;
             
           } else if (strstr(Setting, MenuItems_Settings_APRS[15]) != NULL) { // "PATH2 SSID"
             while (inData[i] != '\n' && inData[i] != '\0') {
+              if (k>2) { // string3 should be no longer than 2 chars (plus \n)
+                Serial.print(InvalidData_String2);Serial.println(inData_Value);
+                return;
+              }
               inData_Value[k] = inData[i];
               i++; k++;
             }
@@ -3880,6 +3949,10 @@ const char version[] = __DATE__ " " __TIME__;
             
           } else if (strstr(Setting, MenuItems_Settings_APRS[16]) != NULL) { // "Symbol"
             while (inData[i] != '\n' && inData[i] != '\0') {
+              if (k>1) { // string2 should be no longer than 1 chars (plus \n)
+                Serial.print(InvalidData_String1);Serial.println(inData_Value);
+                return;
+              }
               inData_Value[k] = inData[i];
               i++; k++;
             }
@@ -3892,6 +3965,10 @@ const char version[] = __DATE__ " " __TIME__;
             
           } else if (strstr(Setting, MenuItems_Settings_APRS[17]) != NULL) { // "Table"
             while (inData[i] != '\n' && inData[i] != '\0') {
+              if (k>1) { // string2 should be no longer than 1 chars (plus \n)
+                Serial.print(InvalidData_String1);Serial.println(inData_Value);
+                return;
+              }
               inData_Value[k] = inData[i];
               i++; k++;
             }
@@ -4225,13 +4302,10 @@ const char version[] = __DATE__ " " __TIME__;
   void writeStructToSd(File& file, void* dataPtr, size_t dataSize, const char* label, bool addNewline = true) {
     if (file) {
       uint32_t size = file.size();
-      //if (size > MAX_FILE_SIZE * WARN_THRESHOLD) {
       if (size >= WARN_AT_BYTES) {
         Serial.print(F("[WARNING] "));
         Serial.print(label);
         Serial.print(F(" file is getting large: "));
-        //Serial.print(size);
-        //Serial.println(F(" bytes."));
         printFormattedSize(size);
         Serial.println(F("). Consider offloading or deleting."));
       }
@@ -4452,8 +4526,12 @@ void extractMsgCallParts(const char input[15], char callsign[7], char ssid[3]) {
 #pragma endregion
 
 void setup(){
-
-  Serial.begin(115200);
+  // chose the baud rate wisely
+  // the arduino has a serial buffer size of 64 bytes.
+  // if the data is received too fast, the buffer may overflow before the arduino gets to Serial.read() it
+  // at 9600 baud, we can read a 131 char string without losing data. this is long enough for our 99 char limit for strings (raw, comment, and message) plus the command structure
+  // for example: CMD:Settings:APRS:Message Text:0123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789
+  Serial.begin(9600);
   Serial1.begin(9600); // modem
   Serial2.begin(9600); // gps
   while (!Serial1) // wait for modem
