@@ -166,7 +166,7 @@ const char version[] = __DATE__ " " __TIME__;
 
   #include <EEPROM.h>
 
-  const char Initialized[] = {"Initialized 2025MAY27 v2"}; // change this to something unique if you want to re-init the EEPROM during flashing. useful when there has been a change to a settings array.
+  const char Initialized[] = {"Initialized 2025JUN11 v1"}; // change this to something unique if you want to re-init the EEPROM during flashing. useful when there has been a change to a settings array.
 
   #define EEPROM_SETTINGS_START_ADDR      1000
 
@@ -203,9 +203,9 @@ const char version[] = __DATE__ " " __TIME__;
   unsigned char Settings_TypeIndex_APRS[] = { 0,0,0,0,1,
                                               2,0,0,1,1,
                                               2,2,3,3,4,4,
-                                              0,1,3,1,2,4,5}; // this is the index in the array of the data arrays below
+                                              0,1,3,0,1,2,3}; // this is the index in the array of the data arrays below
   unsigned char Settings_TypeIndex_GPS[] = {1,2,3};
-  unsigned char Settings_TypeIndex_Display[] = {1,0,1,2,3,4};
+  unsigned char Settings_TypeIndex_Display[] = {1,4,2,3,5,4};
   // data arrays
   bool Settings_TypeBool[5] = {true,true,true,true,false}; // aprs beacon enabled, display show position, scroll messages, auto ACK, invert
   int Settings_TypeInt[0] = {};
@@ -214,7 +214,7 @@ const char version[] = __DATE__ " " __TIME__;
   unsigned long Settings_TypeULong[2] = {300000, 2000}; // aprs beacon Idle Time, display timeout
   float Settings_TypeFloat[4] = {1.00000,0.00001,34.790040,-82.790672}; // aprs beacon distance, gps position tolerance, gps latitude, gps longitude
   char Settings_TypeString2[2][2] = {'n','\0'};
-  char Settings_TypeString3[6][3] = {'0','0','\0'};
+  char Settings_TypeString3[5][3] = {'0','0','\0'};
   char Settings_TypeString7[5][7] = {'N','O','C','A','L','L','\0'};
   char Settings_TypeString100[3][100] = {'T','e','s','t','\0'};
   char Settings_TempDispCharArr[100];
@@ -311,63 +311,63 @@ const char version[] = __DATE__ " " __TIME__;
     SETTINGS_APRS_BEACON_IDLE_TIME = 30000;
 
     const char* strTemp1 = "NOCALL>APRS,WIDE1-1,WIDE2-1:!0000.00N/00000.00W>HamMessenger Ready";
-    for (int i=0; i<sizeof(strTemp1);i++) {
+    for (int i=0; i<=strlen(strTemp1);i++) {
       SETTINGS_APRS_RAW_PACKET[i] = strTemp1[i];
     }
 
     const char* strTemp2 = "https://github.com/dalethomas81/HamMessenger";
-    for (int i=0; i<sizeof(strTemp2);i++) {
+    for (int i=0; i<=strlen(strTemp2);i++) {
       SETTINGS_APRS_COMMENT[i] = strTemp2[i];
     }
 
     const char* strTemp3 = "Hi!";
-    for (int i=0; i<sizeof(strTemp3);i++) {
+    for (int i=0; i<=strlen(strTemp3);i++) {
       SETTINGS_APRS_MESSAGE[i] = strTemp3[i];
     }
 
+    //
     const char* strTemp4 = "NOCALL";
-    for (int i=0; i<sizeof(strTemp4);i++) {
+    for (int i=0; i<=strlen(strTemp4);i++) {
       SETTINGS_APRS_RECIPIENT_CALL[i] = strTemp4[i];
     }
-
     SETTINGS_APRS_RECIPIENT_SSID[0] = '0';
     SETTINGS_APRS_RECIPIENT_SSID[1] = '\0';
 
+    //
     const char* strTemp5 = "NOCALL";
-    for (int i=0; i<sizeof(strTemp5);i++) {
+    for (int i=0; i<=strlen(strTemp5);i++) {
       SETTINGS_APRS_CALLSIGN[i] = strTemp5[i];
     }
-
     SETTINGS_APRS_CALLSIGN_SSID[0] = '0';
     SETTINGS_APRS_CALLSIGN_SSID[1] = '\0';
 
+    //
     const char* strTemp6 = "APRS";
-    for (int i=0; i<sizeof(strTemp6);i++) {
+    for (int i=0; i<=strlen(strTemp6);i++) {
       SETTINGS_APRS_DESTINATION_CALL[i] = strTemp6[i];
     }
-
     SETTINGS_APRS_DESTINATION_SSID[0]  = '1';
     SETTINGS_APRS_DESTINATION_SSID[1] = '\0';
 
+    //
     const char* strTemp7 = "WIDE1";
-    for (int i=0; i<sizeof(strTemp7);i++) {
+    for (int i=0; i<=strlen(strTemp7);i++) {
       SETTINGS_APRS_PATH1_CALL[i] = strTemp7[i];
     }
-
     SETTINGS_APRS_PATH1_SSID[0] = '1';
     SETTINGS_APRS_PATH1_SSID[1] = '\0';
 
+    //
     const char* strTemp8 = "WIDE2";
-    for (int i=0; i<sizeof(strTemp8)-1;i++) {
+    for (int i=0; i<=strlen(strTemp8)-1;i++) {
       SETTINGS_APRS_PATH2_CALL[i] = strTemp8[i];
     }
-
     SETTINGS_APRS_PATH2_SSID[0] = '2';
     SETTINGS_APRS_PATH2_SSID[1] = '\0';
 
+    //
     SETTINGS_APRS_SYMBOL[0] = 'n';
     SETTINGS_APRS_SYMBOL[1] = '\0';
-
     SETTINGS_APRS_SYMBOL_TABLE[0] = 's';
     SETTINGS_APRS_SYMBOL_TABLE[1] = '\0';
 
@@ -414,12 +414,12 @@ const char version[] = __DATE__ " " __TIME__;
 
     int address = EEPROM_SETTINGS_START_ADDR;
     for (int i=0;i<ARRAY_SIZE(Settings_TypeBool);i++){
-      //Serial.print(F("bool:"));Serial.println(address);
+      //Serial.print(F("bool:"));Serial.print(address);Serial.print(":");Serial.println(Settings_TypeBool[i]);
       EEPROM.put(address, Settings_TypeBool[i]);
       address = address + sizeof(Settings_TypeBool[i]);
     }
     for (int i=0;i<ARRAY_SIZE(Settings_TypeInt);i++){
-      //Serial.print(F("int:"));Serial.println(address);
+      //Serial.print(F("int:"));Serial.print(address);Serial.print(":");Serial.println(Settings_TypeInt[i]);
       EEPROM.put(address, Settings_TypeInt[i]);
       address = address + sizeof(Settings_TypeInt[i]);
     }
@@ -429,7 +429,7 @@ const char version[] = __DATE__ " " __TIME__;
       address = address + sizeof(Settings_TypeUInt[i]);
     }
     for (int i=0;i<ARRAY_SIZE(Settings_TypeLong);i++){
-      //Serial.print(F("long:"));Serial.println(address);
+      //Serial.print(F("long:"));Serial.print(address);Serial.print(":");Serial.println(Settings_TypeLong[i]);
       EEPROM.put(address, Settings_TypeLong[i]);
       address = address + sizeof(Settings_TypeLong[i]);
     }
@@ -439,37 +439,41 @@ const char version[] = __DATE__ " " __TIME__;
       address = address + sizeof(Settings_TypeULong[i]);
     }
     for (int i=0;i<ARRAY_SIZE(Settings_TypeFloat);i++){
-      //Serial.print(F("float:"));Serial.println(address);
+      //Serial.print(F("float:"));Serial.print(address);Serial.print(":");Serial.println(Settings_TypeFloat[i]);
       EEPROM.put(address, Settings_TypeFloat[i]);
       address = address + sizeof(Settings_TypeFloat[i]);
     }
     for (int i=0;i<ARRAY_SIZE(Settings_TypeString2);i++){
-      //Serial.print(F("Settings_TypeString2:"));Serial.println(address);
+      //Serial.print(F("Settings_TypeString2:"));Serial.print(address);Serial.print(":");
       for (int j=0;j<sizeof(Settings_TypeString2[i]);j++){
         EEPROM.put(address, Settings_TypeString2[i][j]);
         address = address + sizeof(Settings_TypeString2[i][j]);
       }
+      //Serial.println(Settings_TypeString2[i]);
     }
     for (int i=0;i<ARRAY_SIZE(Settings_TypeString3);i++){
-      //Serial.print(F("Settings_TypeString3:"));Serial.println(address);
+      //Serial.print(F("Settings_TypeString3:"));Serial.print(address);Serial.print(":");
       for (int j=0;j<sizeof(Settings_TypeString3[i]);j++){
         EEPROM.put(address, Settings_TypeString3[i][j]);
         address = address + sizeof(Settings_TypeString3[i][j]);
       }
+      //Serial.println(Settings_TypeString3[i]);
     }
     for (int i=0;i<ARRAY_SIZE(Settings_TypeString7);i++){
-      //Serial.print(F("Settings_TypeString7:"));Serial.println(address);
+      //Serial.print(F("Settings_TypeString7:"));Serial.print(address);Serial.print(":");
       for (int j=0;j<sizeof(Settings_TypeString7[i]);j++){
         EEPROM.put(address, Settings_TypeString7[i][j]);
         address = address + sizeof(Settings_TypeString7[i][j]);
       }
+      //Serial.println(Settings_TypeString7[i]);
     }
     for (int i=0;i<ARRAY_SIZE(Settings_TypeString100);i++){
-      //Serial.print(F("Settings_TypeString100:"));Serial.println(address);
+      //Serial.print(F("Settings_TypeString100:"));Serial.print(address);Serial.print(":");
       for (int j=0;j<sizeof(Settings_TypeString100[i]);j++){
         EEPROM.put(address, Settings_TypeString100[i][j]);
         address = address + sizeof(Settings_TypeString100[i][j]);
       }
+      //Serial.println(Settings_TypeString100[i]);
     }
   }
 
@@ -482,12 +486,12 @@ const char version[] = __DATE__ " " __TIME__;
     
     int address = EEPROM_SETTINGS_START_ADDR;
     for (int i=0;i<ARRAY_SIZE(Settings_TypeBool);i++){
-      //Serial.print(F("bool:"));Serial.println(address);
+      //Serial.print(F("bool:"));Serial.print(address);Serial.print(":");Serial.println(Settings_TypeBool[i]);
       EEPROM.get(address, Settings_TypeBool[i]);
       address = address + sizeof(Settings_TypeBool[i]);
     }
     for (int i=0;i<ARRAY_SIZE(Settings_TypeInt);i++){
-      //Serial.print(F("int:"));Serial.println(address);
+      //Serial.print(F("int:"));Serial.print(address);Serial.print(":");Serial.println(Settings_TypeInt[i]);
       EEPROM.get(address, Settings_TypeInt[i]);
       address = address + sizeof(Settings_TypeInt[i]);
     }
@@ -497,7 +501,7 @@ const char version[] = __DATE__ " " __TIME__;
       address = address + sizeof(Settings_TypeUInt[i]);
     }
     for (int i=0;i<ARRAY_SIZE(Settings_TypeLong);i++){
-      //Serial.print(F("long:"));Serial.println(address);
+      //Serial.print(F("long:"));Serial.print(address);Serial.print(":");Serial.println(Settings_TypeLong[i]);
       EEPROM.get(address, Settings_TypeLong[i]);
       address = address + sizeof(Settings_TypeLong[i]);
     }
@@ -507,36 +511,41 @@ const char version[] = __DATE__ " " __TIME__;
       address = address + sizeof(Settings_TypeULong[i]);
     }
     for (int i=0;i<ARRAY_SIZE(Settings_TypeFloat);i++){
-      //Serial.print(F("float:"));Serial.println(address);
+      //Serial.print(F("float:"));Serial.print(address);Serial.print(":");Serial.println(Settings_TypeFloat[i]);
       EEPROM.get(address, Settings_TypeFloat[i]);
       address = address + sizeof(Settings_TypeFloat[i]);
     }
     for (int i=0;i<ARRAY_SIZE(Settings_TypeString2);i++){
-      //Serial.print(F("Settings_TypeString2:"));Serial.println(address);
+      //Serial.print(F("Settings_TypeString2:"));Serial.print(address);Serial.print(":");
       for (int j=0;j<sizeof(Settings_TypeString2[i]);j++){
         EEPROM.get(address, Settings_TypeString2[i][j]);
         address = address + sizeof(Settings_TypeString2[i][j]);
       }
+      //Serial.println(Settings_TypeString2[i]);
     }
     for (int i=0;i<ARRAY_SIZE(Settings_TypeString3);i++){
-      //Serial.print(F("Settings_TypeString3:"));Serial.println(address);
+      //Serial.print(F("Settings_TypeString3:"));Serial.print(address);Serial.print(":");
       for (int j=0;j<sizeof(Settings_TypeString3[i]);j++){
         EEPROM.get(address, Settings_TypeString3[i][j]);
         address = address + sizeof(Settings_TypeString3[i][j]);
       }
+      //Serial.println(Settings_TypeString3[i]);
     }
     for (int i=0;i<ARRAY_SIZE(Settings_TypeString7);i++){
-      //Serial.print(F("Settings_TypeString7:"));Serial.println(address);
+      //Serial.print(F("Settings_TypeString7:"));Serial.print(address);Serial.print(":");
       for (int j=0;j<sizeof(Settings_TypeString7[i]);j++){
         EEPROM.get(address, Settings_TypeString7[i][j]);
         address = address + sizeof(Settings_TypeString7[i][j]);
       }
+      //Serial.println(Settings_TypeString7[i]);
     }
     for (int i=0;i<ARRAY_SIZE(Settings_TypeString100);i++){
+      //Serial.print(F("Settings_TypeString100:"));Serial.print(address);Serial.print(":");
       for (int j=0;j<sizeof(Settings_TypeString100[i]);j++){
         EEPROM.get(address, Settings_TypeString100[i][j]);
         address = address + sizeof(Settings_TypeString100[i][j]);
       }
+      //Serial.println(Settings_TypeString100[i]);
     }
   }
 
