@@ -6,20 +6,19 @@ from PySide6.QtWidgets import (
     QLabel, QComboBox, QPushButton, QPlainTextEdit, QLineEdit, QFileDialog,
     QMessageBox, QCheckBox, QBoxLayout
 )
-from PySide6.QtCore import Qt, QTimer, QThread, Signal, QUrl
+from PySide6.QtCore import Qt, QTimer, QThread, Signal, QUrl, Signal
 from PySide6.QtWebEngineWidgets import QWebEngineView
 from PySide6.QtGui import QTextCharFormat, QTextCursor, QColor, QFont
 from datetime import datetime
 import re
 import base64
 from queue import Queue
-import html
-
-# Placeholder for APRS functionality
+import platform
 from aprspy import APRS
 
-# Global message queue
-message_queue = Queue()
+IS_DARK_MODE = True
+IS_MAC = platform.system() == "Darwin"
+IS_WINDOWS = platform.system() == "Windows"
 
 symbol_map = {
     # Primary Table ('/')
@@ -288,14 +287,16 @@ default_quick_commands = ["?"
                           ,"CMD:Modem:!<data Send raw packet>"
                           ,"CMD:Modem:V<1/0 Silent Mode>"
                           ,"CMD:Modem:v<1/0 Verbose Mode>"
-                          ,"CMD:Settings:APRS:Beacon Frequency:<0 to 4,294,967,295>"
+                          ,"CMD:Settings:APRS:Beacon Enabled:<True/False>"
+                          ,"CMD:Settings:APRS:Beacon Distance:<-3.4028235E+38 to 3.4028235E+38>"
+                          ,"CMD:Settings:APRS:Beacon Idle Time:<0 to 4,294,967,295>"
                           ,"CMD:Settings:APRS:Raw Packet:<alphanumeric 99 char max>"
                           ,"CMD:Settings:APRS:Comment:<alphanumeric 99 char max>"
-                          ,"CMD:Settings:APRS:Message:<alphanumeric 99 char max>"
+                          ,"CMD:Settings:APRS:Message Text:<alphanumeric 99 char max>"
                           ,"CMD:Settings:APRS:Recipient Callsign:<alphanumeric 6 char max>"
                           ,"CMD:Settings:APRS:Recipient SSID:<alphanumeric 2 char max>"
                           ,"CMD:Settings:APRS:My Callsign:<alphanumeric 6 char max>"
-                          ,"CMD:Settings:APRS:Callsign SSID:<alphanumeric 2 char max>"
+                          ,"CMD:Settings:APRS:My SSID:<alphanumeric 2 char max>"
                           ,"CMD:Settings:APRS:Dest Callsign:<alphanumeric 6 char max>"
                           ,"CMD:Settings:APRS:Dest SSID:<alphanumeric 2 char max>"
                           ,"CMD:Settings:APRS:PATH1 Callsign:<alphanumeric 6 char max>"
@@ -309,8 +310,7 @@ default_quick_commands = ["?"
                           ,"CMD:Settings:APRS:Tail:<0 to 65,535>"
                           ,"CMD:Settings:APRS:Retry Count:<0 to 65,535>"
                           ,"CMD:Settings:APRS:Retry Interval:<0 to 65,535>"
-                          ,"CMD:Settings:GPS:Update Freq:<0 to 4,294,967,295>"
-                          ,"CMD:Settings:GPS:Pos Tolerance:<0-100%>"
+                          ,"CMD:Settings:GPS:Pos Tolerance:<-3.4028235E+38 to 3.4028235E+38>"
                           ,"CMD:Settings:GPS:Dest Latitude:<-3.4028235E+38 to 3.4028235E+38>"
                           ,"CMD:Settings:GPS:Dest Longitude:<-3.4028235E+38 to 3.4028235E+38>"
                           ,"CMD:Settings:Display:Timeout:<0 to 4,294,967,295>"
@@ -319,6 +319,60 @@ default_quick_commands = ["?"
                           ,"CMD:Settings:Display:Scroll Messages:<True/False>"
                           ,"CMD:Settings:Display:Scroll Speed:<0 to 65,535>"
                           ,"CMD:Settings:Display:Invert:<True/False>"]
+
+if IS_MAC:
+    import objc
+    from Foundation import NSObject, NSDistributedNotificationCenter
+    import AppKit
+
+    class AppearanceObserver(NSObject):
+        def getDarkMode(self):
+            appearance = AppKit.NSApplication.sharedApplication().effectiveAppearance().name()
+            is_dark = "Dark" in appearance
+            return is_dark
+        # the trailing underscore is needed to match the Objective-C selector name used by macOS notifications
+        # in objective-c this would be - (void)darkModeChanged:(NSNotification *)notification;
+        def darkModeChanged_(self, notification):
+            global IS_DARK_MODE
+            IS_DARK_MODE = self.getDarkMode()
+            global window
+            window.change_text_colors()
+
+if IS_WINDOWS:
+    import winreg
+    import ctypes
+
+    class WindowsDarkModeThread(QThread):
+        darkModeChanged = Signal(bool)  # Signal to emit: True = dark, False = light
+
+        def run(self):
+            REG_PATH = r"Software\Microsoft\Windows\CurrentVersion\Themes\Personalize"
+            REG_NAME = "AppsUseLightTheme"
+            REG_NOTIFY_CHANGE_LAST_SET = 0x00000004
+
+            hKey = winreg.OpenKey(winreg.HKEY_CURRENT_USER, REG_PATH, 0, winreg.KEY_READ)
+            current_value, _ = winreg.QueryValueEx(hKey, REG_NAME)
+            self.darkModeChanged.emit(current_value == 0)  # Emit current state
+
+            while True:
+                ctypes.windll.advapi32.RegNotifyChangeKeyValue(
+                    hKey.handle,
+                    True,
+                    REG_NOTIFY_CHANGE_LAST_SET,
+                    None,
+                    False
+                )
+                new_value, _ = winreg.QueryValueEx(hKey, REG_NAME)
+                is_dark = new_value == 0
+                if is_dark != (current_value == 0):
+                    current_value = new_value
+                    self.darkModeChanged.emit(is_dark)
+
+        def on_dark_mode_change(self, is_dark):
+            global IS_DARK_MODE
+            IS_DARK_MODE = is_dark
+            global window
+            window.change_text_colors()
 
 class SerialThread(QThread):
     message_received = Signal(str)
@@ -382,17 +436,20 @@ class HamMessengerGUI(QMainWindow):
         self.log_entries = []
         self.msg_entries = []
 
-        self.log_tag_colors = {
-                                "Sent": "blue", # deepskyblue
-                                "Received": "green",
-                                "Modem": "orange",
-                                "SD": "red"
+        self.tag_colors_dark_mode = {
+                                "Sent": "#4DA6FF",      # softer sky blue
+                                "Received": "#90EE90",  # light green
+                                "Modem": "#FFB347",     # warm amber (less harsh than bright orange)
+                                "SD": "#FF6B6B",        # soft coral red
+                                "Message": "#DDA0DD",   # muted light purple
                             }
-        
-        self.msg_tag_colors = {
-                                "Sent": "blue", # deepskyblue
-                                "Received": "green",
-                                "Message": "purple",
+
+        self.tag_colors_light_mode = {
+                            "Sent": "#005EA2",      # deep azure blue
+                            "Received": "#2E8B57",  # medium sea green
+                            "Modem": "#D99000",     # warm mustard gold
+                            "SD": "#C14444",        # muted brick red
+                            "Message": "#A64CA6",   # rich orchid purple
                             }
 
     def toggle_auto_scroll(self, state):
@@ -454,7 +511,7 @@ class HamMessengerGUI(QMainWindow):
         # create the combobox
         self.baud_combo = QComboBox()
         self.baud_combo.addItems(["9600", "19200", "38400", "57600", "115200"])
-        self.baud_combo.setCurrentText("115200")
+        self.baud_combo.setCurrentText("9600")
         self.add_movable_widget(baud_combo_qbox, self.baud_combo, [0,0,0,0], Qt.AlignmentFlag.AlignLeft)
         # set the spacing of all items in the port horizontal layout to 0 so they are all clos
         baud_combo_qbox.setSpacing(0)
@@ -638,6 +695,15 @@ class HamMessengerGUI(QMainWindow):
         for entry in self.log_entries:
             if selected_tag == "All" or entry["tag"] == selected_tag:
                 self.render_log_entry(entry)
+
+    def change_text_colors(self):
+        self.log_output.clear()
+        for entry in self.log_entries:
+            self.render_log_entry(entry)
+
+        self.msg_output.clear()
+        for entry in self.msg_entries:
+            self.render_msg_entry(entry)
 
     def populate_serial_ports(self):
         current_selection = self.port_combo.currentData()
@@ -824,7 +890,6 @@ class HamMessengerGUI(QMainWindow):
                         }
                         self.msg_entries.append(msg_entry)
                         self.render_msg_entry(msg_entry)
-                        #message_queue.put(packet)  # why are we doing this?
                     #self.msg_output.appendPlainText(f"{timestamp} APRS: {packet}")
                     log_entry = {
                         "text": f"{timestamp} RX: {packet}\n",
@@ -935,8 +1000,14 @@ class HamMessengerGUI(QMainWindow):
 
         text = entry["text"]
         tag = entry.get("tag", "Message")
+        global IS_DARK_MODE
+        if IS_DARK_MODE:
+            color = self.tag_colors_dark_mode.get(tag, "white")
+        else:
+            color = self.tag_colors_light_mode.get(tag, "black")
+
         fmt = QTextCharFormat()
-        fmt.setForeground(QColor(self.msg_tag_colors.get(tag, "black")))
+        fmt.setForeground(QColor(color))
 
         cursor = self.msg_output.textCursor()
         cursor.movePosition(QTextCursor.End)
@@ -955,7 +1026,11 @@ class HamMessengerGUI(QMainWindow):
 
         text = entry["text"]
         tag = entry.get("tag", "Received")
-        color = self.log_tag_colors.get(tag, "black")
+        global IS_DARK_MODE
+        if IS_DARK_MODE:
+            color = self.tag_colors_dark_mode.get(tag, "white")
+        else:
+            color = self.tag_colors_light_mode.get(tag, "black")
 
         fmt = QTextCharFormat()
         fmt.setForeground(QColor(color))
@@ -971,7 +1046,45 @@ class HamMessengerGUI(QMainWindow):
 
 
 if __name__ == "__main__":
+
+    # set up Qt application
     app = QApplication(sys.argv)
     window = HamMessengerGUI()
+
+    if IS_MAC:  # macOS
+        try:
+            # set up dark mode monitoring
+            AppKit.NSApplication.sharedApplication()
+            observer = AppearanceObserver.alloc().init()
+            center = NSDistributedNotificationCenter.defaultCenter()
+            # Listen for macOS dark mode change notification
+            center.addObserver_selector_name_object_(
+                observer,
+                objc.selector(observer.darkModeChanged_, signature=b'v@:@'),
+                "AppleInterfaceThemeChangedNotification",
+                None
+            )
+            # get current dark mode
+            IS_DARK_MODE = observer.getDarkMode()
+
+        except Exception:
+            pass
+
+    elif IS_WINDOWS:
+        try:
+            #watch_windows_dark_mode(on_dark_mode_change)
+            win_dark_mode_thread = WindowsDarkModeThread()
+            win_dark_mode_thread.darkModeChanged.connect(lambda is_dark: win_dark_mode_thread.on_dark_mode_change(is_dark))
+            win_dark_mode_thread.start()
+            pass
+        except Exception:
+            pass
+
+    else:
+        #raise NotImplementedError("Dark mode detection not supported on this OS.")
+        pass
+
+    # open app
     window.show()
+    # exit cleanly
     sys.exit(app.exec())

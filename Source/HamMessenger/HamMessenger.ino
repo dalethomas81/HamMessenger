@@ -166,7 +166,7 @@ const char version[] = __DATE__ " " __TIME__;
 
   #include <EEPROM.h>
 
-  const char Initialized[] = {"Initialized 2025MAY27 v2"}; // change this to something unique if you want to re-init the EEPROM during flashing. useful when there has been a change to a settings array.
+  const char Initialized[] = {"Initialized 2025JUN11 v1"}; // change this to something unique if you want to re-init the EEPROM during flashing. useful when there has been a change to a settings array.
 
   #define EEPROM_SETTINGS_START_ADDR      1000
 
@@ -188,7 +188,7 @@ const char version[] = __DATE__ " " __TIME__;
                           
   const char *MenuItems_Settings[] = {"APRS", "GPS", "Display"};
   const char *MenuItems_Settings_APRS[] = {"Beacon Enabled", "Beacon Distance", "Beacon Idle Time", "Raw Packet", "Comment",
-                                          "Message Text", "Recipient Callsign", "Recipient SSID", "My Callsign", "My Callsign SSID", 
+                                          "Message Text", "Recipient Callsign", "Recipient SSID", "My Callsign", "My SSID", 
                                           "Dest Callsign", "Dest SSID", "PATH1 Callsign", "PATH1 SSID", "PATH2 Callsign", "PATH2 SSID",
                                           "Symbol", "Table", "Automatic ACK", "Preamble", "Tail", "Retry Count", "Retry Interval"};
   const char *MenuItems_Settings_GPS[] = {"Pos Tolerance", "Dest Latitude", "Dest Longitude"};
@@ -203,9 +203,9 @@ const char version[] = __DATE__ " " __TIME__;
   unsigned char Settings_TypeIndex_APRS[] = { 0,0,0,0,1,
                                               2,0,0,1,1,
                                               2,2,3,3,4,4,
-                                              0,1,3,1,2,4,5}; // this is the index in the array of the data arrays below
+                                              0,1,3,0,1,2,3}; // this is the index in the array of the data arrays below
   unsigned char Settings_TypeIndex_GPS[] = {1,2,3};
-  unsigned char Settings_TypeIndex_Display[] = {1,0,1,2,3,4};
+  unsigned char Settings_TypeIndex_Display[] = {1,4,2,3,5,4};
   // data arrays
   bool Settings_TypeBool[5] = {true,true,true,true,false}; // aprs beacon enabled, display show position, scroll messages, auto ACK, invert
   int Settings_TypeInt[0] = {};
@@ -214,7 +214,7 @@ const char version[] = __DATE__ " " __TIME__;
   unsigned long Settings_TypeULong[2] = {300000, 2000}; // aprs beacon Idle Time, display timeout
   float Settings_TypeFloat[4] = {1.00000,0.00001,34.790040,-82.790672}; // aprs beacon distance, gps position tolerance, gps latitude, gps longitude
   char Settings_TypeString2[2][2] = {'n','\0'};
-  char Settings_TypeString3[6][3] = {'0','0','\0'};
+  char Settings_TypeString3[5][3] = {'0','0','\0'};
   char Settings_TypeString7[5][7] = {'N','O','C','A','L','L','\0'};
   char Settings_TypeString100[3][100] = {'T','e','s','t','\0'};
   char Settings_TempDispCharArr[100];
@@ -311,63 +311,63 @@ const char version[] = __DATE__ " " __TIME__;
     SETTINGS_APRS_BEACON_IDLE_TIME = 30000;
 
     const char* strTemp1 = "NOCALL>APRS,WIDE1-1,WIDE2-1:!0000.00N/00000.00W>HamMessenger Ready";
-    for (int i=0; i<sizeof(strTemp1);i++) {
+    for (int i=0; i<=strlen(strTemp1);i++) {
       SETTINGS_APRS_RAW_PACKET[i] = strTemp1[i];
     }
 
     const char* strTemp2 = "https://github.com/dalethomas81/HamMessenger";
-    for (int i=0; i<sizeof(strTemp2);i++) {
+    for (int i=0; i<=strlen(strTemp2);i++) {
       SETTINGS_APRS_COMMENT[i] = strTemp2[i];
     }
 
     const char* strTemp3 = "Hi!";
-    for (int i=0; i<sizeof(strTemp3);i++) {
+    for (int i=0; i<=strlen(strTemp3);i++) {
       SETTINGS_APRS_MESSAGE[i] = strTemp3[i];
     }
 
+    //
     const char* strTemp4 = "NOCALL";
-    for (int i=0; i<sizeof(strTemp4);i++) {
+    for (int i=0; i<=strlen(strTemp4);i++) {
       SETTINGS_APRS_RECIPIENT_CALL[i] = strTemp4[i];
     }
-
     SETTINGS_APRS_RECIPIENT_SSID[0] = '0';
     SETTINGS_APRS_RECIPIENT_SSID[1] = '\0';
 
+    //
     const char* strTemp5 = "NOCALL";
-    for (int i=0; i<sizeof(strTemp5);i++) {
+    for (int i=0; i<=strlen(strTemp5);i++) {
       SETTINGS_APRS_CALLSIGN[i] = strTemp5[i];
     }
-
     SETTINGS_APRS_CALLSIGN_SSID[0] = '0';
     SETTINGS_APRS_CALLSIGN_SSID[1] = '\0';
 
+    //
     const char* strTemp6 = "APRS";
-    for (int i=0; i<sizeof(strTemp6);i++) {
+    for (int i=0; i<=strlen(strTemp6);i++) {
       SETTINGS_APRS_DESTINATION_CALL[i] = strTemp6[i];
     }
-
-    SETTINGS_APRS_DESTINATION_SSID[0]  = '0';
+    SETTINGS_APRS_DESTINATION_SSID[0]  = '1';
     SETTINGS_APRS_DESTINATION_SSID[1] = '\0';
 
+    //
     const char* strTemp7 = "WIDE1";
-    for (int i=0; i<sizeof(strTemp7);i++) {
+    for (int i=0; i<=strlen(strTemp7);i++) {
       SETTINGS_APRS_PATH1_CALL[i] = strTemp7[i];
     }
-
     SETTINGS_APRS_PATH1_SSID[0] = '1';
     SETTINGS_APRS_PATH1_SSID[1] = '\0';
 
+    //
     const char* strTemp8 = "WIDE2";
-    for (int i=0; i<sizeof(strTemp8)-1;i++) {
+    for (int i=0; i<=strlen(strTemp8)-1;i++) {
       SETTINGS_APRS_PATH2_CALL[i] = strTemp8[i];
     }
-
     SETTINGS_APRS_PATH2_SSID[0] = '2';
     SETTINGS_APRS_PATH2_SSID[1] = '\0';
 
+    //
     SETTINGS_APRS_SYMBOL[0] = 'n';
     SETTINGS_APRS_SYMBOL[1] = '\0';
-
     SETTINGS_APRS_SYMBOL_TABLE[0] = 's';
     SETTINGS_APRS_SYMBOL_TABLE[1] = '\0';
 
@@ -414,12 +414,12 @@ const char version[] = __DATE__ " " __TIME__;
 
     int address = EEPROM_SETTINGS_START_ADDR;
     for (int i=0;i<ARRAY_SIZE(Settings_TypeBool);i++){
-      //Serial.print(F("bool:"));Serial.println(address);
+      //Serial.print(F("bool:"));Serial.print(address);Serial.print(":");Serial.println(Settings_TypeBool[i]);
       EEPROM.put(address, Settings_TypeBool[i]);
       address = address + sizeof(Settings_TypeBool[i]);
     }
     for (int i=0;i<ARRAY_SIZE(Settings_TypeInt);i++){
-      //Serial.print(F("int:"));Serial.println(address);
+      //Serial.print(F("int:"));Serial.print(address);Serial.print(":");Serial.println(Settings_TypeInt[i]);
       EEPROM.put(address, Settings_TypeInt[i]);
       address = address + sizeof(Settings_TypeInt[i]);
     }
@@ -429,7 +429,7 @@ const char version[] = __DATE__ " " __TIME__;
       address = address + sizeof(Settings_TypeUInt[i]);
     }
     for (int i=0;i<ARRAY_SIZE(Settings_TypeLong);i++){
-      //Serial.print(F("long:"));Serial.println(address);
+      //Serial.print(F("long:"));Serial.print(address);Serial.print(":");Serial.println(Settings_TypeLong[i]);
       EEPROM.put(address, Settings_TypeLong[i]);
       address = address + sizeof(Settings_TypeLong[i]);
     }
@@ -439,37 +439,41 @@ const char version[] = __DATE__ " " __TIME__;
       address = address + sizeof(Settings_TypeULong[i]);
     }
     for (int i=0;i<ARRAY_SIZE(Settings_TypeFloat);i++){
-      //Serial.print(F("float:"));Serial.println(address);
+      //Serial.print(F("float:"));Serial.print(address);Serial.print(":");Serial.println(Settings_TypeFloat[i]);
       EEPROM.put(address, Settings_TypeFloat[i]);
       address = address + sizeof(Settings_TypeFloat[i]);
     }
     for (int i=0;i<ARRAY_SIZE(Settings_TypeString2);i++){
-      //Serial.print(F("Settings_TypeString2:"));Serial.println(address);
+      //Serial.print(F("Settings_TypeString2:"));Serial.print(address);Serial.print(":");
       for (int j=0;j<sizeof(Settings_TypeString2[i]);j++){
         EEPROM.put(address, Settings_TypeString2[i][j]);
         address = address + sizeof(Settings_TypeString2[i][j]);
       }
+      //Serial.println(Settings_TypeString2[i]);
     }
     for (int i=0;i<ARRAY_SIZE(Settings_TypeString3);i++){
-      //Serial.print(F("Settings_TypeString3:"));Serial.println(address);
+      //Serial.print(F("Settings_TypeString3:"));Serial.print(address);Serial.print(":");
       for (int j=0;j<sizeof(Settings_TypeString3[i]);j++){
         EEPROM.put(address, Settings_TypeString3[i][j]);
         address = address + sizeof(Settings_TypeString3[i][j]);
       }
+      //Serial.println(Settings_TypeString3[i]);
     }
     for (int i=0;i<ARRAY_SIZE(Settings_TypeString7);i++){
-      //Serial.print(F("Settings_TypeString7:"));Serial.println(address);
+      //Serial.print(F("Settings_TypeString7:"));Serial.print(address);Serial.print(":");
       for (int j=0;j<sizeof(Settings_TypeString7[i]);j++){
         EEPROM.put(address, Settings_TypeString7[i][j]);
         address = address + sizeof(Settings_TypeString7[i][j]);
       }
+      //Serial.println(Settings_TypeString7[i]);
     }
     for (int i=0;i<ARRAY_SIZE(Settings_TypeString100);i++){
-      //Serial.print(F("Settings_TypeString100:"));Serial.println(address);
+      //Serial.print(F("Settings_TypeString100:"));Serial.print(address);Serial.print(":");
       for (int j=0;j<sizeof(Settings_TypeString100[i]);j++){
         EEPROM.put(address, Settings_TypeString100[i][j]);
         address = address + sizeof(Settings_TypeString100[i][j]);
       }
+      //Serial.println(Settings_TypeString100[i]);
     }
   }
 
@@ -482,12 +486,12 @@ const char version[] = __DATE__ " " __TIME__;
     
     int address = EEPROM_SETTINGS_START_ADDR;
     for (int i=0;i<ARRAY_SIZE(Settings_TypeBool);i++){
-      //Serial.print(F("bool:"));Serial.println(address);
+      //Serial.print(F("bool:"));Serial.print(address);Serial.print(":");Serial.println(Settings_TypeBool[i]);
       EEPROM.get(address, Settings_TypeBool[i]);
       address = address + sizeof(Settings_TypeBool[i]);
     }
     for (int i=0;i<ARRAY_SIZE(Settings_TypeInt);i++){
-      //Serial.print(F("int:"));Serial.println(address);
+      //Serial.print(F("int:"));Serial.print(address);Serial.print(":");Serial.println(Settings_TypeInt[i]);
       EEPROM.get(address, Settings_TypeInt[i]);
       address = address + sizeof(Settings_TypeInt[i]);
     }
@@ -497,7 +501,7 @@ const char version[] = __DATE__ " " __TIME__;
       address = address + sizeof(Settings_TypeUInt[i]);
     }
     for (int i=0;i<ARRAY_SIZE(Settings_TypeLong);i++){
-      //Serial.print(F("long:"));Serial.println(address);
+      //Serial.print(F("long:"));Serial.print(address);Serial.print(":");Serial.println(Settings_TypeLong[i]);
       EEPROM.get(address, Settings_TypeLong[i]);
       address = address + sizeof(Settings_TypeLong[i]);
     }
@@ -507,36 +511,41 @@ const char version[] = __DATE__ " " __TIME__;
       address = address + sizeof(Settings_TypeULong[i]);
     }
     for (int i=0;i<ARRAY_SIZE(Settings_TypeFloat);i++){
-      //Serial.print(F("float:"));Serial.println(address);
+      //Serial.print(F("float:"));Serial.print(address);Serial.print(":");Serial.println(Settings_TypeFloat[i]);
       EEPROM.get(address, Settings_TypeFloat[i]);
       address = address + sizeof(Settings_TypeFloat[i]);
     }
     for (int i=0;i<ARRAY_SIZE(Settings_TypeString2);i++){
-      //Serial.print(F("Settings_TypeString2:"));Serial.println(address);
+      //Serial.print(F("Settings_TypeString2:"));Serial.print(address);Serial.print(":");
       for (int j=0;j<sizeof(Settings_TypeString2[i]);j++){
         EEPROM.get(address, Settings_TypeString2[i][j]);
         address = address + sizeof(Settings_TypeString2[i][j]);
       }
+      //Serial.println(Settings_TypeString2[i]);
     }
     for (int i=0;i<ARRAY_SIZE(Settings_TypeString3);i++){
-      //Serial.print(F("Settings_TypeString3:"));Serial.println(address);
+      //Serial.print(F("Settings_TypeString3:"));Serial.print(address);Serial.print(":");
       for (int j=0;j<sizeof(Settings_TypeString3[i]);j++){
         EEPROM.get(address, Settings_TypeString3[i][j]);
         address = address + sizeof(Settings_TypeString3[i][j]);
       }
+      //Serial.println(Settings_TypeString3[i]);
     }
     for (int i=0;i<ARRAY_SIZE(Settings_TypeString7);i++){
-      //Serial.print(F("Settings_TypeString7:"));Serial.println(address);
+      //Serial.print(F("Settings_TypeString7:"));Serial.print(address);Serial.print(":");
       for (int j=0;j<sizeof(Settings_TypeString7[i]);j++){
         EEPROM.get(address, Settings_TypeString7[i][j]);
         address = address + sizeof(Settings_TypeString7[i][j]);
       }
+      //Serial.println(Settings_TypeString7[i]);
     }
     for (int i=0;i<ARRAY_SIZE(Settings_TypeString100);i++){
+      //Serial.print(F("Settings_TypeString100:"));Serial.print(address);Serial.print(":");
       for (int j=0;j<sizeof(Settings_TypeString100[i]);j++){
         EEPROM.get(address, Settings_TypeString100[i][j]);
         address = address + sizeof(Settings_TypeString100[i][j]);
       }
+      //Serial.println(Settings_TypeString100[i]);
     }
   }
 
@@ -3401,6 +3410,10 @@ const char version[] = __DATE__ " " __TIME__;
   const char* InvalidData_Float = "Invalid data. Expected float -3.4028235E+38-3.4028235E+38 instead got ";
   const char* InvalidData_UnsignedLong = "Invalid data. Expected unsigned long 0-4294967295 instead got ";
   const char* InvalidData_TrueFalse = "Invalid data. Expected True/False or 1/0";
+  const char* InvalidData_String99 = "Invalid data. Expected string <= 99 chars";
+  const char* InvalidData_String6 = "Invalid data. Expected string <= 6 chars";
+  const char* InvalidData_String2 = "Invalid data. Expected string <= 2 chars";
+  const char* InvalidData_String1 = "Invalid data. Expected string <= 1 chars";
 
   const char exNone[]      PROGMEM = ":<Unknown>";
   const char exBool[]      PROGMEM = ":<True/False>";
@@ -3529,6 +3542,9 @@ const char version[] = __DATE__ " " __TIME__;
     Serial.println();
   }
 
+  const byte MAX_LEN = 250;
+  char inData[MAX_LEN] = {'\0'};
+  byte index = 0;
   const char CMD_DELETE[] PROGMEM = "Delete";
   const char CMD_PRINT[]  PROGMEM = "Print";
   const char CMD_MODEM[]  PROGMEM = "Modem";
@@ -3539,15 +3555,25 @@ const char version[] = __DATE__ " " __TIME__;
     readModem();
     // usb serial commands are handled here
     bool gotCMD = false;
-    char inData[250];
-    if (Serial.available()) {
-      memset(inData,'\0',sizeof(inData));
-      Serial.readBytesUntil('\n', inData, sizeof(inData));
-      Serial.print(F("ECHO  "));Serial.println(inData);
-      if (inData[0]=='C' && inData[1]=='M' && inData[2]=='D' && inData[3]==':') gotCMD=true;
-      if (inData[0]=='?') printOutSerialCommands();
-      //if (inData[0]=='M' && inData[1]=='S' && inData[2]=='G' && inData[3]==':') sendMessage=true;
+    while (Serial.available()) {
+      char c = Serial.read();
+      if (c == '\n') {
+        inData[index] = '\0';
+        Serial.print(F("ECHO ["));Serial.print(index+1);Serial.print(F("] "));Serial.println(inData);
+        if (inData[0]=='C' && inData[1]=='M' && inData[2]=='D' && inData[3]==':') gotCMD=true;
+        if (inData[0]=='?') printOutSerialCommands();
+        index = 0;
+      } else {
+        if (index < MAX_LEN - 1) {
+          inData[index++] = c;
+        } else {
+          // we got to the end of our buffer and never got a \n so lets start over
+          index = 0;
+          break;
+        }
+      }
     }
+
     if (gotCMD){
       // get the command
       char CMD[30]={'\0'};
@@ -3732,6 +3758,10 @@ const char version[] = __DATE__ " " __TIME__;
             
           } else if (strstr(Setting, MenuItems_Settings_APRS[3]) != NULL) { // "Raw Packet"
             while (inData[i] != '\n' && inData[i] != '\0') {
+              if (k>99) { // string100 should be no longer than 99 chars (plus \n)
+                Serial.print(InvalidData_String99);Serial.println(inData_Value);
+                return;
+              }
               inData_Value[k] = inData[i];
               i++; k++;
             }
@@ -3743,6 +3773,10 @@ const char version[] = __DATE__ " " __TIME__;
             
           } else if (strstr(Setting, MenuItems_Settings_APRS[4]) != NULL) { // "Comment"
             while (inData[i] != '\n' && inData[i] != '\0') {
+              if (k>99) { // string100 should be no longer than 99 chars (plus \n)
+                Serial.print(InvalidData_String99);Serial.println(inData_Value);
+                return;
+              }
               inData_Value[k] = inData[i];
               i++; k++;
             }
@@ -3754,6 +3788,10 @@ const char version[] = __DATE__ " " __TIME__;
             
           } else if (strstr(Setting, MenuItems_Settings_APRS[5]) != NULL) { // "Message"
             while (inData[i] != '\n' && inData[i] != '\0') {
+              if (k>99) { // string100 should be no longer than 99 chars (plus \n)
+                Serial.print(InvalidData_String99);Serial.println(inData_Value);
+                return;
+              }
               inData_Value[k] = inData[i];
               i++; k++;
             }
@@ -3765,6 +3803,10 @@ const char version[] = __DATE__ " " __TIME__;
             
           } else if (strstr(Setting, MenuItems_Settings_APRS[6]) != NULL) { // "Recipient Callsign"
             while (inData[i] != '\n' && inData[i] != '\0') {
+              if (k>6) { // string7 should be no longer than 6 chars (plus \n)
+                Serial.print(InvalidData_String6);Serial.println(inData_Value);
+                return;
+              }
               inData_Value[k] = inData[i];
               i++; k++;
             }
@@ -3776,6 +3818,10 @@ const char version[] = __DATE__ " " __TIME__;
             
           } else if (strstr(Setting, MenuItems_Settings_APRS[7]) != NULL) { // "Recipient SSID"
             while (inData[i] != '\n' && inData[i] != '\0') {
+              if (k>2) { // string3 should be no longer than 2 chars (plus \n)
+                Serial.print(InvalidData_String2);Serial.println(inData_Value);
+                return;
+              }
               inData_Value[k] = inData[i];
               i++; k++;
             }
@@ -3788,6 +3834,10 @@ const char version[] = __DATE__ " " __TIME__;
             
           } else if (strstr(Setting, MenuItems_Settings_APRS[8]) != NULL) { // "My Callsign"
             while (inData[i] != '\n' && inData[i] != '\0') {
+              if (k>6) { // string7 should be no longer than 6 chars (plus \n)
+                Serial.print(InvalidData_String6);Serial.println(inData_Value);
+                return;
+              }
               inData_Value[k] = inData[i];
               i++; k++;
             }
@@ -3799,6 +3849,10 @@ const char version[] = __DATE__ " " __TIME__;
             
           } else if (strstr(Setting, MenuItems_Settings_APRS[9]) != NULL) { // "Callsign SSID"
             while (inData[i] != '\n' && inData[i] != '\0') {
+              if (k>2) { // string3 should be no longer than 2 chars (plus \n)
+                Serial.print(InvalidData_String2);Serial.println(inData_Value);
+                return;
+              }
               inData_Value[k] = inData[i];
               i++; k++;
             }
@@ -3811,6 +3865,10 @@ const char version[] = __DATE__ " " __TIME__;
             
           } else if (strstr(Setting, MenuItems_Settings_APRS[10]) != NULL) { // "Destination Callsign"
             while (inData[i] != '\n' && inData[i] != '\0') {
+              if (k>6) { // string7 should be no longer than 6 chars (plus \n)
+                Serial.print(InvalidData_String6);Serial.println(inData_Value);
+                return;
+              }
               inData_Value[k] = inData[i];
               i++; k++;
             }
@@ -3822,6 +3880,10 @@ const char version[] = __DATE__ " " __TIME__;
             
           } else if (strstr(Setting, MenuItems_Settings_APRS[11]) != NULL) { // "Destination SSID"
             while (inData[i] != '\n' && inData[i] != '\0') {
+              if (k>2) { // string3 should be no longer than 2 chars (plus \n)
+                Serial.print(InvalidData_String2);Serial.println(inData_Value);
+                return;
+              }
               inData_Value[k] = inData[i];
               i++; k++;
             }
@@ -3834,6 +3896,10 @@ const char version[] = __DATE__ " " __TIME__;
             
           } else if (strstr(Setting, MenuItems_Settings_APRS[12]) != NULL) { // "PATH1 Callsign"
             while (inData[i] != '\n' && inData[i] != '\0') {
+              if (k>6) { // string7 should be no longer than 6 chars (plus \n)
+                Serial.print(InvalidData_String6);Serial.println(inData_Value);
+                return;
+              }
               inData_Value[k] = inData[i];
               i++; k++;
             }
@@ -3845,6 +3911,10 @@ const char version[] = __DATE__ " " __TIME__;
             
           } else if (strstr(Setting, MenuItems_Settings_APRS[13]) != NULL) { // "PATH1 SSID"
             while (inData[i] != '\n' && inData[i] != '\0') {
+              if (k>2) { // string3 should be no longer than 2 chars (plus \n)
+                Serial.print(InvalidData_String2);Serial.println(inData_Value);
+                return;
+              }
               inData_Value[k] = inData[i];
               i++; k++;
             }
@@ -3857,6 +3927,10 @@ const char version[] = __DATE__ " " __TIME__;
             
           } else if (strstr(Setting, MenuItems_Settings_APRS[14]) != NULL) { // "PATH2 Callsign"
             while (inData[i] != '\n' && inData[i] != '\0') {
+              if (k>6) { // string7 should be no longer than 6 chars (plus \n)
+                Serial.print(InvalidData_String6);Serial.println(inData_Value);
+                return;
+              }
               inData_Value[k] = inData[i];
               i++; k++;
             }
@@ -3868,6 +3942,10 @@ const char version[] = __DATE__ " " __TIME__;
             
           } else if (strstr(Setting, MenuItems_Settings_APRS[15]) != NULL) { // "PATH2 SSID"
             while (inData[i] != '\n' && inData[i] != '\0') {
+              if (k>2) { // string3 should be no longer than 2 chars (plus \n)
+                Serial.print(InvalidData_String2);Serial.println(inData_Value);
+                return;
+              }
               inData_Value[k] = inData[i];
               i++; k++;
             }
@@ -3880,6 +3958,10 @@ const char version[] = __DATE__ " " __TIME__;
             
           } else if (strstr(Setting, MenuItems_Settings_APRS[16]) != NULL) { // "Symbol"
             while (inData[i] != '\n' && inData[i] != '\0') {
+              if (k>1) { // string2 should be no longer than 1 chars (plus \n)
+                Serial.print(InvalidData_String1);Serial.println(inData_Value);
+                return;
+              }
               inData_Value[k] = inData[i];
               i++; k++;
             }
@@ -3892,6 +3974,10 @@ const char version[] = __DATE__ " " __TIME__;
             
           } else if (strstr(Setting, MenuItems_Settings_APRS[17]) != NULL) { // "Table"
             while (inData[i] != '\n' && inData[i] != '\0') {
+              if (k>1) { // string2 should be no longer than 1 chars (plus \n)
+                Serial.print(InvalidData_String1);Serial.println(inData_Value);
+                return;
+              }
               inData_Value[k] = inData[i];
               i++; k++;
             }
@@ -4201,20 +4287,54 @@ const char version[] = __DATE__ " " __TIME__;
     return actualLen;
   }
 
-  void writeRawDataToSd(APRSFormat_Raw RawData){
-    byte *buff = (byte *) &RawData; // to access RawData as bytes
-
-    // if the file opened okay, write to it:
-    if (RawDataFile) {
-      RawDataFile.seek(RawDataFile.size()); // go to end of file first
-      RawDataFile.write(buff, sizeof(APRSFormat_Raw)); 
-      RawDataFile.write('\n'); // add a \n to make raw.txt more human readable
+  void printFormattedSize(uint32_t bytes) {
+    if (bytes < 1024) {
+      Serial.print(bytes);
+      Serial.print(F(" B"));
+    } else if (bytes < 1024 * 1024) {
+      Serial.print(bytes / 1024.0, 2);
+      Serial.print(F(" KB"));
+    } else if (bytes < 1024UL * 1024UL * 1024UL) {
+      Serial.print(bytes / 1024.0 / 1024.0, 2);
+      Serial.print(F(" MB"));
     } else {
-      // if the file didn't open, print an error:
-      Serial.println(F("error opening raw.txt"));
+      Serial.print(bytes / 1024.0 / 1024.0 / 1024.0, 2);
+      Serial.print(F(" GB"));
     }
-    
-    RawDataFile.flush(); // will save data
+  }
+
+  // 1 GB (gigabyte) = 1,073,741,824 bytes
+  // 2 GB = 2 × 1,073,741,824 = 2,147,483,648 bytes
+  // 90% of 2 GB = 0.9 × 2,147,483,648 = 1,932,735,283.2 bytes
+  //#define MAX_FILE_BYTES 2147483648UL
+  #define WARN_AT_BYTES 1932735283UL
+  void writeStructToSd(File& file, void* dataPtr, size_t dataSize, const char* label, bool addNewline = true) {
+    if (file) {
+      uint32_t size = file.size();
+      if (size >= WARN_AT_BYTES) {
+        Serial.print(F("[WARNING] "));
+        Serial.print(label);
+        Serial.print(F(" file is getting large: "));
+        printFormattedSize(size);
+        Serial.println(F("). Consider offloading or deleting."));
+      }
+      file.seek(size);
+      file.write((byte*)dataPtr, dataSize);
+      if (addNewline) file.write('\n');
+      file.flush();
+    } else {
+      Serial.print(F("error opening "));
+      Serial.print(label);
+      Serial.println(F(".txt"));
+    }
+  }
+
+  void writeRawDataToSd(APRSFormat_Raw RawData) {
+    writeStructToSd(RawDataFile, &RawData, sizeof(APRSFormat_Raw), "raw");
+  }
+
+  void writeMsgDataToSd(APRSFormat_Msg MsgData) {
+    writeStructToSd(MsgDataFile, &MsgData, sizeof(APRSFormat_Msg), "msg");
   }
 
   void startReadingFromSd(uint32_t StartPosition) {
@@ -4246,21 +4366,6 @@ const char version[] = __DATE__ " " __TIME__;
 
     Serial.print(F("SD Raw:"));
     Serial.println(encodedBuffer);
-  }
-
-  void writeMsgDataToSd(APRSFormat_Msg MsgData){
-    byte *buff = (byte *) &MsgData; // to access MsgData as bytes
-
-    // if the file opened okay, write to it:
-    if (MsgDataFile) {
-      MsgDataFile.seek(MsgDataFile.size()); // go to end of file first
-      MsgDataFile.write(buff, sizeof(APRSFormat_Msg)); MsgDataFile.write('\n');
-    } else {
-      // if the file didn't open, print an error:
-      Serial.println(F("error opening msg.txt"));
-    }
-    
-    MsgDataFile.flush(); // will save data
   }
 
   void printMsgDataFromSd(uint32_t StartPosition){
@@ -4430,8 +4535,12 @@ void extractMsgCallParts(const char input[15], char callsign[7], char ssid[3]) {
 #pragma endregion
 
 void setup(){
-
-  Serial.begin(115200);
+  // chose the baud rate wisely
+  // the arduino has a serial buffer size of 64 bytes.
+  // if the data is received too fast, the buffer may overflow before the arduino gets to Serial.read() it
+  // at 9600 baud, we can read a 131 char string without losing data. this is long enough for our 99 char limit for strings (raw, comment, and message) plus the command structure
+  // for example: CMD:Settings:APRS:Message Text:0123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789
+  Serial.begin(9600);
   Serial1.begin(9600); // modem
   Serial2.begin(9600); // gps
   while (!Serial1) // wait for modem

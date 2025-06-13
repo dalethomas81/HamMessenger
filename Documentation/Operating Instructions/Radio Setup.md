@@ -28,7 +28,7 @@ To program the UV-5R5 (or the other 2 variants above), you can use an open sourc
 
     number | item | required | value | description
     ------ | ------- | -------- | ----- | -----------
-    0 | SQL | *N* | 4 | recommended squelch
+    0 | SQL | *N* | 0 | recommended squelch (0 will open it all the way)
     2 | TXP | *N* | HIGH | transmit power
     3 | SAVE | *N* | OFF | power save mode
     4 | VOX | *N* | OFF | voice activation
@@ -54,6 +54,6 @@ To program the UV-5R5 (or the other 2 variants above), you can use an open sourc
 
 ## Radio Use ##
 
-I have found that the volume of the radio works well at around 30%. I actually havent done much testing here but this works well.
+I have found that the volume of the radio works well at around 80%. I actually havent done much testing here but this works well.
 
 HamMessenger is designed so that you can wear the radio on your belt while you use HamMessenger as a texting device in your hand.
