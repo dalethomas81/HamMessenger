@@ -81,12 +81,24 @@ Serial interface information can be found [here](https://github.com/dalethomas81
 
 ## TODO ##
 
-hardware:
+hardware:  
 - improve enclosure design  
+- add polarity indicators to board
+- list D1, D2, R10, R11 as optional
 
-software:
+tutorials:  
+- 2 pair tweezers
+- soldering iron
+- baofeng y,g,r,b
+- btech b,r,w,g
+- super glue or hot glue gun
+
+software:  
 - add ability to program the radio once connected for 'plug-n-play' experience (is this possible?)  
 - add feature to be selective about message acknowledgments. currently any acknowlegment (from a second conversation) will reset the messaging sequencer.  
+- [GUI] add virtual keyboard to control HamMessenger lite
+- handle file sizes hitting a limit
+
 
 ## Libraries ##
 

@@ -15,6 +15,7 @@ import base64
 from queue import Queue
 import platform
 from aprspy import APRS
+import time
 
 IS_DARK_MODE = True
 IS_MAC = platform.system() == "Darwin"
@@ -393,6 +394,7 @@ class SerialThread(QThread):
                     line = self.serial_connection.readline().decode('utf-8', errors='replace').strip()
                     if line:
                         self.message_received.emit(line)
+                time.sleep(0.001)
         except serial.SerialException as e:
             self.message_received.emit(f"Serial error: {e}")
 
