@@ -1,3 +1,7 @@
+> **⚠️ This repository is archived and no longer maintained.**  
+> The code is left available for reference. No further updates, issues, or pull requests will be accepted.
+> Please see [Meshtastic](https://meshtastic.org) or [Meshcore](https://meshcore.io) as superior alternatives. 
+
 # HamMessenger # 
 ![Tests](https://github.com/dalethomas81/HamMessenger/actions/workflows/development.yml/badge.svg)  
 ![Release Build](https://github.com/dalethomas81/HamMessenger/actions/workflows/release.yml/badge.svg)  
